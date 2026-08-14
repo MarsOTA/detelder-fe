@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="134px" height="134px" viewBox="0 0 134 134" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>octagon</title>
+    <g id="Pagina-Evento" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Eventi-popup-massivo" transform="translate(-679.000000, -289.000000)">
+            <g id="detelder-logo"></g>
+            <g id="Group-2" transform="translate(610.000000, 291.000000)" stroke-linecap="round" stroke-linejoin="round">
+                <g id="octagon" transform="translate(71.000000, 0.000000)">
+                    <path d="M3.809,95.719 C1.37085813,93.2815945 0,89.9755326 0,86.528 L0,43.472 C0,40.0244674 1.37085813,36.7184055 3.809,34.281 L34.281,3.809 C36.7184055,1.37085813 40.0244674,0 43.472,0 L86.528,0 C89.9755326,0 93.2815945,1.37085813 95.719,3.809 L126.191,34.281 C128.629142,36.7184055 130,40.0244674 130,43.472 L130,86.528 C130,89.9755326 128.629142,93.2815945 126.191,95.719 L95.719,126.191 C93.2815945,128.629142 89.9755326,130 86.528,130 L43.472,130 C40.0244674,130 36.7184055,128.629142 34.281,126.191 L3.809,95.719 Z" id="Path" stroke="#015C41" stroke-width="4" fill="#007A55"></path>
+                    <g id="copy-check" transform="translate(34.000000, 34.000000)" stroke="#FFFFFF">
+                        <polyline id="Path" stroke-width="2" points="31.0434783 41.0869565 37.4347826 47.4782609 50.2173913 34.6956522"></polyline>
+                        <rect id="Rectangle" stroke-width="4" x="19.173913" y="19.173913" width="43.826087" height="43.826087" rx="2"></rect>
+                        <path d="M6.26086957,43.826087 C2.8173913,43.826087 0,41.0086957 0,37.5652174 L0,6.26086957 C0,2.8173913 2.8173913,0 6.26086957,0 L37.5652174,0 C41.0086957,0 43.826087,2.8173913 43.826087,6.26086957" id="Path" stroke-width="4"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g id="detelder-logo-bianco"></g>
+        <g id="location_pin_007"></g>
+        <g id="location_pin_007"></g>
+    </g>
+</svg>
