@@ -92,7 +92,7 @@ const Rendicontazione = () => {
             credentials: 'include',
             body: JSON.stringify(body)
         });
-        const data = await resp.json();
+        await resp.json();
 
 
         setContestazioneDialogOpen(false);
