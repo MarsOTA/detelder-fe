@@ -101,7 +101,7 @@ export default function Login() {
                 Bentornato
               </h1>
               <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-500 sm:text-xs">
-                Detelder · Workforce &amp; Event Management
+                APP DETELDER · WORKFORCE &amp; EVENT MANAGEMENT
               </p>
             </div>
 
