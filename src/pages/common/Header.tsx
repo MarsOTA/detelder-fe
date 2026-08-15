@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Building2, LogOut, CalendarDays, CircleUserRound, ChevronDown, WalletCards } from "lucide-react";
+import {
+  CalendarSync,
+  Calendars,
+  Users,
+  UserRoundCheck,
+  Factory,
+  ReceiptEuro,
+  LogOut,
+  CircleUserRound,
+  ChevronDown,
+} from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
 
 const Header = () => {
@@ -43,19 +53,19 @@ const Header = () => {
       label: "Turni",
       to: "/admin/turni",
       active: location.pathname === "/admin/turni",
-      icon: CalendarDays,
+      icon: CalendarSync,
     },
     {
       label: "Eventi",
       to: "/admin/eventi",
       active: isEventiActive,
-      icon: CalendarDays,
+      icon: Calendars,
     },
     {
       label: "Presenze",
       to: "/admin/presenze",
       active: location.pathname === "/admin/presenze",
-      icon: Building2,
+      icon: UserRoundCheck,
     },
     {
       label: "Operatori",
@@ -67,13 +77,13 @@ const Header = () => {
       label: "Clienti",
       to: "/admin/clienti",
       active: location.pathname === "/admin/clienti",
-      icon: Building2,
+      icon: Factory,
     },
     {
       label: "Payroll",
       to: "/admin/payroll",
       active: location.pathname === "/admin/payroll",
-      icon: WalletCards,
+      icon: ReceiptEuro,
     },
   ];
 
@@ -103,6 +113,7 @@ const Header = () => {
               }`}
             >
               <Icon
+                strokeWidth={1}
                 className={`h-4 w-4 transition-colors duration-200 ${
                   active ? "text-[#a5e8cf]" : "text-white/55 group-hover:text-[#a5e8cf]"
                 }`}
@@ -124,9 +135,10 @@ const Header = () => {
             aria-expanded={accountOpen}
             aria-haspopup="menu"
           >
-            <CircleUserRound className="h-[18px] w-[18px]" />
+            <CircleUserRound strokeWidth={1} className="h-[18px] w-[18px]" />
             <span>Admin</span>
             <ChevronDown
+              strokeWidth={1}
               className={`h-3.5 w-3.5 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`}
             />
           </button>
@@ -147,7 +159,7 @@ const Header = () => {
                 onClick={logout}
                 className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut strokeWidth={1} className="h-4 w-4" />
                 Logout
               </button>
             </div>
