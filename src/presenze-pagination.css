@@ -1,0 +1,11 @@
+/* Generale presenze: mantiene la pagination in basso anche quando la tabella è vuota o ha poche righe. */
+section.m-6 > .space-y-5 > div.flex.items-center.gap-3.rounded-xl.border.border-\[\#e4ebe8\].bg-\[\#f7f9f8\].p-3\.5 + div {
+  display: flex;
+  min-height: calc(100vh - 330px);
+  flex-direction: column;
+}
+
+section.m-6 > .space-y-5 > div.flex.items-center.gap-3.rounded-xl.border.border-\[\#e4ebe8\].bg-\[\#f7f9f8\].p-3\.5 + div > div.flex.items-center.mt-4 {
+  margin-top: auto;
+  padding-top: 16px;
+}
