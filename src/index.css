@@ -133,12 +133,15 @@
     letter-spacing: -0.035em !important;
   }
 
-  /* Toolbar Eventi: Filtra resta azione primaria, export/utility diventano secondarie. */
+  /* Toolbar Eventi: Filtra chiude il gruppo dei campi, utility/export restano secondari. */
   section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
     height: 40px !important;
-    margin-left: 8px !important;
+    margin-left: -1px !important;
     padding-inline: 18px !important;
-    border-radius: 10px !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
     background: #007a55 !important;
     color: #fff !important;
     font-weight: 700 !important;
