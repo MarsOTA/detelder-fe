@@ -2,7 +2,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { it } from "date-fns/locale";
-import { CalendarIcon, ChevronsLeft, ChevronsRight, Paintbrush } from "lucide-react";
+import { CalendarIcon, ChevronsLeft, ChevronsRight, Download, Paintbrush } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,6 @@ type FiltriRicerca = {
     dataFine: Date | undefined
     titoloEvento: string | undefined
 }
-
 
 const presenze = () => {
 
@@ -76,7 +75,6 @@ const presenze = () => {
         );
     };
 
-
     const caricaPresenzeOperatore = async (
         dataInizio: Date | undefined,
         dataFine: Date | undefined,
@@ -107,8 +105,6 @@ const presenze = () => {
             queryParams.append("sortNomeEvento", sortNomeEvento);
         }
 
-        // console.log("sortOrderDataCeckIn: ", sortOrderDataCeckIn);
-
         const url = `${ezystaffBEUrl}operatori/ottieniPresenzeGenerale?${queryParams.toString()}`;
 
         try {
@@ -134,7 +130,7 @@ const presenze = () => {
         if (!date) return undefined;
 
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // mesi 0-based
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
 
         return `${year}-${month}-${day}`;
@@ -168,7 +164,7 @@ const presenze = () => {
                 titoloEvento,
             };
         });
-    };    
+    };
 
     const openGoogleMaps = (lat: number, lng: number) => {
         window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
@@ -185,7 +181,6 @@ const presenze = () => {
     };
 
     const handleGiornoClick = (offsetGiorni: number) => {
-
         const now = new Date();
         now.setDate(now.getDate() + offsetGiorni);
 
@@ -209,7 +204,6 @@ const presenze = () => {
         );
     };
 
-    // Funzione per calcolare il totale delle ore lavorate
     const getTotalHours = (records: typeof listaPresenze): string => {
         let totalSeconds = 0;
 
@@ -252,26 +246,35 @@ const presenze = () => {
     };
 
     return (
-        <section className="m-6">
-            <div className="space-y-6">
-                <div className="text-[#007a55] text-[32px] font-extrabold mb-2">
-                    GENERALE PRESENZE
-                </div>
+        <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
+            <div className="space-y-5">
+                <div className="flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+                    <div>
+                        <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-[#007a55]">
+                            Generale presenze
+                        </h1>
+                        <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">
+                            Visualizza, filtra ed esporta le presenze registrate dagli operatori.
+                        </p>
+                    </div>
 
-                <div>
-                    <Button onClick={handleExportToExcel}
-                        className="w-[200px] rounded-[18px] bg-[#007a55] text-white text-[18px] !font-bold hover:bg-[#009e6d] transition-colors cursor-pointer">
-                        SCARICA CSV
+                    <Button
+                        onClick={handleExportToExcel}
+                        className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#006f4d]"
+                    >
+                        <Download className="h-4 w-4" />
+                        Scarica CSV
                     </Button>
                 </div>
-                <div className="flex items-center gap-4 bg-[#f0f0f0] p-4 mb-1">
-                    <span className="text-[13px] font-normal text-[#656565]">Periodo da</span>
+
+                <div className="flex items-center gap-3 rounded-xl border border-[#e4ebe8] bg-[#f7f9f8] p-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+                    <span className="text-[13px] font-semibold text-[#656565]">Periodo da</span>
                     <div>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="w-full text-[13px] font-normal text-[#747474]"
+                                    className="w-full bg-white text-[13px] font-normal text-[#747474]"
                                 >
                                     {filtriRicerca?.dataInizio
                                         ? filtriRicerca?.dataInizio.toLocaleDateString()
@@ -290,13 +293,13 @@ const presenze = () => {
                             </PopoverContent>
                         </Popover>
                     </div>
-                    <span className="text-[13px] font-normal text-[#656565]">a</span>
+                    <span className="text-[13px] font-semibold text-[#656565]">a</span>
                     <div>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="w-full text-[13px] font-normal text-[#747474]"
+                                    className="w-full bg-white text-[13px] font-normal text-[#747474]"
                                 >
                                     {filtriRicerca?.dataFine
                                         ? filtriRicerca?.dataFine.toLocaleDateString()
@@ -322,49 +325,44 @@ const presenze = () => {
                             placeholder="Ricerca per Titolo evento"
                             value={filtriRicerca?.titoloEvento}
                             onChange={(e) => setTitoloEvento(e.target.value)}
-                            className="border border-gray-300 px-2 py-1 w-48 bg-white"
+                            className="w-52 border border-[#d8dfdc] bg-white px-3 py-1"
                         />
-                    </div>                    
-
-                    <div>
-                        <Button
-                            onClick={() =>
-                                caricaPresenzeOperatore(filtriRicerca?.dataInizio, filtriRicerca?.dataFine, filtriRicerca?.titoloEvento, page, pageSize, sortOrderCheckIn, sortOrderNominativo, sortOrderNomeEvento)
-                            }
-                            className="rounded-[5px] bg-[#007a55] text-white text-[16px] font-bold hover:bg-[#009e6d] cursor-pointer"
-                        >
-                            FILTRA
-                        </Button>
                     </div>
 
-                    <div>
-                        <Button
-                            onClick={() => resetFiltriRicerca()}
-                            className="rounded-[5px] bg-[#007a55] text-white hover:bg-[#009e6d] cursor-pointer"
-                        >
-                            <Paintbrush className="h-4 w-4" />
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() =>
+                            caricaPresenzeOperatore(filtriRicerca?.dataInizio, filtriRicerca?.dataFine, filtriRicerca?.titoloEvento, page, pageSize, sortOrderCheckIn, sortOrderNominativo, sortOrderNomeEvento)
+                        }
+                        className="rounded-lg bg-[#007a55] px-4 text-[14px] font-extrabold text-white hover:bg-[#006f4d]"
+                    >
+                        Filtra
+                    </Button>
 
-                    <div>
-                        <Button
-                            onClick={() => handleGiornoClick(0)}
-                            className="w-[70px] rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold hover:bg-[#e6fff5] cursor-pointer">
-                            Oggi
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() => resetFiltriRicerca()}
+                        title="Azzera filtri"
+                        className="rounded-lg bg-[#007a55] text-white hover:bg-[#006f4d]"
+                    >
+                        <Paintbrush className="h-4 w-4" />
+                    </Button>
 
-                    <div>
-                        <Button onClick={() => handleGiornoClick(-1)}
-                            className="w-[70px] rounded-[18px] border border-[#007a55] bg-white text-[#007a55] text-[16px] font-bold hover:bg-[#f3fffa] cursor-pointer">
-                            Ieri
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() => handleGiornoClick(0)}
+                        className="rounded-full border border-[#007a55] bg-[#f3fffa] px-5 text-[14px] font-bold text-[#007a55] hover:bg-[#e9f8f2]"
+                    >
+                        Oggi
+                    </Button>
 
-                    <div className="ml-auto text-[#5e8a7a] text-[24px] font-extrabold">
-                        Totale ore lavorate: {getTotalHours(listaPresenze)}
-                    </div>
+                    <Button
+                        onClick={() => handleGiornoClick(-1)}
+                        className="rounded-full border border-[#007a55] bg-white px-5 text-[14px] font-bold text-[#007a55] hover:bg-[#f5faf8]"
+                    >
+                        Ieri
+                    </Button>
 
+                    <div className="ml-auto whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
+                        Totale ore: {getTotalHours(listaPresenze)}
+                    </div>
                 </div>
 
                 <div>
@@ -374,7 +372,6 @@ const presenze = () => {
                                 <TableHead
                                     className="text-[16px] font-bold text-[#656565] cursor-pointer"
                                     onClick={() => {
-
                                         const orderNominativo = sortOrderNominativo === undefined
                                             ? "DESC"
                                             : sortOrderNominativo === "ASC"
@@ -388,7 +385,6 @@ const presenze = () => {
                                         setSortOrderNominativo(orderNominativo);
                                         setSortOrderNomeEvento(orderNomeEvento);
 
-                                        // chiama la funzione passando il sort aggiornato
                                         caricaPresenzeOperatore(
                                             filtriRicerca?.dataInizio,
                                             filtriRicerca?.dataFine,
@@ -414,7 +410,6 @@ const presenze = () => {
                                 <TableHead
                                     className="text-[16px] font-bold text-[#656565] cursor-pointer"
                                     onClick={() => {
-
                                         const orderDataCeckIn = sortOrderCheckIn === undefined
                                             ? "DESC"
                                             : sortOrderCheckIn === "ASC"
@@ -428,7 +423,6 @@ const presenze = () => {
                                         setSortOrderNominativo(orderNominativo);
                                         setSortOrderNomeEvento(orderNomeEvento);
 
-                                        // chiama la funzione passando il sort aggiornato
                                         caricaPresenzeOperatore(
                                             filtriRicerca?.dataInizio,
                                             filtriRicerca?.dataFine,
@@ -462,15 +456,10 @@ const presenze = () => {
                                 <TableHead className="text-[16px] font-bold text-[#656565]">
                                     Posizione Check-Out
                                 </TableHead>
-                                {/*
-                                <TableHead className="text-[16px] font-bold text-[#656565]">
-                                    Titolo Evento
-                                </TableHead>
-                                        */}
+
                                 <TableHead
                                     className="text-[16px] font-bold text-[#656565] cursor-pointer"
                                     onClick={() => {
-
                                         const orderNomeEvento = sortOrderNomeEvento === undefined
                                             ? "DESC"
                                             : sortOrderNomeEvento === "ASC"
@@ -484,7 +473,6 @@ const presenze = () => {
                                         setSortOrderNominativo(orderNominativo);
                                         setSortOrderNomeEvento(orderNomeEvento);
 
-                                        // chiama la funzione passando il sort aggiornato
                                         caricaPresenzeOperatore(
                                             filtriRicerca?.dataInizio,
                                             filtriRicerca?.dataFine,
@@ -594,7 +582,6 @@ const presenze = () => {
                                 <ChevronsLeft className="h-4 w-4" /> Precedente
                             </Button>
 
-                            {/* Selettore pageSize */}
                             <div className="flex items-center space-x-2">
                                 <span className="ml-auto text-[20px] font-bold text-[#4c4a4a]">Mostra</span>
                                 <select
@@ -602,7 +589,7 @@ const presenze = () => {
                                     onChange={(e) => {
                                         const newPageSize = parseInt(e.target.value);
                                         setPageSize(newPageSize);
-                                        setPage(1); // reset pagina
+                                        setPage(1);
                                         caricaPresenzeOperatore(
                                             filtriRicerca?.dataInizio,
                                             filtriRicerca?.dataFine,
@@ -622,7 +609,7 @@ const presenze = () => {
                                         </option>
                                     ))}
                                 </select>
-                                <span className="ml-auto text-[20px] font-bold text-[#4c4a4a]" >righe per pagina</span>
+                                <span className="ml-auto text-[20px] font-bold text-[#4c4a4a]">righe per pagina</span>
                             </div>
 
                             <Button
@@ -652,11 +639,8 @@ const presenze = () => {
                         <div className="ml-auto text-[20px] font-bold text-[#4c4a4a]">
                             Pagina {page} di {totalPages}
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
         </section>
     )
