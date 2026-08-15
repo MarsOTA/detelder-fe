@@ -3,7 +3,7 @@ import { ezystaffBEUrl } from "../../utils/baseUrl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, LockKeyhole, LogIn, UserRound } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo-detelder-white.svg";
 
@@ -96,9 +96,6 @@ export default function Login() {
 
           <div className="rounded-[26px] border border-white/10 bg-white p-4 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.95)] sm:p-6">
             <div className="mb-4 text-center sm:mb-5">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-[14px] bg-slate-950 text-white shadow-lg shadow-slate-950/15">
-                <LogIn className="h-[18px] w-[18px]" strokeWidth={1.8} />
-              </div>
               <h1
                 className="text-[27px] tracking-[-0.04em] text-slate-950 sm:text-[29px]"
                 style={{ fontFamily: "'Mulish', sans-serif", fontWeight: 900 }}
