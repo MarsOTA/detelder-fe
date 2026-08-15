@@ -76,9 +76,7 @@ const Operatori = () => {
         throw new Error(`Errore nella richiesta: ${resp.status}`);
       }
 
-      const data = await resp.json(); // restituisce i dati aggiornati dal server
-
-      //const data = await resp.json();
+      const data = await resp.json();
       console.log(data);
       alert(data.message);
 
@@ -87,7 +85,7 @@ const Operatori = () => {
     } catch (error) {
       console.error(`Errore durante l'invio della password :`, error);
       alert(error);
-      throw error; // rilancio l’errore al chiamante
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -124,12 +122,10 @@ const Operatori = () => {
     setIsDialogOpen(false);
     fethcOperatori();
 
-    // Mostra un alert se success è false
     if (!data.success) {
       alert(`Errore: ${data.message}\nDettagli: ${data.error || 'Nessun dettaglio disponibile'}`);
-      return; // esce prima di chiudere il dialog o aggiornare
+      return;
     }
-
   };
 
   const fethcOperatori = async () => {
@@ -146,18 +142,15 @@ const Operatori = () => {
   }
 
   const handleGpgChange = (gpg: boolean) => {
-
     setFormData((prev) => ({
       ...prev,
       gpg: gpg,
     }));
-
   }
 
   const handleExportToExcel = () => {
     let dataToExport: any[] = [];
 
-    // ✅ Se enabled è true, esporta i turni
     dataToExport = dipendenti.map(d => ({
       Cognome: d.cognome,
       Nome: d.nome,
@@ -167,35 +160,22 @@ const Operatori = () => {
       Eventi_Assegnati: d.turniAttivi,
     }));
 
-
-    //Creazione del file Excel
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Operatori"
-    );
-
-    XLSX.writeFile(
-      workbook,
-      "operatori.xlsx"
-    );
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Operatori");
+    XLSX.writeFile(workbook, "operatori.xlsx");
   };
-
 
   const filteredAndSortedDipendenti = useMemo(() => {
     const keyword = ricercaKeyword.toLowerCase()
 
     return [...dipendenti]
-      // 🔎 FILTRO
       .filter((dipendente) =>
         dipendente.cognome.toLowerCase().includes(keyword) ||
         dipendente.nome.toLowerCase().includes(keyword) ||
         dipendente.email.toLowerCase().includes(keyword) ||
         dipendente.telefono.toLowerCase().includes(keyword)
       )
-      // 🔤 ORDINAMENTO
       .sort((a, b) => {
         const cognomeA = a.cognome.toLowerCase()
         const cognomeB = b.cognome.toLowerCase()
@@ -208,12 +188,11 @@ const Operatori = () => {
   }, [dipendenti, ricercaKeyword, sortDirection])
 
   return (
-
-    <section className="m-6">
+    <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
       <div className="space-y-6">
-        <div className="text-[#007a55] text-[32px] font-extrabold mb-2">
-          LISTA OPERATORI
-        </div>
+        <h1 className="text-[38px] font-black leading-[1.05] tracking-[-0.035em] text-[#007a55]">
+          Lista operatori
+        </h1>
         <Button
           onClick={handleNewOperator}
           className="rounded-[18px] bg-[#007a55] hover:bg-[#007a55] px-6 cursor-pointer">
@@ -230,14 +209,12 @@ const Operatori = () => {
             />
           </div>
           <div>
-            <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer  pl-8 pr-8"
+            <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer pl-8 pr-8"
               onClick={handleExportToExcel}
             >
               Scarica .csv
             </Button>
-
           </div>
-
         </div>
         <Table>
           <TableHeader className="bg-[#ebebeb]">
@@ -269,47 +246,39 @@ const Operatori = () => {
                 <TableCell>{dipendente.turniAttivi}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => handleEdit(dipendente)}
                       title="Modifica operatore"
-                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] 
-                                hover:bg-[#007a55] hover:text-white transition-colors duration-200"
+                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] hover:bg-[#007a55] hover:text-white transition-colors duration-200"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => mostraPresenze(dipendente)}
                       title="Presenze operatore"
-                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] 
-                                hover:bg-[#007a55] hover:text-white transition-colors duration-200"
+                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] hover:bg-[#007a55] hover:text-white transition-colors duration-200"
                     >
                       <ListChecks className="h-4 w-4" />
                     </Button>
-
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => reinviaPassword(dipendente)}
                       title="Reinvia password"
-                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] 
-                                hover:bg-[#007a55] hover:text-white transition-colors duration-200"
+                      className="cursor-pointer rounded-[5px] border border-[#007a55] bg-white text-[#007a55] hover:bg-[#007a55] hover:text-white transition-colors duration-200"
                     >
                       <KeyRound className="h-4 w-4" />
                     </Button>
-
                   </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-
       </div>
 
       {isLoading && (
@@ -358,7 +327,6 @@ const Operatori = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label>Telefono</Label>
-
                 <div className="col-span-3 flex gap-2">
                   <Select
                     value={formData.prefisso}
@@ -369,7 +337,6 @@ const Operatori = () => {
                     <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>
-
                     <SelectContent>
                       {prefissi.map((p) => (
                         <SelectItem key={p.value} value={p.value}>
@@ -378,7 +345,6 @@ const Operatori = () => {
                       ))}
                     </SelectContent>
                   </Select>
-
                   <Input
                     id="telefono"
                     value={formData.telefono}
@@ -404,15 +370,10 @@ const Operatori = () => {
                 {"Aggiungi"}
               </Button>
             </DialogFooter>
-
           </form>
-
         </DialogContent>
       </Dialog>
-
     </section>
-
-
   )
 }
 
