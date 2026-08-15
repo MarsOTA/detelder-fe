@@ -106,7 +106,7 @@ const Header = () => {
             <Link
               key={label}
               to={to}
-              className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-bold tracking-[-0.01em] transition-all duration-200 ease-out ${
+              className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out ${
                 active
                   ? "bg-white/[0.08] text-[#a5e8cf] shadow-[inset_0_0_0_1px_rgba(165,232,207,0.08)]"
                   : "text-white/80 hover:text-[#a5e8cf]"
@@ -127,7 +127,7 @@ const Header = () => {
           <button
             type="button"
             onClick={() => setAccountOpen((open) => !open)}
-            className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[14px] font-bold transition-all duration-200 focus:outline-none ${
+            className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[14px] font-semibold transition-all duration-200 focus:outline-none ${
               accountOpen
                 ? "bg-white/[0.08] text-[#a5e8cf]"
                 : "text-white/85 hover:text-[#a5e8cf]"
