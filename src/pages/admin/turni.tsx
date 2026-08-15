@@ -132,7 +132,7 @@ const turni = () => {
 
                 <Button
                     onClick={handleExportToExcel}
-                    className="ml-auto h-10 rounded-xl bg-[#5e8a7a] px-5 text-[14px] font-extrabold text-white shadow-none hover:bg-[#527b6c]"
+                    className="ml-auto h-10 rounded-xl border border-[#c8d8d2] bg-white px-5 text-[14px] font-bold text-[#007a55] shadow-none transition-colors duration-200 hover:border-[#007a55] hover:bg-[#007a55] hover:text-white"
                 >
                     <Download className="h-4 w-4" />
                     Scarica CSV
