@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
-import { Trash2, View } from "lucide-react";
+import { Check, Trash2, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import { ContrattoChiamataComponent } from "./ContrattoChiamataComponent";
 import { ContrattoOccasionaleComponent } from "./ContrattoOccasionaleComponent";
@@ -29,6 +30,12 @@ interface ContrattoLista {
     pathContrattoUnilav: string | null;
 }
 
+interface SuccessDialogState {
+    open: boolean;
+    title: string;
+    description: string;
+}
+
 const LABEL_TIPO: Record<TipoContratto, string> = {
     CHIAMATA: "Contratto a chiamata",
     OCCASIONALE: "Contratto occasionale",
@@ -47,6 +54,11 @@ export function ContrattiOperatoreComponent() {
     const [loading, setLoading] = useState(false);
     const [messaggio, setMessaggio] = useState<string | null>(null);
     const [errore, setErrore] = useState(false);
+    const [successDialog, setSuccessDialog] = useState<SuccessDialogState>({
+        open: false,
+        title: "",
+        description: "",
+    });
 
     const [dataInizioManuale, setDataInizioManuale] = useState("");
     const [dataFineManuale, setDataFineManuale] = useState("");
@@ -77,6 +89,10 @@ export function ContrattiOperatoreComponent() {
         "Content-Type": "application/json",
         Accept: "application/json",
     });
+
+    const showSuccess = (title: string, description: string) => {
+        setSuccessDialog({ open: true, title, description });
+    };
 
     const caricaListaContratti = async () => {
         if (!id) return;
@@ -131,7 +147,6 @@ export function ContrattiOperatoreComponent() {
         const data = await response.json();
         if (!response.ok) throw new Error(data?.message || "Errore durante la creazione del contratto.");
         resetManuale();
-        setMessaggio("Contratto creato. Ora puoi caricare il contratto firmato dalla tabella.");
     };
 
     const generaContratto = async () => {
@@ -184,16 +199,25 @@ export function ContrattiOperatoreComponent() {
             body: JSON.stringify(contrattoFinale),
         });
         if (!response.ok) throw new Error("Errore durante la generazione del contratto.");
-        setMessaggio("Contratto generato correttamente.");
     };
 
     const submitContratto = async () => {
+        if (!tipoContratto) return;
+        const tipoCreato = tipoContratto;
+
         setLoading(true);
         setErrore(false);
         setMessaggio(null);
         try {
             await generaContratto();
             await caricaListaContratti();
+
+            showSuccess(
+                isManuale(tipoCreato) ? "Contratto creato" : "Contratto generato",
+                isManuale(tipoCreato)
+                    ? `${LABEL_TIPO[tipoCreato]} creato correttamente. Ora puoi caricare il contratto firmato dalla tabella.`
+                    : `${LABEL_TIPO[tipoCreato]} generato correttamente ed è ora disponibile nella tabella.`
+            );
         } catch (error) {
             setErrore(true);
             setMessaggio(error instanceof Error ? error.message : "Si è verificato un errore.");
@@ -227,21 +251,37 @@ export function ContrattiOperatoreComponent() {
     ) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const formData = new FormData();
-        formData.append("tipoContratto", tipoContrattoUpload);
-        formData.append("file", file);
 
-        const response = await fetch(`${ezystaffBEUrl}upload/contrattoFirmato/${idContratto}`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                Accept: "application/json",
-            },
-            credentials: "include",
-            body: formData,
-        });
-        if (!response.ok) throw new Error("Errore nel caricamento del PDF.");
-        await caricaListaContratti();
+        setErrore(false);
+        setMessaggio(null);
+
+        try {
+            const formData = new FormData();
+            formData.append("tipoContratto", tipoContrattoUpload);
+            formData.append("file", file);
+
+            const response = await fetch(`${ezystaffBEUrl}upload/contrattoFirmato/${idContratto}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Accept: "application/json",
+                },
+                credentials: "include",
+                body: formData,
+            });
+            if (!response.ok) throw new Error("Errore nel caricamento del PDF.");
+
+            await caricaListaContratti();
+            showSuccess(
+                tipoContrattoUpload === "contrattoFirmato" ? "Contratto firmato caricato" : "UNILAV caricato",
+                tipoContrattoUpload === "contrattoFirmato"
+                    ? "Il PDF del contratto firmato è stato caricato correttamente."
+                    : "Il documento UNILAV è stato caricato correttamente."
+            );
+        } catch (error) {
+            setErrore(true);
+            setMessaggio(error instanceof Error ? error.message : "Errore nel caricamento del PDF.");
+        }
     };
 
     const cancellaSingolo = async (idContratto: number, tipo: TipoContrattoUpload) => {
@@ -412,8 +452,8 @@ export function ContrattiOperatoreComponent() {
                         </div>
                     )}
 
-                    {messaggio && (
-                        <div className={`mt-4 text-sm font-medium ${errore ? "text-red-600" : "text-[#007a55]"}`}>
+                    {messaggio && errore && (
+                        <div className="mt-4 text-sm font-medium text-red-600">
                             {messaggio}
                         </div>
                     )}
@@ -433,6 +473,35 @@ export function ContrattiOperatoreComponent() {
                     </div>
                 </div>
             </div>
+
+            <Dialog
+                open={successDialog.open}
+                onOpenChange={(open) => setSuccessDialog((prev) => ({ ...prev, open }))}
+            >
+                <DialogContent className="sm:max-w-[430px] p-8 text-center" showCloseButton={false}>
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#e5f5ef] animate-in zoom-in-50 fade-in duration-500">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#007a55] shadow-sm animate-in zoom-in-50 duration-700">
+                            <Check className="h-8 w-8 text-white stroke-[3] animate-in fade-in duration-700" />
+                        </div>
+                    </div>
+
+                    <DialogHeader className="text-center sm:text-center mt-2">
+                        <DialogTitle className="text-[24px] font-extrabold text-[#2e2e2e]">
+                            {successDialog.title}
+                        </DialogTitle>
+                        <DialogDescription className="text-[15px] leading-6 text-[#5e5d5d] pt-1">
+                            {successDialog.description}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <Button
+                        onClick={() => setSuccessDialog((prev) => ({ ...prev, open: false }))}
+                        className="mt-2 w-full bg-[#007a55] text-white hover:bg-[#006747] hover:text-white"
+                    >
+                        CHIUDI
+                    </Button>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
