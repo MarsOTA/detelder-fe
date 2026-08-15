@@ -13,7 +13,9 @@ section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbod
   border-right-color: #d9e5e0;
 }
 
-/* Timbrature: keep the raw check-in/out times on a neutral white background. */
-section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
+/* Timbrature reali: la prima sottocolonna di EFFETTIVO deve restare bianca.
+   Il selettore volutamente più specifico prevale sulla vecchia regola globale di index.css. */
+html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
   background: #ffffff !important;
+  background-color: #ffffff !important;
 }
