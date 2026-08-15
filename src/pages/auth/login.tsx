@@ -64,11 +64,13 @@ export default function Login() {
   };
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-10">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-black px-4 py-6 sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-200/50 blur-3xl sm:h-96 sm:w-96" />
-        <div className="absolute -bottom-32 -right-20 h-80 w-80 rounded-full bg-indigo-200/50 blur-3xl sm:h-[28rem] sm:w-[28rem]" />
-        <div className="absolute left-1/2 top-1/3 hidden h-56 w-56 -translate-x-1/2 rounded-full bg-cyan-100/60 blur-3xl sm:block" />
+        <img
+          src={logo}
+          alt=""
+          className="absolute left-1/2 top-1/2 w-[150vw] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.035] sm:w-[105vw] lg:w-[88vw]"
+        />
       </div>
 
       <div className="relative mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-md flex-col justify-center sm:min-h-[calc(100dvh-5rem)]">
@@ -81,7 +83,7 @@ export default function Login() {
             />
           </div>
 
-          <div className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_24px_70px_-28px_rgba(15,23,42,0.28)] backdrop-blur sm:p-8">
+          <div className="rounded-[28px] border border-white/10 bg-white p-5 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.9)] sm:p-8">
             <div className="mb-7 text-center sm:mb-8">
               <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-slate-950/15">
                 <LogIn className="h-5 w-5" strokeWidth={1.8} />
@@ -89,8 +91,11 @@ export default function Login() {
               <h1 className="text-[28px] font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">
                 Bentornato
               </h1>
-              <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-[15px]">
-                Accedi alla piattaforma Detelder per gestire turni, operatori ed eventi.
+              <p className="mt-2 text-xs font-medium uppercase tracking-[0.12em] text-slate-400 sm:text-[13px]">
+                Detelder · Workforce &amp; Event Management
+              </p>
+              <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-[15px]">
+                Accedi alla piattaforma per gestire turni, operatori ed eventi.
               </p>
             </div>
 
@@ -180,8 +185,8 @@ export default function Login() {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-xs leading-5 text-slate-400 sm:mt-7">
-            Detelder · Workforce & Event Management
+          <p className="mt-6 text-center text-xs leading-5 text-white/45 sm:mt-7">
+            Developed by <span className="font-medium text-white/70">OTA Digital</span>
           </p>
         </section>
       </div>
