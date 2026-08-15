@@ -308,4 +308,24 @@
   section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(4) {
     background: rgba(0, 80, 50, 0.2) !important;
   }
+
+  /* Presenze: porta "Da" e "A" dentro i due campi data per rendere la toolbar più compatta. */
+  section.m-6 > .space-y-5 > div.flex.items-center.gap-3 > span:nth-of-type(1),
+  section.m-6 > .space-y-5 > div.flex.items-center.gap-3 > span:nth-of-type(2) {
+    display: none !important;
+  }
+
+  section.m-6 > .space-y-5 > div.flex.items-center.gap-3 > div:nth-of-type(1) > button::before {
+    content: "Da";
+    margin-right: 8px;
+    font-weight: 700;
+    color: #007a55;
+  }
+
+  section.m-6 > .space-y-5 > div.flex.items-center.gap-3 > div:nth-of-type(2) > button::before {
+    content: "A";
+    margin-right: 8px;
+    font-weight: 700;
+    color: #007a55;
+  }
 }
