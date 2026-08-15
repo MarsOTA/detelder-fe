@@ -232,4 +232,75 @@
     border-top-right-radius: 10px !important;
     border-bottom-right-radius: 10px !important;
   }
+
+  /* Payroll: toolbar coerente con le altre pagine, senza toccare i pulsanti di stato colorati. */
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 {
+    gap: 16px !important;
+    padding: 14px !important;
+    border: 1px solid #e4ebe8 !important;
+    border-radius: 12px !important;
+    background: #f7f9f8 !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div > button,
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
+    height: 40px !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child > button {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(2) > button {
+    margin-left: -1px !important;
+    border-radius: 0 !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
+    margin-left: -1px !important;
+    padding-inline: 18px !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    background: #007a55 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button:hover {
+    background: #006f4d !important;
+  }
+
+  /* Solo Ieri / Settimana / Mese: i successivi bottoni stato restano invariati. */
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.gap-3 > button:nth-of-type(-n+3) {
+    height: 40px !important;
+    padding-inline: 20px !important;
+    border: 1px solid #007a55 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #007a55 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.gap-3 > button:nth-of-type(-n+3):hover {
+    background: #007a55 !important;
+    border-color: #007a55 !important;
+    color: #ffffff !important;
+  }
 }
