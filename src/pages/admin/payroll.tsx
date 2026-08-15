@@ -231,10 +231,11 @@ const payroll = () => {
 
     return (
         <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-            <div className="mb-8">
-                <h1 className="text-[38px] font-black leading-[1.05] tracking-[-0.035em] text-[#007a55]">
-                    Rendicontazione ore operatori
-                </h1>
+            <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+                <div>
+                    <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Rendicontazione ore operatori</h1>
+                    <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">Riconcilia le ore lavorate, verifica gli scostamenti e gestisci lo stato di elaborazione dei turni.</p>
+                </div>
             </div>
 
             <div className="flex items-center bg-[#ecf3f1] mb-1">
@@ -265,9 +266,7 @@ const payroll = () => {
                             </PopoverContent>
                         </Popover>
                     </div>
-                    <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && caricaPayroll(filtriRicerca)}>
-                        Filtra
-                    </Button>
+                    <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && caricaPayroll(filtriRicerca)}>Filtra</Button>
                 </div>
                 <div className="flex gap-3">
                     <Button onClick={() => handlePeriodoClick("giorno")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold hover:bg-[#e6fff5] cursor-pointer">Ieri</Button>
