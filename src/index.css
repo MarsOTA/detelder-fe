@@ -132,4 +132,43 @@
     line-height: 1.05 !important;
     letter-spacing: -0.035em !important;
   }
+
+  /* Toolbar Eventi: Filtra resta azione primaria, export/utility diventano secondarie. */
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
+    height: 40px !important;
+    margin-left: 8px !important;
+    padding-inline: 18px !important;
+    border-radius: 10px !important;
+    background: #007a55 !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 10px rgba(0, 122, 85, 0.12) !important;
+    transition: all 180ms ease !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button:hover {
+    background: #006f4d !important;
+    transform: translateY(-1px);
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto > button {
+    height: 40px !important;
+    min-width: 0 !important;
+    padding-inline: 20px !important;
+    border: 1px solid #c8d8d2 !important;
+    border-radius: 11px !important;
+    background: #ffffff !important;
+    color: #405b52 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 7px rgba(20, 55, 43, 0.045) !important;
+    transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease !important;
+  }
+
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto > button:hover {
+    background: #f7fbf9 !important;
+    border-color: #007a55 !important;
+    color: #007a55 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 122, 85, 0.07) !important;
+  }
 }
