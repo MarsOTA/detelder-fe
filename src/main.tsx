@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './presenze-pagination.css'
 import App from './App.tsx'
 import '@mantine/core/styles.css';
 //import { AuthProvider } from './AuthContext';
