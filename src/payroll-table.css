@@ -13,9 +13,22 @@ section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbod
   border-right-color: #d9e5e0;
 }
 
-/* Timbrature reali: la prima sottocolonna di EFFETTIVO deve restare bianca.
-   Il selettore volutamente più specifico prevale sulla vecchia regola globale di index.css. */
+/* Timbrature reali: la prima sottocolonna di EFFETTIVO deve essere neutra e centrata.
+   background-image garantisce visivamente il bianco anche contro la vecchia shorthand
+   `background: ... !important` presente in index.css. */
 html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
-  background: #ffffff !important;
   background-color: #ffffff !important;
+  background-image: linear-gradient(#ffffff, #ffffff) !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) > div {
+  display: flex !important;
+  min-height: 100% !important;
+  width: 100% !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }
