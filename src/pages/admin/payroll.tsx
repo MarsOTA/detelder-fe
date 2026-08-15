@@ -185,7 +185,7 @@ const payroll = () => {
     }
 
     const calcolaTotaleOre = (oraInizio: string, oraFine: string, oraPausa: number = 0): string => {
-        if (!oraInizio || !oraFine) return "00:00:00";
+        if (!oraInizio || !oraFine) return "00:00";
         const [h1, m1] = oraInizio.split(":").map(Number);
         const [h2, m2] = oraFine.split(":").map(Number);
         const inizio = h1 * 60 + m1;
@@ -194,7 +194,13 @@ const payroll = () => {
         const minutiLavorati = fine - inizio - (oraPausa * 60);
         const ore = Math.floor(minutiLavorati / 60);
         const minuti = minutiLavorati % 60;
-        return [String(ore).padStart(2, "0"), String(minuti).padStart(2, "0"), "00"].join(":");
+        return [String(ore).padStart(2, "0"), String(minuti).padStart(2, "0")].join(":");
+    };
+
+    const formatOreBrevi = (valore: string | number | undefined): string => {
+        if (valore === undefined || valore === null || valore === "") return "00:00";
+        const parti = String(valore).split(":");
+        return parti.length >= 2 ? `${parti[0]}:${parti[1]}` : String(valore);
     };
 
     const setOraInizioTurno = (idTurno: number, ora: string) => {
@@ -340,8 +346,8 @@ const payroll = () => {
                                                 ))}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{turno.oreLavorateTurno} h</div></TableCell>
-                                        <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{turno.delta} h</div></TableCell>
+                                        <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{formatOreBrevi(turno.oreLavorateTurno)} h</div></TableCell>
+                                        <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{formatOreBrevi(turno.delta)} h</div></TableCell>
                                         <TableCell className="text-center">
                                             <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="inline-flex cursor-default"><StickyNote className="h-4 w-4 text-muted-foreground" /></span></TooltipTrigger><TooltipContent className="max-w-[60ch]"><p className="whitespace-pre-wrap break-words">{turno.motivazioneRitardo || "Nessuna motivazione"}</p></TooltipContent></Tooltip></TooltipProvider>
                                         </TableCell>
