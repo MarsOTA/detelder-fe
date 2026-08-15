@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarSync,
-  CalendarDays,
+  BookmarkCheck,
   Users,
   UserRoundCheck,
   Factory,
@@ -12,24 +12,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
-
-type HeaderIconProps = {
-  className?: string;
-  strokeWidth?: number;
-};
-
-const CalendarsIcon = ({ className = "", strokeWidth = 2 }: HeaderIconProps) => (
-  <span className={`relative inline-block shrink-0 ${className}`} aria-hidden="true">
-    <CalendarDays
-      strokeWidth={strokeWidth}
-      className="absolute bottom-0 right-0 h-[82%] w-[82%]"
-    />
-    <CalendarDays
-      strokeWidth={strokeWidth}
-      className="absolute left-0 top-0 h-[82%] w-[82%]"
-    />
-  </span>
-);
 
 const Header = () => {
   const location = useLocation();
@@ -77,7 +59,7 @@ const Header = () => {
       label: "Eventi",
       to: "/admin/eventi",
       active: isEventiActive,
-      icon: CalendarsIcon,
+      icon: BookmarkCheck,
     },
     {
       label: "Presenze",
@@ -131,7 +113,7 @@ const Header = () => {
               }`}
             >
               <Icon
-                strokeWidth={2}
+                strokeWidth={1.5}
                 className={`h-5 w-5 transition-colors duration-200 ${
                   active ? "text-[#a5e8cf]" : "text-white/55 group-hover:text-[#a5e8cf]"
                 }`}
@@ -153,10 +135,10 @@ const Header = () => {
             aria-expanded={accountOpen}
             aria-haspopup="menu"
           >
-            <CircleUserRound strokeWidth={2} className="h-5 w-5" />
+            <CircleUserRound strokeWidth={1.5} className="h-5 w-5" />
             <span>Admin</span>
             <ChevronDown
-              strokeWidth={2}
+              strokeWidth={1.5}
               className={`h-4 w-4 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`}
             />
           </button>
@@ -177,7 +159,7 @@ const Header = () => {
                 onClick={logout}
                 className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
               >
-                <LogOut strokeWidth={2} className="h-[18px] w-[18px]" />
+                <LogOut strokeWidth={1.5} className="h-[18px] w-[18px]" />
                 Logout
               </button>
             </div>
