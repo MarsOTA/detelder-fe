@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Calendar, CircleUserRound, ChevronDown } from "lucide-react";
+import { Users, Building2, LogOut, CalendarDays, CircleUserRound, ChevronDown, WalletCards } from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
 
 const Header = () => {
@@ -28,134 +27,125 @@ const Header = () => {
     navigate("/login");
   };
 
-  const navButtonClass = (active: boolean) => `
-    cursor-pointer border border-[#a5e8cf] bg-[#313131]
-    hover:border-[#a5e8cf] hover:bg-[#313131]
-    ${active
-      ? "text-[#a5e8cf] hover:text-[#a5e8cf]"
-      : "text-white hover:text-[#a5e8cf]"
-    }
-  `;
+  const isEventiActive =
+    location.pathname === "/admin/eventi" ||
+    location.pathname.includes("/admin/crea-evento") ||
+    location.pathname.startsWith("/admin/gestione-turni/");
+
+  const isOperatoriActive =
+    location.pathname === "/admin/operatori" ||
+    location.pathname.includes("/admin/dettaglio-operatore") ||
+    location.pathname.includes("/admin/assegnaEvento-operatore") ||
+    location.pathname.includes("/admin/timbrature-operatore");
+
+  const navItems = [
+    {
+      label: "Turni",
+      to: "/admin/turni",
+      active: location.pathname === "/admin/turni",
+      icon: CalendarDays,
+    },
+    {
+      label: "Eventi",
+      to: "/admin/eventi",
+      active: isEventiActive,
+      icon: CalendarDays,
+    },
+    {
+      label: "Presenze",
+      to: "/admin/presenze",
+      active: location.pathname === "/admin/presenze",
+      icon: Building2,
+    },
+    {
+      label: "Operatori",
+      to: "/admin/operatori",
+      active: isOperatoriActive,
+      icon: Users,
+    },
+    {
+      label: "Clienti",
+      to: "/admin/clienti",
+      active: location.pathname === "/admin/clienti",
+      icon: Building2,
+    },
+    {
+      label: "Payroll",
+      to: "/admin/payroll",
+      active: location.pathname === "/admin/payroll",
+      icon: WalletCards,
+    },
+  ];
 
   return (
-    <header className="border-b sticky top-0 z-50 bg-[#313131]">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="w-44 h-16">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#2f3130]/95 shadow-[0_4px_18px_rgba(0,0,0,0.12)] backdrop-blur-md">
+      <div className="mx-auto flex h-[60px] max-w-[1600px] items-center justify-between gap-6 px-6">
+        <Link to="/admin/turni" className="flex shrink-0 items-center">
           <img
             src="/assets/logo.svg"
-            alt="Logo"
-            className="w-full h-full object-contain block"
+            alt="Detelder"
+            className="h-[42px] w-[132px] object-contain"
           />
-        </div>
+        </Link>
 
-        <div className="flex gap-4">
-          <Link to="/admin/turni">
-            <Button
-              variant={location.pathname === "/admin/turni" ? "default" : "outline"}
-              className={navButtonClass(location.pathname === "/admin/turni")}
+        <nav
+          className="flex flex-1 items-center justify-center gap-1"
+          style={{ fontFamily: "'Mulish', sans-serif" }}
+        >
+          {navItems.map(({ label, to, active, icon: Icon }) => (
+            <Link
+              key={label}
+              to={to}
+              className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-bold tracking-[-0.01em] transition-all duration-200 ease-out ${
+                active
+                  ? "bg-white/[0.08] text-[#a5e8cf] shadow-[inset_0_0_0_1px_rgba(165,232,207,0.08)]"
+                  : "text-white/80 hover:text-[#a5e8cf]"
+              }`}
             >
-              <Calendar className="mr-2 h-4 w-4" />
-              Turni
-            </Button>
-          </Link>
+              <Icon
+                className={`h-4 w-4 transition-colors duration-200 ${
+                  active ? "text-[#a5e8cf]" : "text-white/55 group-hover:text-[#a5e8cf]"
+                }`}
+              />
+              <span>{label}</span>
+            </Link>
+          ))}
+        </nav>
 
-          <Link to="/admin/eventi">
-            <Button
-              variant={
-                location.pathname === "/admin/eventi" ||
-                location.pathname.startsWith("/admin/gestione-turni/")
-                  ? "default"
-                  : "outline"
-              }
-              className={navButtonClass(
-                location.pathname === "/admin/eventi" ||
-                location.pathname.includes("/admin/crea-evento") ||
-                location.pathname.startsWith("/admin/gestione-turni/")
-              )}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Eventi
-            </Button>
-          </Link>
-
-          <Link to="/admin/presenze">
-            <Button
-              variant={location.pathname === "/admin/presenze" ? "default" : "outline"}
-              className={navButtonClass(location.pathname === "/admin/presenze")}
-            >
-              <Building2 className="mr-2 h-4 w-4" />
-              Presenze
-            </Button>
-          </Link>
-
-          <Link to="/admin/operatori">
-            <Button
-              variant={
-                location.pathname === "/admin/operatori" ||
-                location.pathname.includes("/admin/dettaglio-operatore") ||
-                location.pathname.includes("/admin/assegnaEvento-operatore") ||
-                location.pathname.includes("/admin/timbrature-operatore")
-                  ? "default"
-                  : "outline"
-              }
-              className={navButtonClass(
-                location.pathname === "/admin/operatori" ||
-                location.pathname.includes("/admin/dettaglio-operatore") ||
-                location.pathname.includes("/admin/assegnaEvento-operatore") ||
-                location.pathname.includes("/admin/timbrature-operatore")
-              )}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Operatori
-            </Button>
-          </Link>
-
-          <Link to="/admin/clienti">
-            <Button
-              variant={location.pathname === "/admin/clienti" ? "default" : "outline"}
-              className={navButtonClass(location.pathname === "/admin/clienti")}
-            >
-              <Building2 className="mr-2 h-4 w-4" />
-              Clienti
-            </Button>
-          </Link>
-
-          <Link to="/admin/payroll">
-            <Button
-              variant={location.pathname === "/admin/payroll" ? "default" : "outline"}
-              className={navButtonClass(location.pathname === "/admin/payroll")}
-            >
-              <Building2 className="mr-2 h-4 w-4" />
-              Payroll
-            </Button>
-          </Link>
-        </div>
-
-        <div className="relative">
+        <div className="relative shrink-0" style={{ fontFamily: "'Mulish', sans-serif" }}>
           <button
             type="button"
             onClick={() => setAccountOpen((open) => !open)}
-            className="group flex items-center gap-2 rounded-full px-3 py-2 text-[#a5e8cf] transition-colors duration-200 hover:text-white focus:outline-none"
+            className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[14px] font-bold transition-all duration-200 focus:outline-none ${
+              accountOpen
+                ? "bg-white/[0.08] text-[#a5e8cf]"
+                : "text-white/85 hover:text-[#a5e8cf]"
+            }`}
             aria-expanded={accountOpen}
             aria-haspopup="menu"
           >
-            <CircleUserRound className="h-5 w-5" />
-            <span className="font-semibold">Admin</span>
+            <CircleUserRound className="h-[18px] w-[18px]" />
+            <span>Admin</span>
             <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`}
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`}
             />
           </button>
 
           {accountOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-[calc(100%+8px)] min-w-[170px] overflow-hidden rounded-xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
+              className="absolute right-0 top-[calc(100%+10px)] min-w-[180px] overflow-hidden rounded-2xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.2)]"
             >
+              <div className="border-b border-[#edf1ef] px-3 py-2.5">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9a9a9a]">Account</div>
+                <div className="mt-0.5 text-sm font-extrabold text-[#313131]">Admin</div>
+              </div>
+
               <button
                 type="button"
                 role="menuitem"
                 onClick={logout}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-[#4d4d4d] transition-colors duration-150 hover:bg-[#edf3f1] hover:text-[#007a55]"
+                className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
