@@ -133,9 +133,17 @@
     letter-spacing: -0.035em !important;
   }
 
-  /* Eventi: Filtra chiude il gruppo dei campi. */
+  /* Eventi: tutti i controlli del gruppo filtri hanno esattamente la stessa altezza. */
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:not(.ml-auto) > button,
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:not(.ml-auto) > input,
   section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
     height: 40px !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Eventi: Filtra chiude il gruppo dei campi. */
+  section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button {
     margin-left: -1px !important;
     padding-inline: 18px !important;
     border-top-left-radius: 0 !important;
@@ -145,13 +153,13 @@
     background: #007a55 !important;
     color: #fff !important;
     font-weight: 700 !important;
-    box-shadow: 0 3px 10px rgba(0, 122, 85, 0.12) !important;
-    transition: all 180ms ease !important;
+    box-shadow: none !important;
+    transition: background-color 180ms ease !important;
   }
 
   section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > button:hover {
     background: #006f4d !important;
-    transform: translateY(-1px);
+    transform: none !important;
   }
 
   section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto > button {
