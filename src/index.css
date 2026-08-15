@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -117,5 +117,19 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .detelder-page-title,
+  section.m-6 > .mb-8 > div.text-3xl.font-extrabold.text-\[\#007a55\],
+  section.m-6 > .space-y-6 > div.text-\[\#007a55\].text-\[32px\].font-extrabold:first-child,
+  section.m-8 > .grid:first-child div.text-\[32px\].font-extrabold.text-\[\#007a55\],
+  section.m-6 > .space-y-5 h1.text-\[\#007a55\] {
+    font-family: 'Mulish', sans-serif !important;
+    font-size: 38px !important;
+    font-weight: 900 !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.035em !important;
   }
 }
