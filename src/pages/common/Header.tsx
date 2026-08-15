@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarSync,
-  Calendars,
+  CalendarDays,
   Users,
   UserRoundCheck,
   Factory,
@@ -12,6 +12,24 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
+
+type HeaderIconProps = {
+  className?: string;
+  strokeWidth?: number;
+};
+
+const CalendarsIcon = ({ className = "", strokeWidth = 1 }: HeaderIconProps) => (
+  <span className={`relative inline-block shrink-0 ${className}`} aria-hidden="true">
+    <CalendarDays
+      strokeWidth={strokeWidth}
+      className="absolute bottom-0 right-0 h-[82%] w-[82%]"
+    />
+    <CalendarDays
+      strokeWidth={strokeWidth}
+      className="absolute left-0 top-0 h-[82%] w-[82%]"
+    />
+  </span>
+);
 
 const Header = () => {
   const location = useLocation();
@@ -59,7 +77,7 @@ const Header = () => {
       label: "Eventi",
       to: "/admin/eventi",
       active: isEventiActive,
-      icon: Calendars,
+      icon: CalendarsIcon,
     },
     {
       label: "Presenze",
