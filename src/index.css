@@ -303,4 +303,9 @@
     border-color: #007a55 !important;
     color: #ffffff !important;
   }
+
+  /* Payroll: entrambe le sottocolonne EFFETTIVO condividono lo stesso sfondo, anche quando la prima è vuota. */
+  section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(4) {
+    background: rgba(0, 80, 50, 0.2) !important;
+  }
 }
