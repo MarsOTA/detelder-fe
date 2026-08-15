@@ -217,7 +217,7 @@ const eventi = () => {
 
     const indirizzoOnValueChange = (idIndirizzo: number) => {
         setFormData((prev) => ({ ...prev, idIndirizzo: idIndirizzo }));
-    }
+    };
 
     const caricaListaBrandsCliente = async (id: number | null) => {
         const resp = await fetch(ezystaffBEUrl + `clienti/brands/${id}`, {
@@ -318,12 +318,17 @@ const eventi = () => {
 
     return (
         <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-            <div className="mb-8">
-                <h1 className="text-[38px] font-black leading-[1.05] tracking-[-0.035em] text-[#007a55] mb-4">
-                    Gestione eventi
-                </h1>
+            <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+                <div>
+                    <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">
+                        Gestione eventi
+                    </h1>
+                    <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">
+                        Crea, pianifica e consulta gli eventi con i relativi turni e operatori assegnati.
+                    </p>
+                </div>
 
-                <div className="min-h-[40px]">
+                <div className="shrink-0">
                     <CreaEventoDialog
                         open={isDialogEventiOpen}
                         onOpenChange={setIsDialogEventiOpen}
