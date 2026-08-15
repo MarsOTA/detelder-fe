@@ -1,0 +1,19 @@
+/* Payroll table polish: light separators and white timbrature cell. */
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]) {
+  border-bottom: 1px solid #e8efec;
+}
+
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):not(:last-child) {
+  border-right: 1px solid #e8efec;
+}
+
+/* Separators slightly more visible at the main logical blocks. */
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(1),
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
+  border-right-color: #d9e5e0;
+}
+
+/* Timbrature: keep the raw check-in/out times on a neutral white background. */
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
+  background: #ffffff !important;
+}
