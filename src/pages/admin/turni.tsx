@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Circle } from "lucide-react";
+import { CalendarIcon, Circle, Download } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { it } from "date-fns/locale";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
@@ -63,15 +63,80 @@ const turni = () => {
                 </div>
             </div>
 
-            <div className="flex items-center bg-[#ecf3f1] mb-1">
-                <div className="flex items-center bg-[#ecf3f1] p-4 mb-1">
-                    <Input type="text" placeholder="Ricerca per keyword" value={filtriRicerca?.ricercaKeyword} onChange={(e) => setRicercaKeyword(e.target.value)} className="border border-gray-300 rounded-l-md px-2 py-1 w-48 bg-white rounded-r-none" />
-                    <Popover><PopoverTrigger asChild><Button variant="outline" className="w-full rounded-none">{filtriRicerca?.dataInizio ? filtriRicerca.dataInizio.toLocaleDateString() : "Seleziona data"}<CalendarIcon className="mr-2 h-4 w-4" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={filtriRicerca?.dataInizio} onSelect={setDataInizio} locale={it} className="pointer-events-auto" /></PopoverContent></Popover>
-                    <Popover><PopoverTrigger asChild><Button variant="outline" className="w-full rounded-none">{filtriRicerca?.dataFine ? filtriRicerca.dataFine.toLocaleDateString() : "Seleziona data"}<CalendarIcon className="mr-2 h-4 w-4" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={filtriRicerca?.dataFine} onSelect={setDataFine} locale={it} className="pointer-events-auto" /></PopoverContent></Popover>
-                    <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && caricaTurni(filtriRicerca)}>Filtra</Button>
+            <div className="mb-2 flex flex-wrap items-end gap-3 rounded-xl border border-[#e4ebe8] bg-[#f7f9f8] p-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+                <div className="w-[230px]">
+                    <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Ricerca</label>
+                    <Input
+                        type="text"
+                        placeholder="Keyword, evento, operatore..."
+                        value={filtriRicerca?.ricercaKeyword}
+                        onChange={(e) => setRicercaKeyword(e.target.value)}
+                        className="h-10 rounded-lg border-[#d8dfdc] bg-white text-[14px]"
+                    />
                 </div>
-                <div className="flex gap-3"><Button onClick={() => handleGiornoClick(0)} className="w-[70px] rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold hover:bg-[#e6fff5] cursor-pointer">Oggi</Button><Button onClick={() => handleGiornoClick(+1)} className="w-[70px] rounded-[18px] border border-[#007a55] bg-white text-[#007a55] text-[16px] font-bold hover:bg-[#f3fffa] cursor-pointer">Domani</Button></div>
-                <div className="flex items-center gap-4 ml-auto"><Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer pl-8 pr-8" onClick={handleExportToExcel}>Scarica .csv</Button></div>
+
+                <div className="w-[170px]">
+                    <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Dal</label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="h-10 w-full justify-between rounded-lg border-[#d8dfdc] bg-white px-3 text-[14px] font-medium text-[#4f4f4f]">
+                                {filtriRicerca?.dataInizio ? filtriRicerca.dataInizio.toLocaleDateString("it-IT") : "Seleziona data"}
+                                <CalendarIcon className="h-4 w-4 text-[#007a55]" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={filtriRicerca?.dataInizio} onSelect={setDataInizio} locale={it} className="pointer-events-auto" />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+
+                <div className="w-[170px]">
+                    <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Al</label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="h-10 w-full justify-between rounded-lg border-[#d8dfdc] bg-white px-3 text-[14px] font-medium text-[#4f4f4f]">
+                                {filtriRicerca?.dataFine ? filtriRicerca.dataFine.toLocaleDateString("it-IT") : "Seleziona data"}
+                                <CalendarIcon className="h-4 w-4 text-[#007a55]" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={filtriRicerca?.dataFine} onSelect={setDataFine} locale={it} className="pointer-events-auto" />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+
+                <Button
+                    onClick={() => filtriRicerca && caricaTurni(filtriRicerca)}
+                    className="h-10 rounded-lg bg-[#007a55] px-5 text-[14px] font-extrabold text-white hover:bg-[#006f4d]"
+                >
+                    Filtra
+                </Button>
+
+                <div className="mx-1 h-8 w-px self-end bg-[#d8dfdc]" />
+
+                <Button
+                    variant="outline"
+                    onClick={() => handleGiornoClick(0)}
+                    className="h-10 rounded-full border-[#007a55] bg-white px-5 text-[14px] font-bold text-[#007a55] hover:bg-white hover:text-[#005f43]"
+                >
+                    Oggi
+                </Button>
+
+                <Button
+                    variant="outline"
+                    onClick={() => handleGiornoClick(1)}
+                    className="h-10 rounded-full border-[#007a55] bg-white px-5 text-[14px] font-bold text-[#007a55] hover:bg-white hover:text-[#005f43]"
+                >
+                    Domani
+                </Button>
+
+                <Button
+                    onClick={handleExportToExcel}
+                    className="ml-auto h-10 rounded-xl bg-[#5e8a7a] px-5 text-[14px] font-extrabold text-white shadow-none hover:bg-[#527b6c]"
+                >
+                    <Download className="h-4 w-4" />
+                    Scarica CSV
+                </Button>
             </div>
 
             <div className="border rounded-md p-4 bg-gray-50">
