@@ -99,7 +99,7 @@ const turni = () => {
         if (!date) return undefined;
 
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // mesi 0-based
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
 
         return `${year}-${month}-${day}`;
@@ -135,8 +135,6 @@ const turni = () => {
     const handleExportToExcel = () => {
         let dataToExport: any[] = [];
 
-
-        // ✅ Se enabled è true, esporta i turni
         dataToExport = turni.map(turno => ({
             DataTurno: turno.dataTurno ? format(turno.dataTurno, "dd/MM/yyyy") : "",
             NomeEvento: turno.nomeEvento,
@@ -148,8 +146,6 @@ const turni = () => {
             OrePausa: turno.orePausa,
         }));
 
-
-        //Creazione del file Excel
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(
@@ -181,27 +177,20 @@ const turni = () => {
     ): boolean => {
         if (!dataTurno || !oraInizio) return false;
 
-        // Copia la dataTurno per non modificarla
         const turnoDate = new Date(dataTurno);
-
-        // Split oraInizio "HH:mm"
         const [oreStr, minutiStr] = oraInizio.split(":");
         const ore = parseInt(oreStr, 10);
         const minuti = parseInt(minutiStr, 10);
-
-        // Imposta ore e minuti
         turnoDate.setHours(ore, minuti, 0, 0);
-
-        // Confronto con ora attuale
         return turnoDate < new Date();
     };
 
     return (
-        <section className="m-6">
+        <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
             <div className="mb-8">
-                <div className="text-3xl font-extrabold text-[#007a55] mb-4">
-                    PLANNING TURNI
-                </div>
+                <h1 className="text-[38px] font-black leading-[1.05] tracking-[-0.035em] text-[#007a55]">
+                    Planning turni
+                </h1>
             </div>
 
             <div className="flex items-center bg-[#ecf3f1] mb-1">
@@ -288,36 +277,22 @@ const turni = () => {
                 </div>
 
                 <div className="flex items-center gap-4 ml-auto">
-
-                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer  pl-8 pr-8"
+                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer pl-8 pr-8"
                         onClick={handleExportToExcel}>
                         Scarica .csv
                     </Button>
-
                 </div>
             </div>
             <div className="border rounded-md p-4 bg-gray-50">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>
-                                Ora inizio
-                            </TableHead>
-                            <TableHead>
-                                Ora fine
-                            </TableHead>
-                            <TableHead>
-                                Operatore
-                            </TableHead>
-                            <TableHead>
-                                Mansione
-                            </TableHead>
-                            <TableHead>
-                                Tipo Turno
-                            </TableHead>
-                            <TableHead>
-                                Pausa h.
-                            </TableHead>
+                            <TableHead>Ora inizio</TableHead>
+                            <TableHead>Ora fine</TableHead>
+                            <TableHead>Operatore</TableHead>
+                            <TableHead>Mansione</TableHead>
+                            <TableHead>Tipo Turno</TableHead>
+                            <TableHead>Pausa h.</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -341,11 +316,8 @@ const turni = () => {
 
                             return (
                                 <React.Fragment key={index}>
-
-                                    {/* separatore cambio data */}
                                     {isNewDate && (
                                         <TableRow >
-
                                             <TableCell colSpan={6} className="bg-[#007a55] text-white">
                                                 <div className="flex justify-between">
                                                     <span className="w-[10%] font-bold">
@@ -353,22 +325,18 @@ const turni = () => {
                                                             ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
                                                             : ""}
                                                     </span>
-
-                                                    <span className=" w-[45%] uppercase font-bold">
+                                                    <span className="w-[45%] uppercase font-bold">
                                                         {(turno.nomeEvento && turno.nomeEvento.trim() !== ''
                                                             ? turno.nomeEvento
                                                             : `${turno.nomeBrand ?? ''} - ${turno.ragioneSociale ?? ''}`
                                                         ).toUpperCase()}
                                                     </span>
-
                                                     <span className="w-[45%] text-right">{turno.via}</span>
                                                 </div>
                                             </TableCell>
-
                                         </TableRow>
                                     )}
 
-                                    {/* separatore cambio evento stessa data */}
                                     {!isNewDate && isNewEvento && (
                                         <TableRow >
                                             <TableCell colSpan={6} className="bg-[#8f8f8f] text-white">
@@ -390,13 +358,9 @@ const turni = () => {
                                         </TableRow>
                                     )}
 
-                                    <TableRow onClick={() => navigaSuSingoloEvento(turno.idEvento, turno.dataTurno)}
-                                        style={{ cursor: "pointer" }}>
-
+                                    <TableRow onClick={() => navigaSuSingoloEvento(turno.idEvento, turno.dataTurno)} style={{ cursor: "pointer" }}>
                                         <TableCell>{turno.oraInizio}</TableCell>
-
                                         <TableCell>{turno.oraFine}</TableCell>
-
                                         <TableCell style={{ display: "flex", alignItems: "center" }}>
                                             <Circle
                                                 size={10}
@@ -417,14 +381,10 @@ const turni = () => {
                                                 }
                                                 style={{ marginRight: 8 }}
                                             />
-
                                             {turno.operatore}
                                         </TableCell>
-
                                         <TableCell>{turno.tipoMansione}</TableCell>
-
                                         <TableCell>{turno.tipologiaTurno}</TableCell>
-
                                         <TableCell>{turno.orePausa}</TableCell>
                                     </TableRow>
                                 </React.Fragment>
