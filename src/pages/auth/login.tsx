@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logo from "@/assets/logo-detelder-white.svg";
+import logoMark from "@/assets/logo-detelder-mark-white.svg";
 
 const rememberedUsername = localStorage.getItem("rememberedUsername") || "";
 
@@ -78,9 +78,9 @@ export default function Login() {
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <img
-          src={logo}
+          src={logoMark}
           alt=""
-          className="absolute left-1/2 top-1/2 w-[150vw] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.035] sm:w-[105vw] lg:w-[88vw]"
+          className="absolute left-1/2 top-1/2 w-[95vw] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.045] sm:w-[70vw] lg:w-[52vw]"
         />
       </div>
 
@@ -88,9 +88,9 @@ export default function Login() {
         <section className="w-full">
           <div className="mb-4 flex justify-center sm:mb-5">
             <img
-              src={logo}
+              src={logoMark}
               alt="Detelder"
-              className="h-auto w-[176px] sm:w-[215px]"
+              className="h-auto w-[58px] sm:w-[66px]"
             />
           </div>
 
