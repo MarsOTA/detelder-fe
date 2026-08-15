@@ -98,10 +98,10 @@ export default function Login() {
                 <LogIn className="h-[18px] w-[18px]" strokeWidth={1.8} />
               </div>
               <h1 className="text-[27px] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[29px]">
-                Bentornato
+                DETELDER APP
               </h1>
               <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-500 sm:text-xs">
-                APP DETELDER · WORKFORCE &amp; EVENT MANAGEMENT
+                WORKFORCE &amp; EVENT MANAGEMENT
               </p>
             </div>
 
