@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LockKeyhole, LogIn, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo-detelder-white.svg";
 
 const rememberedUsername = localStorage.getItem("rememberedUsername") || "";
 
@@ -74,6 +74,8 @@ export default function Login() {
 
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-black px-4 py-3 sm:px-6 sm:py-6">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@900&display=swap');`}</style>
+
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <img
           src={logo}
@@ -97,7 +99,10 @@ export default function Login() {
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-[14px] bg-slate-950 text-white shadow-lg shadow-slate-950/15">
                 <LogIn className="h-[18px] w-[18px]" strokeWidth={1.8} />
               </div>
-              <h1 className="text-[27px] font-semibold tracking-[-0.04em] text-slate-950 sm:text-[29px]">
+              <h1
+                className="text-[27px] tracking-[-0.04em] text-slate-950 sm:text-[29px]"
+                style={{ fontFamily: "'Mulish', sans-serif", fontWeight: 900 }}
+              >
                 DETELDER APP
               </h1>
               <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-slate-500 sm:text-xs">
