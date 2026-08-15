@@ -2,6 +2,7 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
+import { ContrattiOperatoreComponent } from "@/pages/components/ContrattiOperatoreComponent"
 
 function Tabs({
   className,
@@ -50,14 +51,25 @@ function TabsTrigger({
 
 function TabsContent({
   className,
+  children,
+  value,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Content>) {
+  const isDettaglioOperatore =
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/admin/dettaglio-operatore/")
+
+  const usaPannelloContratti = isDettaglioOperatore && value === "contratti"
+
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
+      value={value}
       className={cn("flex-1 outline-none", className)}
       {...props}
-    />
+    >
+      {usaPannelloContratti ? <ContrattiOperatoreComponent /> : children}
+    </TabsPrimitive.Content>
   )
 }
 
