@@ -7,10 +7,13 @@ import { Eye, EyeOff, LockKeyhole, LogIn, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.svg";
 
+const rememberedUsername = localStorage.getItem("rememberedUsername") || "";
+
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(rememberedUsername);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(Boolean(rememberedUsername));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -38,6 +41,12 @@ export default function Login() {
       if (!data.success) {
         setError(data.message || "Credenziali non valide. Riprova.");
         return;
+      }
+
+      if (rememberMe) {
+        localStorage.setItem("rememberedUsername", username);
+      } else {
+        localStorage.removeItem("rememberedUsername");
       }
 
       localStorage.setItem("token", data.token);
@@ -158,6 +167,16 @@ export default function Login() {
                   </button>
                 </div>
               </div>
+
+              <label className="flex min-h-10 cursor-pointer items-center gap-3 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 accent-slate-950"
+                />
+                <span>Remember me</span>
+              </label>
 
               {error && (
                 <div
