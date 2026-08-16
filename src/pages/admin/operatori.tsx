@@ -1,6 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,12 @@ type StatoContrattoResponse = {
   statoContratto: StatoContratto;
 };
 
+const statoContrattoOptions: { value: StatoContratto; label: string }[] = [
+  { value: "REGOLARE", label: "In regola" },
+  { value: "SCADUTO", label: "Non in regola" },
+  { value: "ASSENTE", label: "Assente" },
+];
+
 const Operatori = () => {
   const [formData, setFormData] = useState({
     nome: "",
@@ -33,6 +40,11 @@ const Operatori = () => {
   const navigate = useNavigate();
   const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
   const [statiContratto, setStatiContratto] = useState<Record<number, StatoContratto>>({});
+  const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>([
+    "REGOLARE",
+    "SCADUTO",
+    "ASSENTE",
+  ]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   type SortDirection = "asc" | "desc";
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -161,6 +173,14 @@ const Operatori = () => {
   const handleGpgChange = (gpg: boolean) =>
     setFormData((prev) => ({ ...prev, gpg }));
 
+  const toggleStatoContratto = (stato: StatoContratto) => {
+    setStatiSelezionati((prev) =>
+      prev.includes(stato)
+        ? prev.filter((item) => item !== stato)
+        : [...prev, stato]
+    );
+  };
+
   const getStatoContrattoLabel = (stato?: StatoContratto) => {
     if (stato === "REGOLARE") return "In regola";
     if (stato === "SCADUTO") return "Non in regola";
@@ -210,13 +230,18 @@ const Operatori = () => {
     const keyword = ricercaKeyword.toLowerCase();
 
     return [...dipendenti]
-      .filter(
-        (dipendente) =>
+      .filter((dipendente) => {
+        const matchesKeyword =
           dipendente.cognome.toLowerCase().includes(keyword) ||
           dipendente.nome.toLowerCase().includes(keyword) ||
           dipendente.email.toLowerCase().includes(keyword) ||
-          dipendente.telefono.toLowerCase().includes(keyword)
-      )
+          dipendente.telefono.toLowerCase().includes(keyword);
+
+        const stato = statiContratto[dipendente.id] ?? "ASSENTE";
+        const matchesContratto = statiSelezionati.includes(stato);
+
+        return matchesKeyword && matchesContratto;
+      })
       .sort((a, b) => {
         const cognomeA = a.cognome.toLowerCase();
         const cognomeB = b.cognome.toLowerCase();
@@ -224,7 +249,7 @@ const Operatori = () => {
         if (cognomeA > cognomeB) return sortDirection === "asc" ? 1 : -1;
         return 0;
       });
-  }, [dipendenti, ricercaKeyword, sortDirection]);
+  }, [dipendenti, ricercaKeyword, sortDirection, statiContratto, statiSelezionati]);
 
   return (
     <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
@@ -247,13 +272,48 @@ const Operatori = () => {
         </div>
 
         <div className="flex items-center justify-between bg-[#ecf3f1] px-6 py-4">
-          <Input
-            type="text"
-            placeholder="Ricerca per keyword"
-            value={ricercaKeyword}
-            onChange={(e) => setRicercaKeyword(e.target.value)}
-            className="w-[280px] rounded-xl border border-gray-300 bg-white px-3 py-2"
-          />
+          <div className="flex items-center gap-3">
+            <Input
+              type="text"
+              placeholder="Ricerca per keyword"
+              value={ricercaKeyword}
+              onChange={(e) => setRicercaKeyword(e.target.value)}
+              className="w-[280px] rounded-xl border border-gray-300 bg-white px-3 py-2"
+            />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 min-w-[180px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"
+                >
+                  Contratto ({statiSelezionati.length})
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[220px] p-3">
+                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">
+                  Stato contratto
+                </div>
+                <div className="space-y-2">
+                  {statoContrattoOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={statiSelezionati.includes(option.value)}
+                        onChange={() => toggleStatoContratto(option.value)}
+                        className="h-4 w-4 accent-[#007a55]"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <Button
             className="rounded-xl border border-[#b8d2c8] bg-white px-6 font-bold text-[#007a55] shadow-sm hover:bg-[#f7fbf9] hover:text-[#006f4d]"
             onClick={handleExportToExcel}
