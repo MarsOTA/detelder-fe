@@ -2,234 +2,387 @@ import React, { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { CirclePause } from "lucide-react";
+import { CalendarIcon, CirclePause } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { it } from "date-fns/locale";
 
 type FiltriRicerca = {
-    statoElaborazione?: string;
-    dataInizio: Date | undefined;
-    dataFine: Date | undefined;
-}
+  statoElaborazione?: string;
+  dataInizio: Date | undefined;
+  dataFine: Date | undefined;
+};
 
 type CheckInCheckOut = {
-    dataInserimentoCheckIn: Date | undefined
-    dataInserimentoCheckOut: Date | undefined
-    statoTimbratura: string
-}
+  dataInserimentoCheckIn: Date | undefined;
+  dataInserimentoCheckOut: Date | undefined;
+  statoTimbratura: string;
+};
 
 type TurnoCompleto = {
-    idTurno: number
-    dataTurno: Date | undefined
-    oraInizio: string
-    oraInizioDefinitivo: string
-    oraFine: string
-    oraFineDefinitivo: string
-    nomeEvento: string
-    nomeBrand: string
-    ragioneSociale: string
-    operatore: string
-    orePausa: number | undefined
-    orePausaDefinitiva: number | undefined
-    via: string
-    statoPayroll: string
-    motivazioneRitardo: string
-    motivazioneContestazione: string
-    checkInCheckOut: CheckInCheckOut[]
-    statoTurno: string
-    orePreviste: number | undefined
-    oreLavorateTurno: number | string | undefined
-    delta: string | undefined
-}
+  idTurno: number;
+  dataTurno: Date | undefined;
+  oraInizio: string;
+  oraInizioDefinitivo: string;
+  oraFine: string;
+  oraFineDefinitivo: string;
+  nomeEvento: string;
+  nomeBrand: string;
+  ragioneSociale: string;
+  operatore: string;
+  orePausa: number | undefined;
+  orePausaDefinitiva: number | undefined;
+  via: string;
+  statoPayroll: string;
+  motivazioneRitardo: string;
+  motivazioneContestazione: string;
+  checkInCheckOut: CheckInCheckOut[];
+  statoTurno: string;
+  orePreviste: number | undefined;
+  oreLavorateTurno: number | string | undefined;
+  delta: string | undefined;
+};
 
 type PayrollForm = {
-    idTurno: number
-    oraInizioDefinitivo: string
-    oraFineDefinitivo: string
-    orePausaDefinitivo: number | undefined
-    stato: string | undefined
-}
+  idTurno: number;
+  oraInizioDefinitivo: string;
+  oraFineDefinitivo: string;
+  orePausaDefinitivo: number | undefined;
+  stato: string | undefined;
+};
 
 const payroll = () => {
-    const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>();
-    const [turni, setTurni] = useState<TurnoCompleto[]>([]);
+  const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>();
+  const [turni, setTurni] = useState<TurnoCompleto[]>([]);
 
-    useEffect(() => {
-        const filtriRicerca: FiltriRicerca = {
-            dataInizio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            dataFine: new Date(),
-        };
-        setFiltriRicerca(filtriRicerca);
-        caricaPayroll(filtriRicerca);
-    }, []);
+  useEffect(() => {
+    const filtri: FiltriRicerca = {
+      dataInizio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      dataFine: new Date(),
+    };
+    setFiltriRicerca(filtri);
+    caricaPayroll(filtri);
+  }, []);
 
-    const setDataInizio = (date: Date | undefined) => setFiltriRicerca((prev) => prev ? { ...prev, dataInizio: date } : undefined);
-    const setDataFine = (date: Date | undefined) => setFiltriRicerca((prev) => prev ? { ...prev, dataFine: date } : undefined);
+  const setDataInizio = (date: Date | undefined) =>
+    setFiltriRicerca((prev) => (prev ? { ...prev, dataInizio: date } : undefined));
 
-    const salvaPayroll = async (idTurno: number) => {
-        const turno = turni.find(t => t.idTurno === idTurno);
-        if (!turno) return;
-        const payrollForm: PayrollForm = { idTurno: turno.idTurno, oraInizioDefinitivo: turno.oraInizioDefinitivo, oraFineDefinitivo: turno.oraFineDefinitivo, orePausaDefinitivo: turno.orePausaDefinitiva, stato: 'ELABORATO' };
-        const resp = await fetch(ezystaffBEUrl + 'payroll', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json', accept: 'application/json' }, method: "POST", credentials: 'include', body: JSON.stringify(payrollForm) });
-        await resp.json();
-        if (filtriRicerca) caricaPayroll(filtriRicerca);
+  const setDataFine = (date: Date | undefined) =>
+    setFiltriRicerca((prev) => (prev ? { ...prev, dataFine: date } : undefined));
+
+  const salvaPayroll = async (idTurno: number) => {
+    const turno = turni.find((t) => t.idTurno === idTurno);
+    if (!turno) return;
+
+    const payrollForm: PayrollForm = {
+      idTurno: turno.idTurno,
+      oraInizioDefinitivo: turno.oraInizioDefinitivo,
+      oraFineDefinitivo: turno.oraFineDefinitivo,
+      orePausaDefinitivo: turno.orePausaDefinitiva,
+      stato: "ELABORATO",
     };
 
-    const eliminaPayroll = async (idTurno: number) => {
-        const resp = await fetch(ezystaffBEUrl + `payroll/${idTurno}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json', accept: 'application/json' }, method: "DELETE", credentials: 'include' });
-        await resp.json();
-        if (filtriRicerca) caricaPayroll(filtriRicerca);
+    const resp = await fetch(ezystaffBEUrl + "payroll", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(payrollForm),
+    });
+    await resp.json();
+    if (filtriRicerca) caricaPayroll(filtriRicerca);
+  };
+
+  const eliminaPayroll = async (idTurno: number) => {
+    const resp = await fetch(ezystaffBEUrl + `payroll/${idTurno}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      method: "DELETE",
+      credentials: "include",
+    });
+    await resp.json();
+    if (filtriRicerca) caricaPayroll(filtriRicerca);
+  };
+
+  const modificaPayroll = async (idTurno: number) => {
+    const turno = turni.find((t) => t.idTurno === idTurno);
+    if (!turno) return;
+
+    const body = {
+      oraInizioDefinitivo: turno.oraInizioDefinitivo,
+      oraFineDefinitivo: turno.oraFineDefinitivo,
+      orePausaDefinitivo: turno.orePausaDefinitiva,
+      stato: "MODIFICATO",
     };
 
-    const modificaPayroll = async (idTurno: number) => {
-        const turno = turni.find(t => t.idTurno === idTurno);
-        if (!turno) return;
-        const body = { oraInizioDefinitivo: turno.oraInizioDefinitivo, oraFineDefinitivo: turno.oraFineDefinitivo, orePausaDefinitivo: turno.orePausaDefinitiva, stato: 'MODIFICATO' };
-        const resp = await fetch(ezystaffBEUrl + `payroll/${turno.idTurno}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json', accept: 'application/json' }, method: "PATCH", credentials: 'include', body: JSON.stringify(body) });
-        await resp.json();
-        if (filtriRicerca) caricaPayroll(filtriRicerca);
-    };
+    const resp = await fetch(ezystaffBEUrl + `payroll/${turno.idTurno}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      method: "PATCH",
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    await resp.json();
+    if (filtriRicerca) caricaPayroll(filtriRicerca);
+  };
 
-    const formatDateToYYYYMMDD = (date: Date | undefined): string | undefined => {
-        if (!date) return undefined;
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    };
+  const formatDateToYYYYMMDD = (date: Date | undefined): string | undefined => {
+    if (!date) return undefined;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
 
-    const caricaPayroll = async (filtri: FiltriRicerca) => {
-        const queryParams = new URLSearchParams();
-        const dataInizioStr = formatDateToYYYYMMDD(filtri.dataInizio);
-        const dataFineStr = formatDateToYYYYMMDD(filtri.dataFine);
-        const statoElaborazione = filtri.statoElaborazione?.trim();
-        if (dataInizioStr) queryParams.append("dataInizio", dataInizioStr);
-        if (dataFineStr) queryParams.append("dataFine", dataFineStr);
-        if (statoElaborazione) queryParams.append("statoElaborazione", statoElaborazione);
-        const resp = await fetch(`${ezystaffBEUrl}payroll?${queryParams.toString()}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json', accept: 'application/json' }, credentials: 'include' });
-        setTurni(await resp.json());
-    };
+  const caricaPayroll = async (filtri: FiltriRicerca) => {
+    const queryParams = new URLSearchParams();
+    const dataInizioStr = formatDateToYYYYMMDD(filtri.dataInizio);
+    const dataFineStr = formatDateToYYYYMMDD(filtri.dataFine);
+    const statoElaborazione = filtri.statoElaborazione?.trim();
 
-    const calcolaTotaleOre = (oraInizio: string, oraFine: string, oraPausa: number = 0): string => {
-        if (!oraInizio || !oraFine) return "00:00";
-        const [h1, m1] = oraInizio.split(":").map(Number);
-        const [h2, m2] = oraFine.split(":").map(Number);
-        const inizio = h1 * 60 + m1;
-        let fine = h2 * 60 + m2;
-        if (fine < inizio) fine += 24 * 60;
-        const minutiLavorati = fine - inizio - (oraPausa * 60);
-        return `${String(Math.floor(minutiLavorati / 60)).padStart(2, "0")}:${String(minutiLavorati % 60).padStart(2, "0")}`;
-    };
+    if (dataInizioStr) queryParams.append("dataInizio", dataInizioStr);
+    if (dataFineStr) queryParams.append("dataFine", dataFineStr);
+    if (statoElaborazione) queryParams.append("statoElaborazione", statoElaborazione);
 
-    const formatOreBrevi = (valore: string | number | undefined): string => {
-        if (valore === undefined || valore === null || valore === "") return "00:00";
-        const parti = String(valore).split(":");
-        return parti.length >= 2 ? `${parti[0]}:${parti[1]}` : String(valore);
-    };
+    const resp = await fetch(`${ezystaffBEUrl}payroll?${queryParams.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      credentials: "include",
+    });
+    setTurni(await resp.json());
+  };
 
-    const getTotalHours = (records: TurnoCompleto[]): string => {
-        let totalMinutes = 0;
-        records.forEach((turno) => {
-            const valore = turno.oreLavorateTurno;
-            if (valore === undefined || valore === null || valore === "") return;
-            if (typeof valore === "number") {
-                totalMinutes += Math.round(valore * 60);
-                return;
-            }
-            if (valore.includes(":")) {
-                const [ore = 0, minuti = 0] = valore.split(":").map(Number);
-                totalMinutes += ore * 60 + minuti;
-            } else {
-                const oreDecimali = Number(valore);
-                if (!Number.isNaN(oreDecimali)) totalMinutes += Math.round(oreDecimali * 60);
-            }
-        });
-        return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
-    };
+  const calcolaMinutiDefinitivi = (oraInizio: string, oraFine: string, oraPausa: number = 0): number => {
+    if (!oraInizio || !oraFine) return 0;
+    const [h1, m1] = oraInizio.split(":").map(Number);
+    const [h2, m2] = oraFine.split(":").map(Number);
+    if ([h1, m1, h2, m2].some(Number.isNaN)) return 0;
 
-    const setOraInizioTurno = (idTurno: number, ora: string) => setTurni((prev) => prev.map((t) => t.idTurno === idTurno ? { ...t, oraInizioDefinitivo: ora } : t));
-    const setOraFineTurno = (idTurno: number, ora: string) => setTurni((prev) => prev.map((t) => t.idTurno === idTurno ? { ...t, oraFineDefinitivo: ora } : t));
-    const setNumeroOrePausa = (idTurno: number, numero: number | undefined) => setTurni((prev) => prev.map((t) => t.idTurno === idTurno ? { ...t, orePausaDefinitiva: numero } : t));
+    const inizio = h1 * 60 + m1;
+    let fine = h2 * 60 + m2;
+    if (fine < inizio) fine += 24 * 60;
 
-    const handlePeriodoClick = (periodo: "giorno" | "settimana" | "mese") => {
-        const dataFine = new Date();
-        const dataInizio = new Date(dataFine);
-        if (periodo === "giorno") dataInizio.setDate(dataInizio.getDate() - 1);
-        if (periodo === "settimana") dataInizio.setDate(dataInizio.getDate() - 7);
-        if (periodo === "mese") dataInizio.setMonth(dataInizio.getMonth() - 1);
-        const filtri: FiltriRicerca = { dataInizio, dataFine };
-        setFiltriRicerca(filtri);
-        caricaPayroll(filtri);
-    };
+    return Math.max(0, Math.round(fine - inizio - (Number(oraPausa) || 0) * 60));
+  };
 
-    const filtraPerStatoElaborazione = (statoElaborazione: string) => {
-        if (!filtriRicerca) return;
-        const nuoviFiltri = { ...filtriRicerca, statoElaborazione };
-        setFiltriRicerca(nuoviFiltri);
-        caricaPayroll(nuoviFiltri);
-    };
+  const formatMinuti = (minutiTotali: number): string =>
+    `${String(Math.floor(minutiTotali / 60)).padStart(2, "0")}:${String(minutiTotali % 60).padStart(2, "0")}`;
 
-    return (
-        <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-            <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5"><div><h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Rendicontazione ore operatori</h1><p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">Riconcilia le ore lavorate, verifica gli scostamenti e gestisci lo stato di elaborazione dei turni.</p></div></div>
-            <div className="flex items-center bg-[#ecf3f1] mb-1">
-                <div className="flex items-center bg-[#ecf3f1] p-4 mb-1">
-                    <div><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full rounded-none">{filtriRicerca?.dataInizio ? filtriRicerca.dataInizio.toLocaleDateString() : "Seleziona data"}<CalendarIcon className="mr-2 h-4 w-4" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={filtriRicerca?.dataInizio} onSelect={setDataInizio} locale={it} className="pointer-events-auto" /></PopoverContent></Popover></div>
-                    <div><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full rounded-none">{filtriRicerca?.dataFine ? filtriRicerca.dataFine.toLocaleDateString() : "Seleziona data"}<CalendarIcon className="mr-2 h-4 w-4" /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={filtriRicerca?.dataFine} onSelect={setDataFine} locale={it} className="pointer-events-auto" /></PopoverContent></Popover></div>
-                    <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && caricaPayroll(filtriRicerca)}>Filtra</Button>
-                </div>
-                <div className="flex gap-3">
-                    <Button onClick={() => handlePeriodoClick("giorno")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer">Ieri</Button>
-                    <Button onClick={() => handlePeriodoClick("settimana")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer">Settimana</Button>
-                    <Button onClick={() => handlePeriodoClick("mese")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer">Mese</Button>
-                    <div className="h-8 w-px bg-[#c4c7c5]" />
-                    <Button onClick={() => filtraPerStatoElaborazione("ELABORATO")} className="rounded-full border border-[#9df5c3] bg-[#9df5c3] text-[#002112] text-[13px] font-semibold cursor-pointer">Elaborati</Button>
-                    <Button onClick={() => filtraPerStatoElaborazione("DA_ELABORARE")} className="rounded-full border border-[#fed7aa] bg-[#ffedd5] text-[#c2410c] text-[13px] font-semibold cursor-pointer">Da Elaborare</Button>
-                    <Button onClick={() => filtraPerStatoElaborazione("MODIFICATO")} className="rounded-full border border-[#c3cfeb] bg-[#d5e2ff] text-[#4c608b] text-[13px] font-semibold cursor-pointer">Modificato</Button>
-                    <Button onClick={() => filtraPerStatoElaborazione("CONTESTATO")} className="rounded-full border border-[#ffacac] bg-[#ffd5d5] text-[#ba1a1a] text-[13px] font-semibold cursor-pointer">Contestato</Button>
-                </div>
-                <div className="ml-auto mr-4 whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">Totale ore: {getTotalHours(turni)}</div>
-            </div>
-            <div className="border rounded-md bg-white border-r border-r-[#e5e7eb]">
-                <Table>
-                    <TableHeader><TableRow>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOMINATIVO</TableHead>
-                        <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(65,101,89,0.2)] border-r border-r-[#e5e7eb]">PREVISTO</TableHead>
-                        <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(0,80,50,0.2)] border-r border-r-[#e5e7eb]">EFFETTIVO</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">DELTA</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#e6f4ff] border-r border-r-[#e5e7eb]">DEFINITIVO</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#d0e8fe] border-r border-r-[#e5e7eb]">ORE</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
-                        <TableHead className="text-center text-[12px] font-bold text-[#3f4942]">STATO</TableHead>
-                    </TableRow></TableHeader>
-                    <TableBody>{turni.map((turno, index) => {
-                        const prevTurno = turni[index - 1];
-                        const isNewDate = index === 0 || (prevTurno?.dataTurno && turno.dataTurno && format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") !== format(new Date(turno.dataTurno), "yyyy-MM-dd"));
-                        const isNewEvento = prevTurno && turno.dataTurno && prevTurno.dataTurno && format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") === format(new Date(turno.dataTurno), "yyyy-MM-dd") && prevTurno.nomeEvento !== turno.nomeEvento;
-                        return <React.Fragment key={index}>
-                            {isNewDate && <TableRow><TableCell colSpan={11} className="bg-[#007a55] text-white"><div className="flex justify-between"><span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span><span className="w-[45%] uppercase font-bold">{(turno.nomeEvento && turno.nomeEvento.trim() !== '' ? turno.nomeEvento : `${turno.nomeBrand ?? ''} - ${turno.ragioneSociale ?? ''}`).toUpperCase()}</span><span className="w-[45%] text-right">{turno.via}</span></div></TableCell></TableRow>}
-                            {!isNewDate && isNewEvento && <TableRow><TableCell colSpan={11} className="bg-[#8f8f8f] text-white"><div className="flex justify-between"><span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span><span className="w-[45%] uppercase font-bold">{(turno.nomeEvento && turno.nomeEvento.trim() !== '' ? turno.nomeEvento : `${turno.nomeBrand ?? ''} - ${turno.ragioneSociale ?? ''}`).toUpperCase()}</span><span className="w-[45%] text-right">{turno.via}</span></div></TableCell></TableRow>}
-                            <TableRow className="h-full">
-                                <TableCell className="text-[16px] font-medium text-[#005032]">{turno.operatore}</TableCell>
-                                <TableCell><div className="flex flex-col items-center text-[16px] font-normal text-[#3f4942]"><span>{turno.oraInizio} - {turno.oraFine}</span><span className="flex items-center"><CirclePause className="mr-1 h-4 w-4" />{turno.orePausa}</span></div></TableCell>
-                                <TableCell className="bg-[rgba(65,101,89,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{turno.orePreviste} h</div></TableCell>
-                                <TableCell><div className="space-y-1 text-[16px] font-normal text-[#3f4942]">{turno.checkInCheckOut.map((item, idx) => <div key={idx}>{item.dataInserimentoCheckIn ? format(new Date(item.dataInserimentoCheckIn), "HH.mm") : "--"} - {item.dataInserimentoCheckOut ? format(new Date(item.dataInserimentoCheckOut), "HH.mm") : "--"}</div>)}</div></TableCell>
-                                <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{formatOreBrevi(turno.oreLavorateTurno)} h</div></TableCell>
-                                <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{formatOreBrevi(turno.delta)} h</div></TableCell>
-                                <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneRitardo || "Nessuna motivazione"}>{turno.motivazioneRitardo || "—"}</span></TableCell>
-                                <TableCell><div className="flex flex-col gap-2 w-full"><div className="flex items-center gap-2 w-full"><Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" /><Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" /></div><div className="flex justify-center"><div className="relative w-fit"><CirclePause size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" /><Input type="number" min={0} max={5} step={0.5} value={turno.orePausaDefinitiva} onChange={(e) => setNumeroOrePausa(turno.idTurno, e.target.value !== "" ? parseFloat(e.target.value) : undefined)} className="w-[100px] pl-8 !bg-white !border-0 !shadow-none !outline-none" /></div></div></div></TableCell>
-                                <TableCell className="bg-[#d0e8fe] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{calcolaTotaleOre(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva)} h</div></TableCell>
-                                <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneContestazione || "Nessuna motivazione"}>{turno.motivazioneContestazione || "—"}</span></TableCell>
-                                <TableCell>{turno.statoPayroll === "DA_ELABORARE" && <Button onClick={() => salvaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffedd5] text-[11px] font-bold text-[#c2410c]">Da elaborare</Button>}{turno.statoPayroll === "ELABORATO" && <Button onClick={() => eliminaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#9df5c3] text-[11px] font-bold text-[#002112]">Rielabora</Button>}{turno.statoPayroll === "CONTESTATO" && <Button onClick={() => modificaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffd5d5] text-[11px] font-bold text-[#c2410c]">Contestato</Button>}{turno.statoPayroll === "MODIFICATO" && <Button disabled className="w-full cursor-not-allowed rounded-[5px] bg-[#d5e2ff] text-[11px] font-bold text-[#4c608b]">Modificato</Button>}</TableCell>
-                            </TableRow>
-                        </React.Fragment>;
-                    })}</TableBody>
-                </Table>
-            </div>
-        </section>
-    );
+  const calcolaTotaleOre = (oraInizio: string, oraFine: string, oraPausa: number = 0): string =>
+    formatMinuti(calcolaMinutiDefinitivi(oraInizio, oraFine, oraPausa));
+
+  const formatOreBrevi = (valore: string | number | undefined): string => {
+    if (valore === undefined || valore === null || valore === "") return "00:00";
+    const parti = String(valore).split(":");
+    return parti.length >= 2 ? `${parti[0]}:${parti[1]}` : String(valore);
+  };
+
+  // Il contatore deve rappresentare esclusivamente le ore della colonna azzurra ORE
+  // dei turni già ELABORATI. Non usa le ore effettive delle timbrature.
+  const getTotalHours = (records: TurnoCompleto[]): string => {
+    const totalMinutes = records
+      .filter((turno) => turno.statoPayroll === "ELABORATO")
+      .reduce(
+        (totale, turno) =>
+          totale +
+          calcolaMinutiDefinitivi(
+            turno.oraInizioDefinitivo,
+            turno.oraFineDefinitivo,
+            turno.orePausaDefinitiva ?? 0
+          ),
+        0
+      );
+
+    return formatMinuti(totalMinutes);
+  };
+
+  const setOraInizioTurno = (idTurno: number, ora: string) =>
+    setTurni((prev) => prev.map((t) => (t.idTurno === idTurno ? { ...t, oraInizioDefinitivo: ora } : t)));
+
+  const setOraFineTurno = (idTurno: number, ora: string) =>
+    setTurni((prev) => prev.map((t) => (t.idTurno === idTurno ? { ...t, oraFineDefinitivo: ora } : t)));
+
+  const setNumeroOrePausa = (idTurno: number, numero: number | undefined) =>
+    setTurni((prev) => prev.map((t) => (t.idTurno === idTurno ? { ...t, orePausaDefinitiva: numero } : t)));
+
+  const handlePeriodoClick = (periodo: "giorno" | "settimana" | "mese") => {
+    const dataFine = new Date();
+    const dataInizio = new Date(dataFine);
+    if (periodo === "giorno") dataInizio.setDate(dataInizio.getDate() - 1);
+    if (periodo === "settimana") dataInizio.setDate(dataInizio.getDate() - 7);
+    if (periodo === "mese") dataInizio.setMonth(dataInizio.getMonth() - 1);
+
+    const filtri: FiltriRicerca = { dataInizio, dataFine };
+    setFiltriRicerca(filtri);
+    caricaPayroll(filtri);
+  };
+
+  const filtraPerStatoElaborazione = (statoElaborazione: string) => {
+    if (!filtriRicerca) return;
+    const nuoviFiltri = { ...filtriRicerca, statoElaborazione };
+    setFiltriRicerca(nuoviFiltri);
+    caricaPayroll(nuoviFiltri);
+  };
+
+  return (
+    <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
+      <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+        <div>
+          <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Rendicontazione ore operatori</h1>
+          <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">Riconcilia le ore lavorate, verifica gli scostamenti e gestisci lo stato di elaborazione dei turni.</p>
+        </div>
+      </div>
+
+      <div className="flex items-center bg-[#ecf3f1] mb-1">
+        <div className="flex items-center bg-[#ecf3f1] p-4 mb-1">
+          <div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full rounded-none">
+                  {filtriRicerca?.dataInizio ? filtriRicerca.dataInizio.toLocaleDateString() : "Seleziona data"}
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={filtriRicerca?.dataInizio} onSelect={setDataInizio} locale={it} className="pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full rounded-none">
+                  {filtriRicerca?.dataFine ? filtriRicerca.dataFine.toLocaleDateString() : "Seleziona data"}
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={filtriRicerca?.dataFine} onSelect={setDataFine} locale={it} className="pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] hover:text-white cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && caricaPayroll(filtriRicerca)}>Filtra</Button>
+        </div>
+
+        <div className="flex gap-3">
+          <Button onClick={() => handlePeriodoClick("giorno")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer hover:bg-[#e6fff5] hover:text-[#007a55]">Ieri</Button>
+          <Button onClick={() => handlePeriodoClick("settimana")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer hover:bg-[#e6fff5] hover:text-[#007a55]">Settimana</Button>
+          <Button onClick={() => handlePeriodoClick("mese")} className="rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold cursor-pointer hover:bg-[#e6fff5] hover:text-[#007a55]">Mese</Button>
+          <div className="h-8 w-px bg-[#c4c7c5]" />
+          <Button onClick={() => filtraPerStatoElaborazione("ELABORATO")} className="rounded-full border border-[#9df5c3] bg-[#9df5c3] text-[#002112] text-[13px] font-semibold cursor-pointer hover:bg-[#9df5c3] hover:text-[#002112]">Elaborati</Button>
+          <Button onClick={() => filtraPerStatoElaborazione("DA_ELABORARE")} className="rounded-full border border-[#fed7aa] bg-[#ffedd5] text-[#c2410c] text-[13px] font-semibold cursor-pointer hover:bg-[#ffedd5] hover:text-[#c2410c]">Da Elaborare</Button>
+          <Button onClick={() => filtraPerStatoElaborazione("MODIFICATO")} className="rounded-full border border-[#c3cfeb] bg-[#d5e2ff] text-[#4c608b] text-[13px] font-semibold cursor-pointer hover:bg-[#d5e2ff] hover:text-[#4c608b]">Modificato</Button>
+          <Button onClick={() => filtraPerStatoElaborazione("CONTESTATO")} className="rounded-full border border-[#ffacac] bg-[#ffd5d5] text-[#ba1a1a] text-[13px] font-semibold cursor-pointer hover:bg-[#ffd5d5] hover:text-[#ba1a1a]">Contestato</Button>
+        </div>
+
+        <div className="ml-auto mr-4 whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
+          Totale ore: {getTotalHours(turni)}
+        </div>
+      </div>
+
+      <div className="border rounded-md bg-white border-r border-r-[#e5e7eb]">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOMINATIVO</TableHead>
+              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(65,101,89,0.2)] border-r border-r-[#e5e7eb]">PREVISTO</TableHead>
+              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(0,80,50,0.2)] border-r border-r-[#e5e7eb]">EFFETTIVO</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">DELTA</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#e6f4ff] border-r border-r-[#e5e7eb]">DEFINITIVO</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#d0e8fe] border-r border-r-[#e5e7eb]">ORE</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942]">STATO</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {turni.map((turno, index) => {
+              const prevTurno = turni[index - 1];
+              const isNewDate = index === 0 || (prevTurno?.dataTurno && turno.dataTurno && format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") !== format(new Date(turno.dataTurno), "yyyy-MM-dd"));
+              const isNewEvento = prevTurno && turno.dataTurno && prevTurno.dataTurno && format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") === format(new Date(turno.dataTurno), "yyyy-MM-dd") && prevTurno.nomeEvento !== turno.nomeEvento;
+
+              return (
+                <React.Fragment key={index}>
+                  {isNewDate && (
+                    <TableRow>
+                      <TableCell colSpan={11} className="bg-[#007a55] text-white">
+                        <div className="flex justify-between">
+                          <span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span>
+                          <span className="w-[45%] uppercase font-bold">{(turno.nomeEvento && turno.nomeEvento.trim() !== "" ? turno.nomeEvento : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`).toUpperCase()}</span>
+                          <span className="w-[45%] text-right">{turno.via}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
+                  {!isNewDate && isNewEvento && (
+                    <TableRow>
+                      <TableCell colSpan={11} className="bg-[#8f8f8f] text-white">
+                        <div className="flex justify-between">
+                          <span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span>
+                          <span className="w-[45%] uppercase font-bold">{(turno.nomeEvento && turno.nomeEvento.trim() !== "" ? turno.nomeEvento : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`).toUpperCase()}</span>
+                          <span className="w-[45%] text-right">{turno.via}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
+                  <TableRow className="h-full">
+                    <TableCell className="text-[16px] font-medium text-[#005032]">{turno.operatore}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col items-center text-[16px] font-normal text-[#3f4942]">
+                        <span>{turno.oraInizio} - {turno.oraFine}</span>
+                        <span className="flex items-center"><CirclePause className="mr-1 h-4 w-4" />{turno.orePausa}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="bg-[rgba(65,101,89,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{turno.orePreviste} h</div></TableCell>
+                    <TableCell><div className="space-y-1 text-[16px] font-normal text-[#3f4942]">{turno.checkInCheckOut.map((item, idx) => <div key={idx}>{item.dataInserimentoCheckIn ? format(new Date(item.dataInserimentoCheckIn), "HH.mm") : "--"} - {item.dataInserimentoCheckOut ? format(new Date(item.dataInserimentoCheckOut), "HH.mm") : "--"}</div>)}</div></TableCell>
+                    <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{formatOreBrevi(turno.oreLavorateTurno)} h</div></TableCell>
+                    <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{formatOreBrevi(turno.delta)} h</div></TableCell>
+                    <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneRitardo || "Nessuna motivazione"}>{turno.motivazioneRitardo || "—"}</span></TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-2 w-full">
+                        <div className="flex items-center gap-2 w-full">
+                          <Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" />
+                          <Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" />
+                        </div>
+                        <div className="flex justify-center">
+                          <div className="relative w-fit">
+                            <CirclePause size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            <Input type="number" min={0} max={5} step={0.5} value={turno.orePausaDefinitiva} onChange={(e) => setNumeroOrePausa(turno.idTurno, e.target.value !== "" ? parseFloat(e.target.value) : undefined)} className="w-[100px] pl-8 !bg-white !border-0 !shadow-none !outline-none" />
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="bg-[#d0e8fe] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{calcolaTotaleOre(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva)} h</div></TableCell>
+                    <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneContestazione || "Nessuna motivazione"}>{turno.motivazioneContestazione || "—"}</span></TableCell>
+                    <TableCell>
+                      {turno.statoPayroll === "DA_ELABORARE" && <Button onClick={() => salvaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffedd5] text-[11px] font-bold text-[#c2410c] hover:bg-[#ffedd5] hover:text-[#c2410c]">Da elaborare</Button>}
+                      {turno.statoPayroll === "ELABORATO" && <Button onClick={() => eliminaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#9df5c3] text-[11px] font-bold text-[#002112] hover:bg-[#9df5c3] hover:text-[#002112]">Rielabora</Button>}
+                      {turno.statoPayroll === "CONTESTATO" && <Button onClick={() => modificaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffd5d5] text-[11px] font-bold text-[#c2410c] hover:bg-[#ffd5d5] hover:text-[#c2410c]">Contestato</Button>}
+                      {turno.statoPayroll === "MODIFICATO" && <Button disabled className="w-full cursor-not-allowed rounded-[5px] bg-[#d5e2ff] text-[11px] font-bold text-[#4c608b] hover:bg-[#d5e2ff] hover:text-[#4c608b]">Modificato</Button>}
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </section>
+  );
 };
 
 export default payroll;
