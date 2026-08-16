@@ -21,7 +21,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("relative z-10 [&_tr]:border-b", className)}
+      className={cn(
+        "relative z-20 isolate [clip-path:inset(0)] [&_tr]:border-b [&_svg.lucide-sticky-note]:hidden [&_svg.lucide-file]:hidden [&_svg.lucide-file-text]:hidden [&_svg.lucide-notebook-text]:hidden [&_svg.lucide-clipboard]:hidden [&_svg.lucide-clipboard-list]:hidden",
+        className
+      )}
       {...props}
     />
   )
@@ -68,7 +71,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "relative h-10 overflow-hidden px-2 text-left align-middle font-medium whitespace-nowrap text-ellipsis text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_svg]:shrink-0",
+        "relative h-10 overflow-hidden [contain:paint] px-2 text-left align-middle font-medium whitespace-nowrap text-ellipsis text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_svg]:shrink-0",
         className
       )}
       {...props}
@@ -81,7 +84,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "relative overflow-hidden p-2 align-middle whitespace-nowrap text-ellipsis [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_input]:max-w-full [&_[role=combobox]]:max-w-full [&_svg]:shrink-0",
+        "relative overflow-hidden [contain:paint] p-2 align-middle whitespace-nowrap text-ellipsis [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_input]:box-border [&_input]:max-w-full [&_[role=combobox]]:box-border [&_[role=combobox]]:max-w-full [&_button]:max-w-full [&_svg]:shrink-0",
         className
       )}
       {...props}
