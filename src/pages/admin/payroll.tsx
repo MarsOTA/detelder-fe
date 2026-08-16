@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { CirclePause, StickyNote } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CirclePause } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -203,6 +202,36 @@ const payroll = () => {
         return parti.length >= 2 ? `${parti[0]}:${parti[1]}` : String(valore);
     };
 
+    const getTotalHours = (records: TurnoCompleto[]): string => {
+        let totalMinutes = 0;
+
+        records.forEach((turno) => {
+            const valore = turno.oreLavorateTurno;
+            if (valore === undefined || valore === null || valore === "") return;
+
+            if (typeof valore === "number") {
+                totalMinutes += Math.round(valore * 60);
+                return;
+            }
+
+            const valoreStringa = String(valore);
+            if (valoreStringa.includes(":")) {
+                const [ore = 0, minuti = 0] = valoreStringa.split(":").map(Number);
+                totalMinutes += (ore * 60) + minuti;
+                return;
+            }
+
+            const oreDecimali = Number(valoreStringa);
+            if (!Number.isNaN(oreDecimali)) {
+                totalMinutes += Math.round(oreDecimali * 60);
+            }
+        });
+
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    };
+
     const setOraInizioTurno = (idTurno: number, ora: string) => {
         setTurni((prev) => prev.map((t): TurnoCompleto => t.idTurno === idTurno ? { ...t, oraInizioDefinitivo: ora } : t));
     };
@@ -284,6 +313,9 @@ const payroll = () => {
                     <Button onClick={() => filtraPerStatoElaborazione("MODIFICATO")} className="rounded-full border border-[#c3cfeb] bg-[#d5e2ff] text-[#4c608b] text-[13px] font-semibold hover:bg-[#d5e2ff] hover:border-[#c3cfeb] hover:text-[#4c608b] cursor-pointer">Modificato</Button>
                     <Button onClick={() => filtraPerStatoElaborazione("CONTESTATO")} className="rounded-full border border-[#ffacac] bg-[#ffd5d5] text-[#ba1a1a] text-[13px] font-semibold hover:bg-[#ffd5d5] hover:border-[#ffacac] hover:text-[#ba1a1a] cursor-pointer">Contestato</Button>
                 </div>
+                <div className="ml-auto mr-4 whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
+                    Totale ore: {getTotalHours(turni)}
+                </div>
             </div>
 
             <div className="border rounded-md bg-white border-r border-r-[#e5e7eb]">
@@ -294,10 +326,11 @@ const payroll = () => {
                             <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(65,101,89,0.2)] border-r border-r-[#e5e7eb]">PREVISTO</TableHead>
                             <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(0,80,50,0.2)] border-r border-r-[#e5e7eb]">EFFETTIVO</TableHead>
                             <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">DELTA</TableHead>
-                            <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]" />
+                            <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
                             <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#e6f4ff] border-r border-r-[#e5e7eb]">DEFINITIVO</TableHead>
                             <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#d0e8fe] border-r border-r-[#e5e7eb]">ORE</TableHead>
-                            <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942]">STATO</TableHead>
+                            <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
+                            <TableHead className="text-center text-[12px] font-bold text-[#3f4942]">STATO</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -349,7 +382,9 @@ const payroll = () => {
                                         <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{formatOreBrevi(turno.oreLavorateTurno)} h</div></TableCell>
                                         <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{formatOreBrevi(turno.delta)} h</div></TableCell>
                                         <TableCell className="text-center">
-                                            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="inline-flex cursor-default"><StickyNote className="h-4 w-4 text-muted-foreground" /></span></TooltipTrigger><TooltipContent className="max-w-[60ch]"><p className="whitespace-pre-wrap break-words">{turno.motivazioneRitardo || "Nessuna motivazione"}</p></TooltipContent></Tooltip></TooltipProvider>
+                                            <span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneRitardo || "Nessuna motivazione"}>
+                                                {turno.motivazioneRitardo || "—"}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-2 w-full">
@@ -367,7 +402,9 @@ const payroll = () => {
                                         </TableCell>
                                         <TableCell className="bg-[#d0e8fe] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{calcolaTotaleOre(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva)} h</div></TableCell>
                                         <TableCell className="text-center">
-                                            <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="inline-flex cursor-default"><StickyNote className="h-4 w-4 text-muted-foreground" /></span></TooltipTrigger><TooltipContent className="max-w-[60ch]"><p className="whitespace-pre-wrap break-words">{turno.motivazioneContestazione || "Nessuna motivazione"}</p></TooltipContent></Tooltip></TooltipProvider>
+                                            <span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneContestazione || "Nessuna motivazione"}>
+                                                {turno.motivazioneContestazione || "—"}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             {turno.statoPayroll === "DA_ELABORARE" && <Button onClick={() => salvaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffedd5] text-[11px] font-bold text-[#c2410c] hover:bg-[#fed7aa] hover:text-[#9a3412]">Da elaborare</Button>}
