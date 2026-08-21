@@ -6,11 +6,11 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative isolate w-full overflow-x-auto overflow-y-hidden"
+      className="relative w-full overflow-x-auto"
     >
       <table
         data-slot="table"
-        className={cn("w-full border-collapse caption-bottom text-sm", className)}
+        className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
@@ -21,10 +21,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn(
-        "relative z-20 isolate [clip-path:inset(0)] [&_tr]:border-b [&_svg.lucide-sticky-note]:hidden [&_svg.lucide-file]:hidden [&_svg.lucide-file-text]:hidden [&_svg.lucide-notebook-text]:hidden [&_svg.lucide-clipboard]:hidden [&_svg.lucide-clipboard-list]:hidden",
-        className
-      )}
+      className={cn("[&_tr]:border-b", className)}
       {...props}
     />
   )
@@ -34,7 +31,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
   return (
     <tbody
       data-slot="table-body"
-      className={cn("relative z-0 [&_tr:last-child]:border-0", className)}
+      className={cn("[&_tr:last-child]:border-0", className)}
       {...props}
     />
   )
@@ -71,7 +68,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "relative h-10 overflow-hidden [contain:paint] px-2 text-left align-middle font-medium whitespace-nowrap text-ellipsis text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_svg]:shrink-0",
+        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -84,7 +81,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "relative overflow-hidden [contain:paint] p-2 align-middle whitespace-nowrap text-ellipsis [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&_input]:box-border [&_input]:max-w-full [&_[role=combobox]]:box-border [&_[role=combobox]]:max-w-full [&_button]:max-w-full [&_svg]:shrink-0",
+        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
