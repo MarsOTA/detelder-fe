@@ -16,7 +16,7 @@ import type { Dipendente } from "@/entity";
 import { prefissi } from "@/pages/admin/utils/prefissi";
 
 type StatoContratto = "REGOLARE" | "SCADUTO" | "ASSENTE";
-type ColonnaSelezionabile = "nickname" | "email" | "telefono";
+type ColonnaSelezionabile = "nickname" | "email" | "telefono" | "attestati";
 
 type StatoContrattoResponse = {
   idOperatore: number;
@@ -45,6 +45,7 @@ const colonneOptions: { value: ColonnaSelezionabile; label: string }[] = [
   { value: "nickname", label: "Nickname" },
   { value: "email", label: "Email" },
   { value: "telefono", label: "Telefono" },
+  { value: "attestati", label: "Attestati" },
 ];
 
 const Operatori = () => {
@@ -64,6 +65,7 @@ const Operatori = () => {
     nickname: false,
     email: true,
     telefono: true,
+    attestati: true,
   });
   const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>([
     "REGOLARE",
@@ -507,7 +509,9 @@ const Operatori = () => {
                   <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
                 )}
                 <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Contratto</TableHead>
-                <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
+                {colonneVisibili.attestati && (
+                  <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
+                )}
                 <TableHead className="w-[9%] whitespace-nowrap text-right text-[#656565]">Azioni</TableHead>
               </TableRow>
             </TableHeader>
@@ -526,7 +530,9 @@ const Operatori = () => {
                     <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>
                   )}
                   <TableCell>{renderStatoContratto(statiContratto[dipendente.id])}</TableCell>
-                  <TableCell>{renderAttestati(dipendente.id)}</TableCell>
+                  {colonneVisibili.attestati && (
+                    <TableCell>{renderAttestati(dipendente.id)}</TableCell>
+                  )}
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                       <Button
