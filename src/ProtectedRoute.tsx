@@ -100,7 +100,9 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   return (
     <>
       {HeaderComponent && <HeaderComponent />}
-      <Outlet />
+      <div className="pt-5 [&_h1_+_p]:!mt-[10px]">
+        <Outlet />
+      </div>
     </>
   );
 };
