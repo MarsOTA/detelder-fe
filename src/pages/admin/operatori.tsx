@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks } from "lucide-react";
+import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks, Flame, BriefcaseMedical, ShieldUser, HeartPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,18 @@ type StatoContratto = "REGOLARE" | "SCADUTO" | "ASSENTE";
 type StatoContrattoResponse = {
   idOperatore: number;
   statoContratto: StatoContratto;
+};
+
+type AttestatiOperatore = {
+  idOperatore: number;
+  antincendioPresente: number;
+  antincendioDataScadenza: string | null;
+  primoSoccorsoPresente: number;
+  primoSoccorsoDataScadenza: string | null;
+  sicurezzaLavoroPresente: number;
+  sicurezzaLavoroDataScadenza: string | null;
+  blsdPresente: number;
+  blsdDataScadenza: string | null;
 };
 
 const statoContrattoOptions: { value: StatoContratto; label: string }[] = [
@@ -40,6 +52,7 @@ const Operatori = () => {
   const navigate = useNavigate();
   const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
   const [statiContratto, setStatiContratto] = useState<Record<number, StatoContratto>>({});
+  const [attestatiOperatori, setAttestatiOperatori] = useState<Record<number, AttestatiOperatore>>({});
   const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>([
     "REGOLARE",
     "SCADUTO",
@@ -162,9 +175,30 @@ const Operatori = () => {
     setStatiContratto(mappa);
   };
 
+  const fetchAttestatiOperatori = async () => {
+    const resp = await fetch(ezystaffBEUrl + "operatori/attestati", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!resp.ok) throw new Error(`Errore caricamento attestati: ${resp.status}`);
+
+    const data: AttestatiOperatore[] = await resp.json();
+    const mappa = data.reduce<Record<number, AttestatiOperatore>>((acc, item) => {
+      acc[item.idOperatore] = item;
+      return acc;
+    }, {});
+
+    setAttestatiOperatori(mappa);
+  };
+
   const caricaOperatoriEContratti = async () => {
     try {
-      await Promise.all([fetchOperatori(), fetchStatiContratto()]);
+      await Promise.all([fetchOperatori(), fetchStatiContratto(), fetchAttestatiOperatori()]);
     } catch (error) {
       console.error("Errore caricamento lista operatori:", error);
     }
@@ -208,6 +242,74 @@ const Operatori = () => {
       <span className="inline-flex min-w-[84px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[12px] font-extrabold text-red-600">
         Assente
       </span>
+    );
+  };
+
+  const isAttestatoScaduto = (dataScadenza?: string | null) => {
+    if (!dataScadenza) return false;
+
+    const oggi = new Date();
+    oggi.setHours(0, 0, 0, 0);
+
+    const scadenza = new Date(dataScadenza);
+    scadenza.setHours(0, 0, 0, 0);
+
+    return scadenza < oggi;
+  };
+
+  const renderAttestati = (idOperatore: number) => {
+    const attestati = attestatiOperatori[idOperatore];
+    if (!attestati) return null;
+
+    const icone = [
+      {
+        key: "antincendio",
+        presente: Boolean(attestati.antincendioPresente),
+        dataScadenza: attestati.antincendioDataScadenza,
+        label: "Antincendio",
+        Icon: Flame,
+      },
+      {
+        key: "primoSoccorso",
+        presente: Boolean(attestati.primoSoccorsoPresente),
+        dataScadenza: attestati.primoSoccorsoDataScadenza,
+        label: "Primo soccorso",
+        Icon: BriefcaseMedical,
+      },
+      {
+        key: "sicurezzaLavoro",
+        presente: Boolean(attestati.sicurezzaLavoroPresente),
+        dataScadenza: attestati.sicurezzaLavoroDataScadenza,
+        label: "Sicurezza sul lavoro",
+        Icon: ShieldUser,
+      },
+      {
+        key: "blsd",
+        presente: Boolean(attestati.blsdPresente),
+        dataScadenza: attestati.blsdDataScadenza,
+        label: "BLSD",
+        Icon: HeartPlus,
+      },
+    ].filter((item) => item.presente);
+
+    if (icone.length === 0) return null;
+
+    return (
+      <div className="flex items-center gap-2">
+        {icone.map(({ key, dataScadenza, label, Icon }) => {
+          const scaduto = isAttestatoScaduto(dataScadenza);
+          const title = `${label}${scaduto ? " - scaduto" : ""}${dataScadenza ? ` (${dataScadenza})` : ""}`;
+
+          return (
+            <span key={key} title={title} aria-label={title}>
+              <Icon
+                className={`h-5 w-5 ${scaduto ? "text-orange-500" : "text-[#8a8a8a]"}`}
+                strokeWidth={1.8}
+              />
+            </span>
+          );
+        })}
+      </div>
     );
   };
 
@@ -327,7 +429,7 @@ const Operatori = () => {
             <TableHeader className="bg-[#ebebeb]">
               <TableRow className="text-[15px] font-bold">
                 <TableHead
-                  className="w-[16%] cursor-pointer whitespace-nowrap text-[#656565]"
+                  className="w-[15%] cursor-pointer whitespace-nowrap text-[#656565]"
                   onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}
                 >
                   Cognome
@@ -337,11 +439,12 @@ const Operatori = () => {
                     <ArrowDown className="ml-1 inline h-4 w-4" />
                   )}
                 </TableHead>
-                <TableHead className="w-[14%] whitespace-nowrap text-[#656565]">Nome</TableHead>
-                <TableHead className="w-[28%] text-[#656565]">Email</TableHead>
-                <TableHead className="w-[18%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
+                <TableHead className="w-[12%] whitespace-nowrap text-[#656565]">Nome</TableHead>
+                <TableHead className="w-[23%] text-[#656565]">Email</TableHead>
+                <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
                 <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Contratto</TableHead>
-                <TableHead className="w-[11%] whitespace-nowrap text-right text-[#656565]">Azioni</TableHead>
+                <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
+                <TableHead className="w-[9%] whitespace-nowrap text-right text-[#656565]">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -352,6 +455,7 @@ const Operatori = () => {
                   <TableCell className="truncate" title={dipendente.email}>{dipendente.email}</TableCell>
                   <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>
                   <TableCell>{renderStatoContratto(statiContratto[dipendente.id])}</TableCell>
+                  <TableCell>{renderAttestati(dipendente.id)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                       <Button
