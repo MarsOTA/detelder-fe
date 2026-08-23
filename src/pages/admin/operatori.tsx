@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks, Flame, BriefcaseMedical, ShieldUser, HeartPlus } from "lucide-react";
+import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks, Flame, BriefcaseMedical, ShieldUser, HeartPlus, Columns3 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import type { Dipendente } from "@/entity";
 import { prefissi } from "@/pages/admin/utils/prefissi";
 
 type StatoContratto = "REGOLARE" | "SCADUTO" | "ASSENTE";
+type ColonnaSelezionabile = "nickname" | "email" | "telefono";
 
 type StatoContrattoResponse = {
   idOperatore: number;
@@ -40,6 +41,12 @@ const statoContrattoOptions: { value: StatoContratto; label: string }[] = [
   { value: "ASSENTE", label: "Assente" },
 ];
 
+const colonneOptions: { value: ColonnaSelezionabile; label: string }[] = [
+  { value: "nickname", label: "Nickname" },
+  { value: "email", label: "Email" },
+  { value: "telefono", label: "Telefono" },
+];
+
 const Operatori = () => {
   const [formData, setFormData] = useState({
     nome: "",
@@ -53,6 +60,11 @@ const Operatori = () => {
   const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
   const [statiContratto, setStatiContratto] = useState<Record<number, StatoContratto>>({});
   const [attestatiOperatori, setAttestatiOperatori] = useState<Record<number, AttestatiOperatore>>({});
+  const [colonneVisibili, setColonneVisibili] = useState<Record<ColonnaSelezionabile, boolean>>({
+    nickname: false,
+    email: true,
+    telefono: true,
+  });
   const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>([
     "REGOLARE",
     "SCADUTO",
@@ -215,6 +227,13 @@ const Operatori = () => {
     );
   };
 
+  const toggleColonna = (colonna: ColonnaSelezionabile) => {
+    setColonneVisibili((prev) => ({
+      ...prev,
+      [colonna]: !prev[colonna],
+    }));
+  };
+
   const getStatoContrattoLabel = (stato?: StatoContratto) => {
     if (stato === "REGOLARE") return "In regola";
     if (stato === "SCADUTO") return "Non in regola";
@@ -336,6 +355,7 @@ const Operatori = () => {
         const matchesKeyword =
           dipendente.cognome.toLowerCase().includes(keyword) ||
           dipendente.nome.toLowerCase().includes(keyword) ||
+          (dipendente.nickname ?? "").toLowerCase().includes(keyword) ||
           dipendente.email.toLowerCase().includes(keyword) ||
           dipendente.telefono.toLowerCase().includes(keyword);
 
@@ -352,6 +372,8 @@ const Operatori = () => {
         return 0;
       });
   }, [dipendenti, ricercaKeyword, sortDirection, statiContratto, statiSelezionati]);
+
+  const numeroColonneOpzionaliVisibili = Object.values(colonneVisibili).filter(Boolean).length;
 
   return (
     <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
@@ -414,6 +436,41 @@ const Operatori = () => {
                 </div>
               </PopoverContent>
             </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 min-w-[150px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"
+                >
+                  <span className="flex items-center gap-2">
+                    <Columns3 className="h-4 w-4" />
+                    Colonne ({numeroColonneOpzionaliVisibili})
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[220px] p-3">
+                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">
+                  Colonne visibili
+                </div>
+                <div className="space-y-2">
+                  {colonneOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={colonneVisibili[option.value]}
+                        onChange={() => toggleColonna(option.value)}
+                        className="h-4 w-4 accent-[#007a55]"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <Button
@@ -440,8 +497,15 @@ const Operatori = () => {
                   )}
                 </TableHead>
                 <TableHead className="w-[12%] whitespace-nowrap text-[#656565]">Nome</TableHead>
-                <TableHead className="w-[23%] text-[#656565]">Email</TableHead>
-                <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
+                {colonneVisibili.nickname && (
+                  <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Nickname</TableHead>
+                )}
+                {colonneVisibili.email && (
+                  <TableHead className="w-[23%] text-[#656565]">Email</TableHead>
+                )}
+                {colonneVisibili.telefono && (
+                  <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
+                )}
                 <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Contratto</TableHead>
                 <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
                 <TableHead className="w-[9%] whitespace-nowrap text-right text-[#656565]">Azioni</TableHead>
@@ -452,8 +516,15 @@ const Operatori = () => {
                 <TableRow key={dipendente.id} className="text-[15px] text-[#2e2e2e]">
                   <TableCell className="font-bold">{dipendente.cognome}</TableCell>
                   <TableCell className="font-bold">{dipendente.nome}</TableCell>
-                  <TableCell className="truncate" title={dipendente.email}>{dipendente.email}</TableCell>
-                  <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>
+                  {colonneVisibili.nickname && (
+                    <TableCell className="truncate" title={dipendente.nickname}>{dipendente.nickname || "-"}</TableCell>
+                  )}
+                  {colonneVisibili.email && (
+                    <TableCell className="truncate" title={dipendente.email}>{dipendente.email}</TableCell>
+                  )}
+                  {colonneVisibili.telefono && (
+                    <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>
+                  )}
                   <TableCell>{renderStatoContratto(statiContratto[dipendente.id])}</TableCell>
                   <TableCell>{renderAttestati(dipendente.id)}</TableCell>
                   <TableCell className="text-right">
