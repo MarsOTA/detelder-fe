@@ -512,7 +512,7 @@ const Operatori = () => {
                 {colonneVisibili.attestati && (
                   <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
                 )}
-                <TableHead className="w-[9%] whitespace-nowrap text-right text-[#656565]">Azioni</TableHead>
+                <TableHead className="w-[9%] whitespace-nowrap text-left text-[#656565]">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -534,16 +534,16 @@ const Operatori = () => {
                     <TableCell>{renderAttestati(dipendente.id)}</TableCell>
                   )}
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => handleEdit(dipendente)}
                         title="Modifica operatore"
                         aria-label="Modifica operatore"
-                        className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
+                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="outline"
@@ -551,9 +551,9 @@ const Operatori = () => {
                         onClick={() => mostraPresenze(dipendente)}
                         title="Presenze operatore"
                         aria-label="Presenze operatore"
-                        className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
+                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
                       >
-                        <ListChecks className="h-4 w-4" />
+                        <ListChecks className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="outline"
@@ -561,9 +561,9 @@ const Operatori = () => {
                         onClick={() => reinviaPassword(dipendente)}
                         title="Reinvia password"
                         aria-label="Reinvia password"
-                        className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
+                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
                       >
-                        <KeyRound className="h-4 w-4" />
+                        <KeyRound className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </TableCell>
