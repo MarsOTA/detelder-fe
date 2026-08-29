@@ -2,7 +2,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Pencil, ArrowUp, ArrowDown, KeyRound, ListChecks, Flame, BriefcaseMedical, ShieldUser, HeartPlus, Columns3 } from "lucide-react";
+import {
+  Pencil,
+  ArrowUp,
+  ArrowDown,
+  KeyRound,
+  ListChecks,
+  Flame,
+  BriefcaseMedical,
+  ShieldUser,
+  HeartPlus,
+  Columns3,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDown,
+  ChevronsUp,
+  CheckCircle2,
+  AlertTriangle,
+  MinusCircle,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,7 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
 import { prefissi } from "@/pages/admin/utils/prefissi";
@@ -35,6 +53,36 @@ type AttestatiOperatore = {
   blsdDataScadenza: string | null;
 };
 
+type AllegatiOperatore = {
+  cartaIdentitaImgFronte?: string | null;
+  cartaIdentitaImgRetro?: string | null;
+  tesseraSanitariaImgFronte?: string | null;
+  tesseraSanitariaImgRetro?: string | null;
+  permessoSoggiornoImgFronte?: string | null;
+  permessoSoggiornoImgRetro?: string | null;
+  passaportoImgFronte?: string | null;
+  passaportoImgRetro?: string | null;
+  antincendioDocFronte?: string | null;
+  antincendioDocRetro?: string | null;
+  primoSoccorsoAttestatoFronte?: string | null;
+  primoSoccorsoAttestatoRetro?: string | null;
+  formazioneSicurezzaLavoroAttestatoFronte?: string | null;
+  formazioneSicurezzaLavoroAttestatoRetro?: string | null;
+  blsdAttestatoFronte?: string | null;
+  blsdAttestatoRetro?: string | null;
+  attestatoPrepostoFronte?: string | null;
+  attestatoPrepostoRetro?: string | null;
+  attestatoSecurityManagerFronte?: string | null;
+};
+
+type DocumentoStatus = {
+  key: string;
+  label: string;
+  presente: boolean;
+  dataScadenza?: string | null;
+  mostraScadenza?: boolean;
+};
+
 const statoContrattoOptions: { value: StatoContratto; label: string }[] = [
   { value: "REGOLARE", label: "In regola" },
   { value: "SCADUTO", label: "Non in regola" },
@@ -57,10 +105,14 @@ const Operatori = () => {
     telefono: "",
     gpg: false,
   });
+
   const navigate = useNavigate();
   const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
   const [statiContratto, setStatiContratto] = useState<Record<number, StatoContratto>>({});
   const [attestatiOperatori, setAttestatiOperatori] = useState<Record<number, AttestatiOperatore>>({});
+  const [allegatiOperatori, setAllegatiOperatori] = useState<Record<number, AllegatiOperatore>>({});
+  const [expandedOperatori, setExpandedOperatori] = useState<Set<number>>(new Set());
+  const [loadingAllegati, setLoadingAllegati] = useState<Set<number>>(new Set());
   const [colonneVisibili, setColonneVisibili] = useState<Record<ColonnaSelezionabile, boolean>>({
     nickname: false,
     email: true,
@@ -185,7 +237,6 @@ const Operatori = () => {
       acc[item.idOperatore] = item.statoContratto;
       return acc;
     }, {});
-
     setStatiContratto(mappa);
   };
 
@@ -206,8 +257,36 @@ const Operatori = () => {
       acc[item.idOperatore] = item;
       return acc;
     }, {});
-
     setAttestatiOperatori(mappa);
+  };
+
+  const fetchAllegatiOperatore = async (idOperatore: number) => {
+    if (allegatiOperatori[idOperatore] || loadingAllegati.has(idOperatore)) return;
+
+    setLoadingAllegati((prev) => new Set(prev).add(idOperatore));
+    try {
+      const resp = await fetch(`${ezystaffBEUrl}operatori/allegatiOperatore/${idOperatore}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!resp.ok) throw new Error(`Errore caricamento stato allegati: ${resp.status}`);
+      const data: AllegatiOperatore = await resp.json();
+      setAllegatiOperatori((prev) => ({ ...prev, [idOperatore]: data || {} }));
+    } catch (error) {
+      console.error(`Errore caricamento stato allegati operatore ${idOperatore}:`, error);
+      setAllegatiOperatori((prev) => ({ ...prev, [idOperatore]: {} }));
+    } finally {
+      setLoadingAllegati((prev) => {
+        const next = new Set(prev);
+        next.delete(idOperatore);
+        return next;
+      });
+    }
   };
 
   const caricaOperatoriEContratti = async () => {
@@ -218,22 +297,16 @@ const Operatori = () => {
     }
   };
 
-  const handleGpgChange = (gpg: boolean) =>
-    setFormData((prev) => ({ ...prev, gpg }));
+  const handleGpgChange = (gpg: boolean) => setFormData((prev) => ({ ...prev, gpg }));
 
   const toggleStatoContratto = (stato: StatoContratto) => {
     setStatiSelezionati((prev) =>
-      prev.includes(stato)
-        ? prev.filter((item) => item !== stato)
-        : [...prev, stato]
+      prev.includes(stato) ? prev.filter((item) => item !== stato) : [...prev, stato]
     );
   };
 
   const toggleColonna = (colonna: ColonnaSelezionabile) => {
-    setColonneVisibili((prev) => ({
-      ...prev,
-      [colonna]: !prev[colonna],
-    }));
+    setColonneVisibili((prev) => ({ ...prev, [colonna]: !prev[colonna] }));
   };
 
   const getStatoContrattoLabel = (stato?: StatoContratto) => {
@@ -250,7 +323,6 @@ const Operatori = () => {
         </span>
       );
     }
-
     if (stato === "SCADUTO") {
       return (
         <span className="inline-flex min-w-[110px] items-center justify-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[12px] font-extrabold text-orange-700">
@@ -258,7 +330,6 @@ const Operatori = () => {
         </span>
       );
     }
-
     return (
       <span className="inline-flex min-w-[84px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[12px] font-extrabold text-red-600">
         Assente
@@ -268,14 +339,18 @@ const Operatori = () => {
 
   const isAttestatoScaduto = (dataScadenza?: string | null) => {
     if (!dataScadenza) return false;
-
     const oggi = new Date();
     oggi.setHours(0, 0, 0, 0);
-
     const scadenza = new Date(dataScadenza);
     scadenza.setHours(0, 0, 0, 0);
-
     return scadenza < oggi;
+  };
+
+  const formatData = (data?: string | null) => {
+    if (!data) return "";
+    const parsed = new Date(data);
+    if (Number.isNaN(parsed.getTime())) return data;
+    return parsed.toLocaleDateString("it-IT");
   };
 
   const renderAttestati = (idOperatore: number) => {
@@ -283,34 +358,10 @@ const Operatori = () => {
     if (!attestati) return null;
 
     const icone = [
-      {
-        key: "antincendio",
-        presente: Boolean(attestati.antincendioPresente),
-        dataScadenza: attestati.antincendioDataScadenza,
-        label: "Antincendio",
-        Icon: Flame,
-      },
-      {
-        key: "primoSoccorso",
-        presente: Boolean(attestati.primoSoccorsoPresente),
-        dataScadenza: attestati.primoSoccorsoDataScadenza,
-        label: "Primo soccorso",
-        Icon: BriefcaseMedical,
-      },
-      {
-        key: "sicurezzaLavoro",
-        presente: Boolean(attestati.sicurezzaLavoroPresente),
-        dataScadenza: attestati.sicurezzaLavoroDataScadenza,
-        label: "Sicurezza sul lavoro",
-        Icon: ShieldUser,
-      },
-      {
-        key: "blsd",
-        presente: Boolean(attestati.blsdPresente),
-        dataScadenza: attestati.blsdDataScadenza,
-        label: "BLSD",
-        Icon: HeartPlus,
-      },
+      { key: "antincendio", presente: Boolean(attestati.antincendioPresente), dataScadenza: attestati.antincendioDataScadenza, label: "Antincendio", Icon: Flame },
+      { key: "primoSoccorso", presente: Boolean(attestati.primoSoccorsoPresente), dataScadenza: attestati.primoSoccorsoDataScadenza, label: "Primo soccorso", Icon: BriefcaseMedical },
+      { key: "sicurezzaLavoro", presente: Boolean(attestati.sicurezzaLavoroPresente), dataScadenza: attestati.sicurezzaLavoroDataScadenza, label: "Sicurezza sul lavoro", Icon: ShieldUser },
+      { key: "blsd", presente: Boolean(attestati.blsdPresente), dataScadenza: attestati.blsdDataScadenza, label: "BLSD", Icon: HeartPlus },
     ].filter((item) => item.presente);
 
     if (icone.length === 0) return null;
@@ -320,18 +371,118 @@ const Operatori = () => {
         {icone.map(({ key, dataScadenza, label, Icon }) => {
           const scaduto = isAttestatoScaduto(dataScadenza);
           const title = `${label}${scaduto ? " - scaduto" : ""}${dataScadenza ? ` (${dataScadenza})` : ""}`;
-
           return (
             <span key={key} title={title} aria-label={title}>
-              <Icon
-                className={`h-5 w-5 ${scaduto ? "text-orange-500" : "text-[#8a8a8a]"}`}
-                strokeWidth={1.8}
-              />
+              <Icon className={`h-5 w-5 ${scaduto ? "text-orange-500" : "text-[#8a8a8a]"}`} strokeWidth={1.8} />
             </span>
           );
         })}
       </div>
     );
+  };
+
+  const getDocumentiIdentita = (idOperatore: number): DocumentoStatus[] => {
+    const a = allegatiOperatori[idOperatore] || {};
+    return [
+      { key: "carta-identita", label: "Carta d'identità", presente: Boolean(a.cartaIdentitaImgFronte || a.cartaIdentitaImgRetro) },
+      { key: "tessera-sanitaria", label: "Tessera sanitaria", presente: Boolean(a.tesseraSanitariaImgFronte || a.tesseraSanitariaImgRetro) },
+      { key: "permesso-soggiorno", label: "Permesso di soggiorno", presente: Boolean(a.permessoSoggiornoImgFronte || a.permessoSoggiornoImgRetro) },
+      { key: "passaporto", label: "Passaporto", presente: Boolean(a.passaportoImgFronte || a.passaportoImgRetro) },
+    ];
+  };
+
+  const getAttestatiDettaglio = (idOperatore: number): DocumentoStatus[] => {
+    const a = allegatiOperatori[idOperatore] || {};
+    const stato = attestatiOperatori[idOperatore];
+    return [
+      {
+        key: "antincendio",
+        label: "Antincendio",
+        presente: Boolean(a.antincendioDocFronte || a.antincendioDocRetro || stato?.antincendioPresente),
+        dataScadenza: stato?.antincendioDataScadenza,
+        mostraScadenza: true,
+      },
+      {
+        key: "primo-soccorso",
+        label: "Primo soccorso",
+        presente: Boolean(a.primoSoccorsoAttestatoFronte || a.primoSoccorsoAttestatoRetro || stato?.primoSoccorsoPresente),
+        dataScadenza: stato?.primoSoccorsoDataScadenza,
+        mostraScadenza: true,
+      },
+      {
+        key: "sicurezza-lavoro",
+        label: "Sicurezza sul lavoro",
+        presente: Boolean(a.formazioneSicurezzaLavoroAttestatoFronte || a.formazioneSicurezzaLavoroAttestatoRetro || stato?.sicurezzaLavoroPresente),
+        dataScadenza: stato?.sicurezzaLavoroDataScadenza,
+        mostraScadenza: true,
+      },
+      {
+        key: "blsd",
+        label: "BLSD",
+        presente: Boolean(a.blsdAttestatoFronte || a.blsdAttestatoRetro || stato?.blsdPresente),
+        dataScadenza: stato?.blsdDataScadenza,
+        mostraScadenza: true,
+      },
+      {
+        key: "preposto",
+        label: "Preposto",
+        presente: Boolean(a.attestatoPrepostoFronte || a.attestatoPrepostoRetro),
+      },
+      {
+        key: "security-manager",
+        label: "Security Manager",
+        presente: Boolean(a.attestatoSecurityManagerFronte),
+      },
+    ];
+  };
+
+  const renderDocumentoStatus = (documento: DocumentoStatus) => {
+    const scaduto = documento.presente && documento.mostraScadenza && isAttestatoScaduto(documento.dataScadenza);
+
+    return (
+      <div key={documento.key} className="flex min-h-11 items-center justify-between gap-4 border-b border-[#edf1ef] px-1 py-2.5 last:border-b-0">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {!documento.presente ? (
+            <MinusCircle className="h-4.5 w-4.5 shrink-0 text-[#a1aaa5]" />
+          ) : scaduto ? (
+            <AlertTriangle className="h-4.5 w-4.5 shrink-0 text-orange-500" />
+          ) : (
+            <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-[#007a55]" />
+          )}
+          <span className="truncate text-[14px] font-bold text-[#3f4942]">{documento.label}</span>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 text-[12px] font-extrabold">
+          {!documento.presente ? (
+            <span className="rounded-full border border-[#d9dfdc] bg-[#f5f7f6] px-2.5 py-1 text-[#7c8580]">Non caricato</span>
+          ) : scaduto ? (
+            <>
+              <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-orange-700">Scaduto</span>
+              {documento.dataScadenza && <span className="font-semibold text-[#8b8b8b]">{formatData(documento.dataScadenza)}</span>}
+            </>
+          ) : (
+            <>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">Caricato</span>
+              {documento.mostraScadenza && documento.dataScadenza && (
+                <span className="font-semibold text-[#8b8b8b]">Scade {formatData(documento.dataScadenza)}</span>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const toggleOperatore = async (idOperatore: number) => {
+    const isExpanded = expandedOperatori.has(idOperatore);
+    setExpandedOperatori((prev) => {
+      const next = new Set(prev);
+      if (isExpanded) next.delete(idOperatore);
+      else next.add(idOperatore);
+      return next;
+    });
+
+    if (!isExpanded) await fetchAllegatiOperatore(idOperatore);
   };
 
   const handleExportToExcel = () => {
@@ -342,7 +493,6 @@ const Operatori = () => {
       Telefono: `${d.prefisso}/${d.telefono}`,
       Contratto: getStatoContrattoLabel(statiContratto[d.id]),
     }));
-
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Operatori");
@@ -351,7 +501,6 @@ const Operatori = () => {
 
   const filteredAndSortedDipendenti = useMemo(() => {
     const keyword = ricercaKeyword.toLowerCase();
-
     return [...dipendenti]
       .filter((dipendente) => {
         const matchesKeyword =
@@ -360,11 +509,8 @@ const Operatori = () => {
           (dipendente.nickname ?? "").toLowerCase().includes(keyword) ||
           dipendente.email.toLowerCase().includes(keyword) ||
           dipendente.telefono.toLowerCase().includes(keyword);
-
         const stato = statiContratto[dipendente.id] ?? "ASSENTE";
-        const matchesContratto = statiSelezionati.includes(stato);
-
-        return matchesKeyword && matchesContratto;
+        return matchesKeyword && statiSelezionati.includes(stato);
       })
       .sort((a, b) => {
         const cognomeA = a.cognome.toLowerCase();
@@ -375,63 +521,46 @@ const Operatori = () => {
       });
   }, [dipendenti, ricercaKeyword, sortDirection, statiContratto, statiSelezionati]);
 
+  const espandiTutto = async () => {
+    const ids = filteredAndSortedDipendenti.map((d) => d.id);
+    setExpandedOperatori(new Set(ids));
+    await Promise.all(ids.map((id) => fetchAllegatiOperatore(id)));
+  };
+
+  const comprimiTutto = () => setExpandedOperatori(new Set());
+
   const numeroColonneOpzionaliVisibili = Object.values(colonneVisibili).filter(Boolean).length;
+  const numeroColonneTotali = 4 + numeroColonneOpzionaliVisibili;
 
   return (
     <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
           <div>
-            <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">
-              Lista operatori
-            </h1>
-            <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">
-              Consulta gli operatori, gestisci i profili e accedi rapidamente a presenze e credenziali.
-            </p>
+            <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Lista operatori</h1>
+            <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">Consulta gli operatori, gestisci i profili e accedi rapidamente a presenze e credenziali.</p>
           </div>
-          <Button
-            onClick={handleNewOperator}
-            className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#006f4d]"
-          >
+          <Button onClick={handleNewOperator} className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#006f4d]">
             Crea nuovo operatore
           </Button>
         </div>
 
-        <div className="flex items-center justify-between bg-[#ecf3f1] px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Input
-              type="text"
-              placeholder="Ricerca per keyword"
-              value={ricercaKeyword}
-              onChange={(e) => setRicercaKeyword(e.target.value)}
-              className="w-[280px] rounded-xl border border-gray-300 bg-white px-3 py-2"
-            />
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#ecf3f1] px-6 py-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Input type="text" placeholder="Ricerca per keyword" value={ricercaKeyword} onChange={(e) => setRicercaKeyword(e.target.value)} className="w-[280px] rounded-xl border border-gray-300 bg-white px-3 py-2" />
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-10 min-w-[180px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"
-                >
+                <Button variant="outline" className="h-10 min-w-[180px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
                   Contratto ({statiSelezionati.length})
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-[220px] p-3">
-                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">
-                  Stato contratto
-                </div>
+                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">Stato contratto</div>
                 <div className="space-y-2">
                   {statoContrattoOptions.map((option) => (
-                    <label
-                      key={option.value}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={statiSelezionati.includes(option.value)}
-                        onChange={() => toggleStatoContratto(option.value)}
-                        className="h-4 w-4 accent-[#007a55]"
-                      />
+                    <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]">
+                      <input type="checkbox" checked={statiSelezionati.includes(option.value)} onChange={() => toggleStatoContratto(option.value)} className="h-4 w-4 accent-[#007a55]" />
                       {option.label}
                     </label>
                   ))}
@@ -441,44 +570,34 @@ const Operatori = () => {
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-10 min-w-[150px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"
-                >
-                  <span className="flex items-center gap-2">
-                    <Columns3 className="h-4 w-4" />
-                    Colonne ({numeroColonneOpzionaliVisibili})
-                  </span>
+                <Button variant="outline" className="h-10 min-w-[150px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
+                  <span className="flex items-center gap-2"><Columns3 className="h-4 w-4" />Colonne ({numeroColonneOpzionaliVisibili})</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-[220px] p-3">
-                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">
-                  Colonne visibili
-                </div>
+                <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">Colonne visibili</div>
                 <div className="space-y-2">
                   {colonneOptions.map((option) => (
-                    <label
-                      key={option.value}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={colonneVisibili[option.value]}
-                        onChange={() => toggleColonna(option.value)}
-                        className="h-4 w-4 accent-[#007a55]"
-                      />
+                    <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-[14px] font-semibold text-[#3f4942] hover:bg-[#f3f8f6]">
+                      <input type="checkbox" checked={colonneVisibili[option.value]} onChange={() => toggleColonna(option.value)} className="h-4 w-4 accent-[#007a55]" />
                       {option.label}
                     </label>
                   ))}
                 </div>
               </PopoverContent>
             </Popover>
+
+            <div className="flex items-center gap-2 border-l border-[#cbd8d3] pl-3">
+              <Button variant="outline" onClick={espandiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
+                <ChevronsDown className="h-4 w-4" />Espandi tutto
+              </Button>
+              <Button variant="outline" onClick={comprimiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
+                <ChevronsUp className="h-4 w-4" />Comprimi tutto
+              </Button>
+            </div>
           </div>
 
-          <Button
-            className="rounded-xl border border-[#b8d2c8] bg-white px-6 font-bold text-[#007a55] shadow-sm hover:bg-[#f7fbf9] hover:text-[#006f4d]"
-            onClick={handleExportToExcel}
-          >
+          <Button className="rounded-xl border border-[#b8d2c8] bg-white px-6 font-bold text-[#007a55] shadow-sm hover:bg-[#f7fbf9] hover:text-[#006f4d]" onClick={handleExportToExcel}>
             Scarica .csv
           </Button>
         </div>
@@ -487,88 +606,73 @@ const Operatori = () => {
           <Table className="w-full table-fixed">
             <TableHeader className="bg-[#ebebeb]">
               <TableRow className="text-[15px] font-bold">
-                <TableHead
-                  className="w-[15%] cursor-pointer whitespace-nowrap text-[#656565]"
-                  onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}
-                >
-                  Cognome
-                  {sortDirection === "asc" ? (
-                    <ArrowUp className="ml-1 inline h-4 w-4" />
-                  ) : (
-                    <ArrowDown className="ml-1 inline h-4 w-4" />
-                  )}
+                <TableHead className="w-[4%] text-[#656565]" />
+                <TableHead className="w-[14%] cursor-pointer whitespace-nowrap text-[#656565]" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
+                  Cognome {sortDirection === "asc" ? <ArrowUp className="ml-1 inline h-4 w-4" /> : <ArrowDown className="ml-1 inline h-4 w-4" />}
                 </TableHead>
                 <TableHead className="w-[12%] whitespace-nowrap text-[#656565]">Nome</TableHead>
-                {colonneVisibili.nickname && (
-                  <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Nickname</TableHead>
-                )}
-                {colonneVisibili.email && (
-                  <TableHead className="w-[23%] text-[#656565]">Email</TableHead>
-                )}
-                {colonneVisibili.telefono && (
-                  <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Telefono</TableHead>
-                )}
+                {colonneVisibili.nickname && <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Nickname</TableHead>}
+                {colonneVisibili.email && <TableHead className="w-[22%] text-[#656565]">Email</TableHead>}
+                {colonneVisibili.telefono && <TableHead className="w-[14%] whitespace-nowrap text-[#656565]">Telefono</TableHead>}
                 <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Contratto</TableHead>
-                {colonneVisibili.attestati && (
-                  <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>
-                )}
+                {colonneVisibili.attestati && <TableHead className="w-[13%] whitespace-nowrap text-[#656565]">Attestati</TableHead>}
                 <TableHead className="w-[9%] whitespace-nowrap text-left text-[#656565]">Azioni</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {filteredAndSortedDipendenti.map((dipendente) => (
-                <TableRow key={dipendente.id} className="text-[15px] text-[#2e2e2e]">
-                  <TableCell className="font-bold">{dipendente.cognome}</TableCell>
-                  <TableCell className="font-bold">{dipendente.nome}</TableCell>
-                  {colonneVisibili.nickname && (
-                    <TableCell className="truncate" title={dipendente.nickname}>{dipendente.nickname || "-"}</TableCell>
-                  )}
-                  {colonneVisibili.email && (
-                    <TableCell className="truncate" title={dipendente.email}>{dipendente.email}</TableCell>
-                  )}
-                  {colonneVisibili.telefono && (
-                    <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>
-                  )}
-                  <TableCell>{renderStatoContratto(statiContratto[dipendente.id])}</TableCell>
-                  {colonneVisibili.attestati && (
-                    <TableCell>{renderAttestati(dipendente.id)}</TableCell>
-                  )}
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEdit(dipendente)}
-                        title="Modifica operatore"
-                        aria-label="Modifica operatore"
-                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => mostraPresenze(dipendente)}
-                        title="Presenze operatore"
-                        aria-label="Presenze operatore"
-                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
-                      >
-                        <ListChecks className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => reinviaPassword(dipendente)}
-                        title="Reinvia password"
-                        aria-label="Reinvia password"
-                        className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"
-                      >
-                        <KeyRound className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredAndSortedDipendenti.map((dipendente) => {
+                const expanded = expandedOperatori.has(dipendente.id);
+                const loading = loadingAllegati.has(dipendente.id);
+                return (
+                  <Fragment key={dipendente.id}>
+                    <TableRow className={`text-[15px] text-[#2e2e2e] ${expanded ? "bg-[#fbfdfc]" : ""}`}>
+                      <TableCell className="px-2">
+                        <button type="button" onClick={() => toggleOperatore(dipendente.id)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#007a55] transition-colors hover:bg-[#e7f1ed]" title={expanded ? "Comprimi documenti" : "Espandi documenti"} aria-label={expanded ? "Comprimi documenti" : "Espandi documenti"}>
+                          {expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                        </button>
+                      </TableCell>
+                      <TableCell className="font-bold">{dipendente.cognome}</TableCell>
+                      <TableCell className="font-bold">{dipendente.nome}</TableCell>
+                      {colonneVisibili.nickname && <TableCell className="truncate" title={dipendente.nickname}>{dipendente.nickname || "-"}</TableCell>}
+                      {colonneVisibili.email && <TableCell className="truncate" title={dipendente.email}>{dipendente.email}</TableCell>}
+                      {colonneVisibili.telefono && <TableCell className="whitespace-nowrap">{dipendente.prefisso}/{dipendente.telefono}</TableCell>}
+                      <TableCell>{renderStatoContratto(statiContratto[dipendente.id])}</TableCell>
+                      {colonneVisibili.attestati && <TableCell>{renderAttestati(dipendente.id)}</TableCell>}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                          <Button variant="outline" size="icon" onClick={() => handleEdit(dipendente)} title="Modifica operatore" aria-label="Modifica operatore" className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button variant="outline" size="icon" onClick={() => mostraPresenze(dipendente)} title="Presenze operatore" aria-label="Presenze operatore" className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"><ListChecks className="h-3.5 w-3.5" /></Button>
+                          <Button variant="outline" size="icon" onClick={() => reinviaPassword(dipendente)} title="Reinvia password" aria-label="Reinvia password" className="h-8 w-8 shrink-0 cursor-pointer rounded-md border border-[#007a55] bg-white text-[#007a55] transition-colors hover:bg-[#007a55] hover:text-white"><KeyRound className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {expanded && (
+                      <TableRow className="border-b border-[#dfe8e4] bg-[#f7faf9] hover:bg-[#f7faf9]">
+                        <TableCell colSpan={numeroColonneTotali + 1} className="p-0">
+                          <div className="px-12 py-5">
+                            {loading ? (
+                              <div className="py-5 text-[14px] font-semibold text-[#7a837e]">Verifica stato documenti...</div>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                                <div className="rounded-xl border border-[#dfe8e4] bg-white p-4">
+                                  <div className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Documenti d'identità</div>
+                                  <div>{getDocumentiIdentita(dipendente.id).map(renderDocumentoStatus)}</div>
+                                </div>
+                                <div className="rounded-xl border border-[#dfe8e4] bg-white p-4">
+                                  <div className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Attestati</div>
+                                  <div>{getAttestatiDettaglio(dipendente.id).map(renderDocumentoStatus)}</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -585,9 +689,7 @@ const Operatori = () => {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nuovo Operatore</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Nuovo Operatore</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
