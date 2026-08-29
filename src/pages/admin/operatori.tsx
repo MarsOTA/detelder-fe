@@ -97,15 +97,7 @@ const colonneOptions: { value: ColonnaSelezionabile; label: string }[] = [
 ];
 
 const Operatori = () => {
-  const [formData, setFormData] = useState({
-    nome: "",
-    cognome: "",
-    email: "",
-    prefisso: "",
-    telefono: "",
-    gpg: false,
-  });
-
+  const [formData, setFormData] = useState({ nome: "", cognome: "", email: "", prefisso: "", telefono: "", gpg: false });
   const navigate = useNavigate();
   const [dipendenti, setDipendenti] = useState<Dipendente[]>([]);
   const [statiContratto, setStatiContratto] = useState<Record<number, StatoContratto>>({});
@@ -113,17 +105,8 @@ const Operatori = () => {
   const [allegatiOperatori, setAllegatiOperatori] = useState<Record<number, AllegatiOperatore>>({});
   const [expandedOperatori, setExpandedOperatori] = useState<Set<number>>(new Set());
   const [loadingAllegati, setLoadingAllegati] = useState<Set<number>>(new Set());
-  const [colonneVisibili, setColonneVisibili] = useState<Record<ColonnaSelezionabile, boolean>>({
-    nickname: false,
-    email: true,
-    telefono: true,
-    attestati: true,
-  });
-  const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>([
-    "REGOLARE",
-    "SCADUTO",
-    "ASSENTE",
-  ]);
+  const [colonneVisibili, setColonneVisibili] = useState<Record<ColonnaSelezionabile, boolean>>({ nickname: false, email: true, telefono: true, attestati: true });
+  const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>(["REGOLARE", "SCADUTO", "ASSENTE"]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   type SortDirection = "asc" | "desc";
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -134,30 +117,19 @@ const Operatori = () => {
     caricaOperatoriEContratti();
   }, []);
 
-  const handleEdit = (dipendente: Dipendente) =>
-    navigate(`/admin/dettaglio-operatore/${dipendente.id}`);
-
-  const mostraPresenze = (dipendente: Dipendente) =>
-    navigate(`/admin/timbrature-operatore/${dipendente.id}`);
+  const handleEdit = (dipendente: Dipendente) => navigate(`/admin/dettaglio-operatore/${dipendente.id}`);
+  const mostraPresenze = (dipendente: Dipendente) => navigate(`/admin/timbrature-operatore/${dipendente.id}`);
 
   const reinviaPassword = async (dipendente: Dipendente) => {
-    const conferma = window.confirm(
-      `Vuoi inviare nuovamente la password a ${dipendente.nome} ${dipendente.cognome}?`
-    );
+    const conferma = window.confirm(`Vuoi inviare nuovamente la password a ${dipendente.nome} ${dipendente.cognome}?`);
     if (!conferma) return;
-
     setIsLoading(true);
     try {
       const resp = await fetch(`${ezystaffBEUrl}operatori/reinviaPassword/${dipendente.id}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", Accept: "application/json" },
         credentials: "include",
       });
-
       if (!resp.ok) throw new Error(`Errore nella richiesta: ${resp.status}`);
       const data = await resp.json();
       alert(data.message);
@@ -172,108 +144,67 @@ const Operatori = () => {
   };
 
   const handleNewOperator = () => {
-    setFormData({
-      nome: "",
-      cognome: "",
-      email: "",
-      prefisso: "+39",
-      telefono: "",
-      gpg: false,
-    });
+    setFormData({ nome: "", cognome: "", email: "", prefisso: "+39", telefono: "", gpg: false });
     setIsDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const resp = await fetch(ezystaffBEUrl + "operatori", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", accept: "application/json" },
       method: "POST",
       credentials: "include",
       body: JSON.stringify(formData),
     });
-
     const data = await resp.json();
     setIsDialogOpen(false);
     await caricaOperatoriEContratti();
-
-    if (!data.success) {
-      alert(`Errore: ${data.message}\nDettagli: ${data.error || "Nessun dettaglio disponibile"}`);
-    }
+    if (!data.success) alert(`Errore: ${data.message}\nDettagli: ${data.error || "Nessun dettaglio disponibile"}`);
   };
 
   const fetchOperatori = async () => {
     const resp = await fetch(ezystaffBEUrl + "operatori", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", accept: "application/json" },
       credentials: "include",
     });
-
     if (!resp.ok) throw new Error(`Errore caricamento operatori: ${resp.status}`);
-    const data = await resp.json();
-    setDipendenti(data);
+    setDipendenti(await resp.json());
   };
 
   const fetchStatiContratto = async () => {
     const resp = await fetch(ezystaffBEUrl + "operatori/statoContratti", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", accept: "application/json" },
       credentials: "include",
     });
-
     if (!resp.ok) throw new Error(`Errore caricamento contratti: ${resp.status}`);
-
     const data: StatoContrattoResponse[] = await resp.json();
-    const mappa = data.reduce<Record<number, StatoContratto>>((acc, item) => {
+    setStatiContratto(data.reduce<Record<number, StatoContratto>>((acc, item) => {
       acc[item.idOperatore] = item.statoContratto;
       return acc;
-    }, {});
-    setStatiContratto(mappa);
+    }, {}));
   };
 
   const fetchAttestatiOperatori = async () => {
     const resp = await fetch(ezystaffBEUrl + "operatori/attestati", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", accept: "application/json" },
       credentials: "include",
     });
-
     if (!resp.ok) throw new Error(`Errore caricamento attestati: ${resp.status}`);
-
     const data: AttestatiOperatore[] = await resp.json();
-    const mappa = data.reduce<Record<number, AttestatiOperatore>>((acc, item) => {
+    setAttestatiOperatori(data.reduce<Record<number, AttestatiOperatore>>((acc, item) => {
       acc[item.idOperatore] = item;
       return acc;
-    }, {});
-    setAttestatiOperatori(mappa);
+    }, {}));
   };
 
   const fetchAllegatiOperatore = async (idOperatore: number) => {
     if (allegatiOperatori[idOperatore] || loadingAllegati.has(idOperatore)) return;
-
     setLoadingAllegati((prev) => new Set(prev).add(idOperatore));
     try {
       const resp = await fetch(`${ezystaffBEUrl}operatori/allegatiOperatore/${idOperatore}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", accept: "application/json" },
         credentials: "include",
       });
-
       if (!resp.ok) throw new Error(`Errore caricamento stato allegati: ${resp.status}`);
       const data: AllegatiOperatore = await resp.json();
       setAllegatiOperatori((prev) => ({ ...prev, [idOperatore]: data || {} }));
@@ -298,16 +229,8 @@ const Operatori = () => {
   };
 
   const handleGpgChange = (gpg: boolean) => setFormData((prev) => ({ ...prev, gpg }));
-
-  const toggleStatoContratto = (stato: StatoContratto) => {
-    setStatiSelezionati((prev) =>
-      prev.includes(stato) ? prev.filter((item) => item !== stato) : [...prev, stato]
-    );
-  };
-
-  const toggleColonna = (colonna: ColonnaSelezionabile) => {
-    setColonneVisibili((prev) => ({ ...prev, [colonna]: !prev[colonna] }));
-  };
+  const toggleStatoContratto = (stato: StatoContratto) => setStatiSelezionati((prev) => prev.includes(stato) ? prev.filter((item) => item !== stato) : [...prev, stato]);
+  const toggleColonna = (colonna: ColonnaSelezionabile) => setColonneVisibili((prev) => ({ ...prev, [colonna]: !prev[colonna] }));
 
   const getStatoContrattoLabel = (stato?: StatoContratto) => {
     if (stato === "REGOLARE") return "In regola";
@@ -316,25 +239,9 @@ const Operatori = () => {
   };
 
   const renderStatoContratto = (stato?: StatoContratto) => {
-    if (stato === "REGOLARE") {
-      return (
-        <span className="inline-flex min-w-[94px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[12px] font-extrabold text-emerald-700">
-          In regola
-        </span>
-      );
-    }
-    if (stato === "SCADUTO") {
-      return (
-        <span className="inline-flex min-w-[110px] items-center justify-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[12px] font-extrabold text-orange-700">
-          Non in regola
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex min-w-[84px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[12px] font-extrabold text-red-600">
-        Assente
-      </span>
-    );
+    if (stato === "REGOLARE") return <span className="inline-flex min-w-[94px] items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[12px] font-extrabold text-emerald-700">In regola</span>;
+    if (stato === "SCADUTO") return <span className="inline-flex min-w-[110px] items-center justify-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[12px] font-extrabold text-orange-700">Non in regola</span>;
+    return <span className="inline-flex min-w-[84px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[12px] font-extrabold text-red-600">Assente</span>;
   };
 
   const isAttestatoScaduto = (dataScadenza?: string | null) => {
@@ -356,26 +263,19 @@ const Operatori = () => {
   const renderAttestati = (idOperatore: number) => {
     const attestati = attestatiOperatori[idOperatore];
     if (!attestati) return null;
-
     const icone = [
       { key: "antincendio", presente: Boolean(attestati.antincendioPresente), dataScadenza: attestati.antincendioDataScadenza, label: "Antincendio", Icon: Flame },
       { key: "primoSoccorso", presente: Boolean(attestati.primoSoccorsoPresente), dataScadenza: attestati.primoSoccorsoDataScadenza, label: "Primo soccorso", Icon: BriefcaseMedical },
       { key: "sicurezzaLavoro", presente: Boolean(attestati.sicurezzaLavoroPresente), dataScadenza: attestati.sicurezzaLavoroDataScadenza, label: "Sicurezza sul lavoro", Icon: ShieldUser },
       { key: "blsd", presente: Boolean(attestati.blsdPresente), dataScadenza: attestati.blsdDataScadenza, label: "BLSD", Icon: HeartPlus },
     ].filter((item) => item.presente);
-
     if (icone.length === 0) return null;
-
     return (
       <div className="flex items-center gap-2">
         {icone.map(({ key, dataScadenza, label, Icon }) => {
           const scaduto = isAttestatoScaduto(dataScadenza);
           const title = `${label}${scaduto ? " - scaduto" : ""}${dataScadenza ? ` (${dataScadenza})` : ""}`;
-          return (
-            <span key={key} title={title} aria-label={title}>
-              <Icon className={`h-5 w-5 ${scaduto ? "text-orange-500" : "text-[#8a8a8a]"}`} strokeWidth={1.8} />
-            </span>
-          );
+          return <span key={key} title={title} aria-label={title}><Icon className={`h-5 w-5 ${scaduto ? "text-orange-500" : "text-[#8a8a8a]"}`} strokeWidth={1.8} /></span>;
         })}
       </div>
     );
@@ -386,7 +286,7 @@ const Operatori = () => {
     return [
       { key: "carta-identita", label: "Carta d'identità", presente: Boolean(a.cartaIdentitaImgFronte || a.cartaIdentitaImgRetro) },
       { key: "tessera-sanitaria", label: "Tessera sanitaria", presente: Boolean(a.tesseraSanitariaImgFronte || a.tesseraSanitariaImgRetro) },
-      { key: "permesso-soggiorno", label: "Permesso di soggiorno", presente: Boolean(a.permessoSoggiornoImgFronte || a.permessoSoggiornoImgRetro) },
+      { key: "permesso-soggiorno", label: "Permesso soggiorno", presente: Boolean(a.permessoSoggiornoImgFronte || a.permessoSoggiornoImgRetro) },
       { key: "passaporto", label: "Passaporto", presente: Boolean(a.passaportoImgFronte || a.passaportoImgRetro) },
     ];
   };
@@ -395,81 +295,48 @@ const Operatori = () => {
     const a = allegatiOperatori[idOperatore] || {};
     const stato = attestatiOperatori[idOperatore];
     return [
-      {
-        key: "antincendio",
-        label: "Antincendio",
-        presente: Boolean(a.antincendioDocFronte || a.antincendioDocRetro || stato?.antincendioPresente),
-        dataScadenza: stato?.antincendioDataScadenza,
-        mostraScadenza: true,
-      },
-      {
-        key: "primo-soccorso",
-        label: "Primo soccorso",
-        presente: Boolean(a.primoSoccorsoAttestatoFronte || a.primoSoccorsoAttestatoRetro || stato?.primoSoccorsoPresente),
-        dataScadenza: stato?.primoSoccorsoDataScadenza,
-        mostraScadenza: true,
-      },
-      {
-        key: "sicurezza-lavoro",
-        label: "Sicurezza sul lavoro",
-        presente: Boolean(a.formazioneSicurezzaLavoroAttestatoFronte || a.formazioneSicurezzaLavoroAttestatoRetro || stato?.sicurezzaLavoroPresente),
-        dataScadenza: stato?.sicurezzaLavoroDataScadenza,
-        mostraScadenza: true,
-      },
-      {
-        key: "blsd",
-        label: "BLSD",
-        presente: Boolean(a.blsdAttestatoFronte || a.blsdAttestatoRetro || stato?.blsdPresente),
-        dataScadenza: stato?.blsdDataScadenza,
-        mostraScadenza: true,
-      },
-      {
-        key: "preposto",
-        label: "Preposto",
-        presente: Boolean(a.attestatoPrepostoFronte || a.attestatoPrepostoRetro),
-      },
-      {
-        key: "security-manager",
-        label: "Security Manager",
-        presente: Boolean(a.attestatoSecurityManagerFronte),
-      },
+      { key: "antincendio", label: "Antincendio", presente: Boolean(a.antincendioDocFronte || a.antincendioDocRetro || stato?.antincendioPresente), dataScadenza: stato?.antincendioDataScadenza, mostraScadenza: true },
+      { key: "primo-soccorso", label: "Primo soccorso", presente: Boolean(a.primoSoccorsoAttestatoFronte || a.primoSoccorsoAttestatoRetro || stato?.primoSoccorsoPresente), dataScadenza: stato?.primoSoccorsoDataScadenza, mostraScadenza: true },
+      { key: "sicurezza-lavoro", label: "Sicurezza lavoro", presente: Boolean(a.formazioneSicurezzaLavoroAttestatoFronte || a.formazioneSicurezzaLavoroAttestatoRetro || stato?.sicurezzaLavoroPresente), dataScadenza: stato?.sicurezzaLavoroDataScadenza, mostraScadenza: true },
+      { key: "blsd", label: "BLSD", presente: Boolean(a.blsdAttestatoFronte || a.blsdAttestatoRetro || stato?.blsdPresente), dataScadenza: stato?.blsdDataScadenza, mostraScadenza: true },
+      { key: "preposto", label: "Preposto", presente: Boolean(a.attestatoPrepostoFronte || a.attestatoPrepostoRetro) },
+      { key: "security-manager", label: "Security Manager", presente: Boolean(a.attestatoSecurityManagerFronte) },
     ];
   };
 
   const renderDocumentoStatus = (documento: DocumentoStatus) => {
     const scaduto = documento.presente && documento.mostraScadenza && isAttestatoScaduto(documento.dataScadenza);
+    const title = !documento.presente
+      ? `${documento.label} - Non caricato`
+      : scaduto
+        ? `${documento.label} - Scaduto${documento.dataScadenza ? ` ${formatData(documento.dataScadenza)}` : ""}`
+        : `${documento.label} - Caricato${documento.mostraScadenza && documento.dataScadenza ? ` - Scade ${formatData(documento.dataScadenza)}` : ""}`;
 
     return (
-      <div key={documento.key} className="flex min-h-11 items-center justify-between gap-4 border-b border-[#edf1ef] px-1 py-2.5 last:border-b-0">
-        <div className="flex min-w-0 items-center gap-2.5">
-          {!documento.presente ? (
-            <MinusCircle className="h-4.5 w-4.5 shrink-0 text-[#a1aaa5]" />
-          ) : scaduto ? (
-            <AlertTriangle className="h-4.5 w-4.5 shrink-0 text-orange-500" />
-          ) : (
-            <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-[#007a55]" />
-          )}
-          <span className="truncate text-[14px] font-bold text-[#3f4942]">{documento.label}</span>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2 text-[12px] font-extrabold">
-          {!documento.presente ? (
-            <span className="rounded-full border border-[#d9dfdc] bg-[#f5f7f6] px-2.5 py-1 text-[#7c8580]">Non caricato</span>
-          ) : scaduto ? (
-            <>
-              <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-orange-700">Scaduto</span>
-              {documento.dataScadenza && <span className="font-semibold text-[#8b8b8b]">{formatData(documento.dataScadenza)}</span>}
-            </>
-          ) : (
-            <>
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">Caricato</span>
-              {documento.mostraScadenza && documento.dataScadenza && (
-                <span className="font-semibold text-[#8b8b8b]">Scade {formatData(documento.dataScadenza)}</span>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      <span
+        key={documento.key}
+        title={title}
+        className={`inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-bold whitespace-nowrap ${
+          !documento.presente
+            ? "border-[#d9dfdc] bg-[#f5f7f6] text-[#7c8580]"
+            : scaduto
+              ? "border-orange-200 bg-orange-50 text-orange-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+        }`}
+      >
+        {!documento.presente ? (
+          <MinusCircle className="h-3.5 w-3.5 shrink-0" />
+        ) : scaduto ? (
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+        ) : (
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+        )}
+        <span>{documento.label}</span>
+        {scaduto && <span className="font-extrabold">· Scaduto</span>}
+        {documento.presente && !scaduto && documento.mostraScadenza && documento.dataScadenza && (
+          <span className="font-semibold opacity-80">· {formatData(documento.dataScadenza)}</span>
+        )}
+      </span>
     );
   };
 
@@ -481,18 +348,11 @@ const Operatori = () => {
       else next.add(idOperatore);
       return next;
     });
-
     if (!isExpanded) await fetchAllegatiOperatore(idOperatore);
   };
 
   const handleExportToExcel = () => {
-    const dataToExport = dipendenti.map((d) => ({
-      Cognome: d.cognome,
-      Nome: d.nome,
-      Email: d.email,
-      Telefono: `${d.prefisso}/${d.telefono}`,
-      Contratto: getStatoContrattoLabel(statiContratto[d.id]),
-    }));
+    const dataToExport = dipendenti.map((d) => ({ Cognome: d.cognome, Nome: d.nome, Email: d.email, Telefono: `${d.prefisso}/${d.telefono}`, Contratto: getStatoContrattoLabel(statiContratto[d.id]) }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Operatori");
@@ -503,12 +363,7 @@ const Operatori = () => {
     const keyword = ricercaKeyword.toLowerCase();
     return [...dipendenti]
       .filter((dipendente) => {
-        const matchesKeyword =
-          dipendente.cognome.toLowerCase().includes(keyword) ||
-          dipendente.nome.toLowerCase().includes(keyword) ||
-          (dipendente.nickname ?? "").toLowerCase().includes(keyword) ||
-          dipendente.email.toLowerCase().includes(keyword) ||
-          dipendente.telefono.toLowerCase().includes(keyword);
+        const matchesKeyword = dipendente.cognome.toLowerCase().includes(keyword) || dipendente.nome.toLowerCase().includes(keyword) || (dipendente.nickname ?? "").toLowerCase().includes(keyword) || dipendente.email.toLowerCase().includes(keyword) || dipendente.telefono.toLowerCase().includes(keyword);
         const stato = statiContratto[dipendente.id] ?? "ASSENTE";
         return matchesKeyword && statiSelezionati.includes(stato);
       })
@@ -528,7 +383,6 @@ const Operatori = () => {
   };
 
   const comprimiTutto = () => setExpandedOperatori(new Set());
-
   const numeroColonneOpzionaliVisibili = Object.values(colonneVisibili).filter(Boolean).length;
   const numeroColonneTotali = 4 + numeroColonneOpzionaliVisibili;
 
@@ -540,9 +394,7 @@ const Operatori = () => {
             <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Lista operatori</h1>
             <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">Consulta gli operatori, gestisci i profili e accedi rapidamente a presenze e credenziali.</p>
           </div>
-          <Button onClick={handleNewOperator} className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#006f4d]">
-            Crea nuovo operatore
-          </Button>
+          <Button onClick={handleNewOperator} className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#006f4d]">Crea nuovo operatore</Button>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 bg-[#ecf3f1] px-6 py-4">
@@ -550,11 +402,7 @@ const Operatori = () => {
             <Input type="text" placeholder="Ricerca per keyword" value={ricercaKeyword} onChange={(e) => setRicercaKeyword(e.target.value)} className="w-[280px] rounded-xl border border-gray-300 bg-white px-3 py-2" />
 
             <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="h-10 min-w-[180px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
-                  Contratto ({statiSelezionati.length})
-                </Button>
-              </PopoverTrigger>
+              <PopoverTrigger asChild><Button variant="outline" className="h-10 min-w-[180px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">Contratto ({statiSelezionati.length})</Button></PopoverTrigger>
               <PopoverContent align="start" className="w-[220px] p-3">
                 <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">Stato contratto</div>
                 <div className="space-y-2">
@@ -569,11 +417,7 @@ const Operatori = () => {
             </Popover>
 
             <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="h-10 min-w-[150px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
-                  <span className="flex items-center gap-2"><Columns3 className="h-4 w-4" />Colonne ({numeroColonneOpzionaliVisibili})</span>
-                </Button>
-              </PopoverTrigger>
+              <PopoverTrigger asChild><Button variant="outline" className="h-10 min-w-[150px] justify-between rounded-xl border border-[#b8d2c8] bg-white px-4 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"><span className="flex items-center gap-2"><Columns3 className="h-4 w-4" />Colonne ({numeroColonneOpzionaliVisibili})</span></Button></PopoverTrigger>
               <PopoverContent align="start" className="w-[220px] p-3">
                 <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-[#656565]">Colonne visibili</div>
                 <div className="space-y-2">
@@ -588,18 +432,11 @@ const Operatori = () => {
             </Popover>
 
             <div className="flex items-center gap-2 border-l border-[#cbd8d3] pl-3">
-              <Button variant="outline" onClick={espandiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
-                <ChevronsDown className="h-4 w-4" />Espandi tutto
-              </Button>
-              <Button variant="outline" onClick={comprimiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]">
-                <ChevronsUp className="h-4 w-4" />Comprimi tutto
-              </Button>
+              <Button variant="outline" onClick={espandiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"><ChevronsDown className="h-4 w-4" />Espandi tutto</Button>
+              <Button variant="outline" onClick={comprimiTutto} className="h-10 gap-2 rounded-xl border border-[#b8d2c8] bg-white px-3 font-bold text-[#007a55] hover:bg-[#f7fbf9] hover:text-[#006f4d]"><ChevronsUp className="h-4 w-4" />Comprimi tutto</Button>
             </div>
           </div>
-
-          <Button className="rounded-xl border border-[#b8d2c8] bg-white px-6 font-bold text-[#007a55] shadow-sm hover:bg-[#f7fbf9] hover:text-[#006f4d]" onClick={handleExportToExcel}>
-            Scarica .csv
-          </Button>
+          <Button className="rounded-xl border border-[#b8d2c8] bg-white px-6 font-bold text-[#007a55] shadow-sm hover:bg-[#f7fbf9] hover:text-[#006f4d]" onClick={handleExportToExcel}>Scarica .csv</Button>
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-[#e7e7e7] bg-white">
@@ -607,9 +444,7 @@ const Operatori = () => {
             <TableHeader className="bg-[#ebebeb]">
               <TableRow className="text-[15px] font-bold">
                 <TableHead className="w-[4%] text-[#656565]" />
-                <TableHead className="w-[14%] cursor-pointer whitespace-nowrap text-[#656565]" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}>
-                  Cognome {sortDirection === "asc" ? <ArrowUp className="ml-1 inline h-4 w-4" /> : <ArrowDown className="ml-1 inline h-4 w-4" />}
-                </TableHead>
+                <TableHead className="w-[14%] cursor-pointer whitespace-nowrap text-[#656565]" onClick={() => setSortDirection((prev) => prev === "asc" ? "desc" : "asc")}>Cognome {sortDirection === "asc" ? <ArrowUp className="ml-1 inline h-4 w-4" /> : <ArrowDown className="ml-1 inline h-4 w-4" />}</TableHead>
                 <TableHead className="w-[12%] whitespace-nowrap text-[#656565]">Nome</TableHead>
                 {colonneVisibili.nickname && <TableHead className="w-[15%] whitespace-nowrap text-[#656565]">Nickname</TableHead>}
                 {colonneVisibili.email && <TableHead className="w-[22%] text-[#656565]">Email</TableHead>}
@@ -628,9 +463,7 @@ const Operatori = () => {
                   <Fragment key={dipendente.id}>
                     <TableRow className={`text-[15px] text-[#2e2e2e] ${expanded ? "bg-[#fbfdfc]" : ""}`}>
                       <TableCell className="px-2">
-                        <button type="button" onClick={() => toggleOperatore(dipendente.id)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#007a55] transition-colors hover:bg-[#e7f1ed]" title={expanded ? "Comprimi documenti" : "Espandi documenti"} aria-label={expanded ? "Comprimi documenti" : "Espandi documenti"}>
-                          {expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                        </button>
+                        <button type="button" onClick={() => toggleOperatore(dipendente.id)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#007a55] transition-colors hover:bg-[#e7f1ed]" title={expanded ? "Comprimi documenti" : "Espandi documenti"} aria-label={expanded ? "Comprimi documenti" : "Espandi documenti"}>{expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}</button>
                       </TableCell>
                       <TableCell className="font-bold">{dipendente.cognome}</TableCell>
                       <TableCell className="font-bold">{dipendente.nome}</TableCell>
@@ -651,18 +484,18 @@ const Operatori = () => {
                     {expanded && (
                       <TableRow className="border-b border-[#dfe8e4] bg-[#f7faf9] hover:bg-[#f7faf9]">
                         <TableCell colSpan={numeroColonneTotali + 1} className="p-0">
-                          <div className="px-12 py-5">
+                          <div className="px-12 py-3">
                             {loading ? (
-                              <div className="py-5 text-[14px] font-semibold text-[#7a837e]">Verifica stato documenti...</div>
+                              <div className="py-2 text-[13px] font-semibold text-[#7a837e]">Verifica stato documenti...</div>
                             ) : (
-                              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-                                <div className="rounded-xl border border-[#dfe8e4] bg-white p-4">
-                                  <div className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Documenti d'identità</div>
-                                  <div>{getDocumentiIdentita(dipendente.id).map(renderDocumentoStatus)}</div>
+                              <div className="space-y-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="mr-1 text-[11px] font-extrabold uppercase tracking-[0.07em] text-[#007a55]">Documenti d'identità</span>
+                                  {getDocumentiIdentita(dipendente.id).map(renderDocumentoStatus)}
                                 </div>
-                                <div className="rounded-xl border border-[#dfe8e4] bg-white p-4">
-                                  <div className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Attestati</div>
-                                  <div>{getAttestatiDettaglio(dipendente.id).map(renderDocumentoStatus)}</div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="mr-1 text-[11px] font-extrabold uppercase tracking-[0.07em] text-[#007a55]">Attestati</span>
+                                  {getAttestatiDettaglio(dipendente.id).map(renderDocumentoStatus)}
                                 </div>
                               </div>
                             )}
@@ -692,18 +525,9 @@ const Operatori = () => {
           <DialogHeader><DialogTitle>Nuovo Operatore</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Nome</Label>
-                <Input id="nome" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} className="col-span-3" required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Cognome</Label>
-                <Input id="cognome" value={formData.cognome} onChange={(e) => setFormData({ ...formData, cognome: e.target.value })} className="col-span-3" required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Email</Label>
-                <Input id="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="col-span-3" required />
-              </div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label>Nome</Label><Input id="nome" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} className="col-span-3" required /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label>Cognome</Label><Input id="cognome" value={formData.cognome} onChange={(e) => setFormData({ ...formData, cognome: e.target.value })} className="col-span-3" required /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label>Email</Label><Input id="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="col-span-3" required /></div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label>Telefono</Label>
                 <div className="col-span-3 flex gap-2">
@@ -714,10 +538,7 @@ const Operatori = () => {
                   <Input id="telefono" value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} className="flex-1" required />
                 </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>G.P.G.</Label>
-                <Switch checked={formData.gpg} onCheckedChange={handleGpgChange} />
-              </div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label>G.P.G.</Label><Switch checked={formData.gpg} onCheckedChange={handleGpgChange} /></div>
             </div>
             <DialogFooter><Button type="submit">Aggiungi</Button></DialogFooter>
           </form>
