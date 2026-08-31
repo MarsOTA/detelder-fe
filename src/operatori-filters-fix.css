@@ -1,0 +1,5 @@
+/* Evita che le pseudo-label globali Da/A usate in altri filtri vengano applicate alla toolbar della Lista operatori. */
+section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3.bg-\[\#ecf3f1\].px-6.py-4 > div.flex.flex-wrap.items-center.gap-3 > div > button::before {
+  content: none !important;
+  display: none !important;
+}
