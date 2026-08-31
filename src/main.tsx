@@ -7,6 +7,7 @@ import './admin-theme-refine.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
 import './payroll-dark-fix.css'
+import './admin-theme-hotfix.css'
 import App from './App.tsx'
 import '@mantine/core/styles.css';
 //import { AuthProvider } from './AuthContext';
