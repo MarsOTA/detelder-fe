@@ -1,0 +1,270 @@
+/* Second pass: consistent dark admin surfaces and readable contrast. */
+html.admin-dark {
+  color-scheme: dark;
+}
+
+html.admin-dark .admin-shell {
+  background: #031821 !important;
+}
+
+html.admin-dark .admin-shell section {
+  color: #edf7f6 !important;
+}
+
+/* Page headings and dividers */
+html.admin-dark .admin-shell h1,
+html.admin-dark .admin-shell .detelder-page-title,
+html.admin-dark .admin-shell .text-\[\#007a55\] {
+  color: #16f0c4 !important;
+}
+
+html.admin-dark .admin-shell section > div.border-b,
+html.admin-dark .admin-shell section > .border-b {
+  border-color: #274553 !important;
+}
+
+html.admin-dark .admin-shell p,
+html.admin-dark .admin-shell .text-\[\#7a7a7a\],
+html.admin-dark .admin-shell .text-gray-600,
+html.admin-dark .admin-shell .text-gray-700,
+html.admin-dark .admin-shell .text-\[\#656565\] {
+  color: #a9bbc2 !important;
+}
+
+/* Toolbars */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.items-center.justify-between.bg-\[\#ecf3f1\],
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3.bg-\[\#ecf3f1\].px-6.py-4 {
+  background: #0c1d2d !important;
+  border: 1px solid #294653 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark .admin-shell textarea,
+html.admin-dark .admin-shell [role="combobox"],
+html.admin-dark .admin-shell button[data-slot="popover-trigger"] {
+  background: #102934 !important;
+  border-color: #365362 !important;
+  color: #edf7f6 !important;
+}
+
+html.admin-dark .admin-shell input::placeholder,
+html.admin-dark .admin-shell textarea::placeholder {
+  color: #78909a !important;
+}
+
+html.admin-dark .admin-shell input:focus,
+html.admin-dark .admin-shell textarea:focus,
+html.admin-dark .admin-shell [role="combobox"]:focus {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 2px rgba(22,240,196,.12) !important;
+}
+
+/* Generic neutral action buttons */
+html.admin-dark .admin-shell button.bg-white,
+html.admin-dark .admin-shell button.bg-\[\#ffffff\],
+html.admin-dark .admin-shell button[class*="border-[#007a55]"][class*="bg-[#f3fffa]"] {
+  background: #102934 !important;
+  border-color: #365362 !important;
+  color: #16f0c4 !important;
+}
+
+html.admin-dark .admin-shell button.bg-white:hover,
+html.admin-dark .admin-shell button.bg-\[\#ffffff\]:hover,
+html.admin-dark .admin-shell button[class*="border-[#007a55]"][class*="bg-[#f3fffa]"]:hover {
+  background: #173744 !important;
+  border-color: #16f0c4 !important;
+  color: #16f0c4 !important;
+}
+
+/* EVENTI */
+html.admin-dark .admin-shell section.m-6 > div > div.grid.bg-\[\#ebebeb\] {
+  background: #12303d !important;
+  color: #c7d5d9 !important;
+  border: 1px solid #294653 !important;
+  border-bottom: 0 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div > div.grid.bg-\[\#ebebeb\] > div {
+  color: #c7d5d9 !important;
+}
+
+html.admin-dark .admin-shell [data-slot="accordion-item"] {
+  border-color: #294653 !important;
+  background: #0b2230 !important;
+}
+
+html.admin-dark .admin-shell [data-slot="accordion-trigger"] {
+  color: #dce8ea !important;
+}
+
+html.admin-dark .admin-shell [data-slot="accordion-trigger"]:hover {
+  background: #102b37 !important;
+  color: #16f0c4 !important;
+}
+
+html.admin-dark .admin-shell .text-\[\#326455\] {
+  color: #dce8ea !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#F8F8F8\] {
+  background: #0c1d2d !important;
+}
+
+/* TABLES */
+html.admin-dark .admin-shell table {
+  background: #0b2230 !important;
+  color: #edf7f6 !important;
+}
+
+html.admin-dark .admin-shell thead,
+html.admin-dark .admin-shell thead tr,
+html.admin-dark .admin-shell thead th {
+  background: #12303d !important;
+  color: #c7d5d9 !important;
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell tbody tr {
+  background: #0b2230 !important;
+  color: #edf7f6 !important;
+}
+
+html.admin-dark .admin-shell tbody tr:nth-child(even) {
+  background: #0d2633 !important;
+}
+
+html.admin-dark .admin-shell tbody tr:hover {
+  background: #12303b !important;
+}
+
+html.admin-dark .admin-shell td,
+html.admin-dark .admin-shell th {
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell td,
+html.admin-dark .admin-shell td div,
+html.admin-dark .admin-shell td span,
+html.admin-dark .admin-shell .text-\[\#3f4942\],
+html.admin-dark .admin-shell .text-\[\#191c1d\],
+html.admin-dark .admin-shell .text-\[\#005032\] {
+  color: #e8f1f3 !important;
+}
+
+html.admin-dark .admin-shell .text-gray-400 {
+  color: #799099 !important;
+}
+
+/* Payroll: keep semantic state buttons, but remove light cell blocks. */
+html.admin-dark .admin-shell .bg-\[rgba\(65\,101\,89\,0\.2\)\] {
+  background: #102f3a !important;
+}
+
+html.admin-dark .admin-shell .bg-\[rgba\(0\,80\,50\,0\.2\)\] {
+  background: #10352f !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#e6f4ff\] {
+  background: #15323f !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#d0e8fe\] {
+  background: #18394a !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#007a55\] {
+  background: #078866 !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#8f8f8f\] {
+  background: #405b65 !important;
+}
+
+html.admin-dark .admin-shell .bg-white.px-4.py-2,
+html.admin-dark .admin-shell .ml-auto.mr-4.bg-white {
+  background: #102934 !important;
+  color: #16f0c4 !important;
+  box-shadow: inset 0 0 0 1px #365362 !important;
+}
+
+html.admin-dark .admin-shell input[type="time"],
+html.admin-dark .admin-shell input[type="number"] {
+  background: #102934 !important;
+  color: #edf7f6 !important;
+  border: 1px solid #365362 !important;
+}
+
+/* Preserve semantic colors for payroll deltas and statuses. */
+html.admin-dark .admin-shell .text-\[\#ba1a1a\] {
+  color: #ff6b6b !important;
+}
+
+html.admin-dark .admin-shell button.bg-\[\#9df5c3\],
+html.admin-dark .admin-shell button.bg-\[\#ffedd5\],
+html.admin-dark .admin-shell button.bg-\[\#ffd5d5\],
+html.admin-dark .admin-shell button.bg-\[\#d5e2ff\] {
+  filter: saturate(.9) brightness(.95);
+}
+
+/* Popovers, dialogs, selects and calendars live in portals. */
+html.admin-dark [data-slot="popover-content"],
+html.admin-dark [data-slot="dialog-content"],
+html.admin-dark [data-slot="select-content"],
+html.admin-dark [role="dialog"],
+html.admin-dark [role="listbox"] {
+  background: #0c1d2d !important;
+  border-color: #365362 !important;
+  color: #edf7f6 !important;
+  box-shadow: 0 20px 55px rgba(0,0,0,.38) !important;
+}
+
+html.admin-dark [data-slot="calendar"] button,
+html.admin-dark [role="gridcell"] button {
+  color: #dbe8ea !important;
+}
+
+html.admin-dark [data-slot="calendar"] button:hover,
+html.admin-dark [role="gridcell"] button:hover {
+  background: #153743 !important;
+  color: #16f0c4 !important;
+}
+
+/* Header/account dropdown */
+html.admin-dark .admin-header {
+  background: rgba(6,24,33,.97) !important;
+  border-color: #183642 !important;
+}
+
+html.admin-dark .admin-account-menu {
+  background: #0c1d2d !important;
+  border-color: #365362 !important;
+}
+
+html.admin-dark .admin-account-heading {
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-account-heading > div:last-child {
+  color: #edf7f6 !important;
+}
+
+html.admin-dark .admin-theme-switch {
+  background: #071f29 !important;
+}
+
+html.admin-dark .admin-logout {
+  color: #c6d4d7 !important;
+}
+
+html.admin-dark .admin-logout:hover {
+  background: #12303b !important;
+  color: #16f0c4 !important;
+}
+
+/* Scrollbars */
+html.admin-dark .admin-shell * {
+  scrollbar-color: #365362 #0c1d2d;
+}
