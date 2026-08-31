@@ -22,12 +22,14 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     const checkAuth = async () => {
       console.log('[checkAuth] called on', location.pathname)
       try {
-        
-       // const res = await fetch('http://localhost:4000/api/auth/validate', { credentials: 'include' });
-        const res = await fetch(ezystaffBEUrl + 'auth/checkAuth', { credentials: 'include' });
+        const token = localStorage.getItem('token');
+        const res = await fetch(ezystaffBEUrl + 'auth/checkAuth', {
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         const data = await res.json()
         console.log(data)
-        setIsAuthenticated(data.ok)
+        setIsAuthenticated(res.ok && data.ok)
        // setUserRole(data.role)
 
 
