@@ -8,11 +8,20 @@ import '@mantine/core/styles.css';
 //import { AuthProvider } from './AuthContext';
 //import { AuthProvider } from './AuthContext.tsx';
 import { BrowserRouter } from 'react-router'
-
-// ✅ Importa e registra il service worker generato dal plugin
 import { registerSW } from 'virtual:pwa-register';
 
-registerSW({ immediate: true });
+let isReloadingForUpdate = false;
+
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    if (isReloadingForUpdate) return;
+    isReloadingForUpdate = true;
+    updateSW(true).finally(() => {
+      window.location.reload();
+    });
+  },
+});
 
 createRoot(document.getElementById('root')!).render(
   <Fragment>
