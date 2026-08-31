@@ -101,7 +101,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
 
   const contentClassName = ruolo === 'OPERATORE'
     ? "min-h-screen bg-[#031821] [&_h1_+_p]:!mt-[10px]"
-    : "pt-5 [&_h1_+_p]:!mt-[10px]";
+    : "admin-shell min-h-screen pt-5 [&_h1_+_p]:!mt-[10px]";
 
   return (
     <>
