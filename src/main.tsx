@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './operatori-filters-fix.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
 import App from './App.tsx'
