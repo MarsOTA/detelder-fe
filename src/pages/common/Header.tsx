@@ -47,9 +47,7 @@ const Header = () => {
       },
     });
 
-    const data = await resp.json();
-    console.log(data);
-
+    await resp.json();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setAccountOpen(false);
@@ -68,73 +66,36 @@ const Header = () => {
     location.pathname.includes("/admin/timbrature-operatore");
 
   const navItems = [
-    {
-      label: "Turni",
-      to: "/admin/turni",
-      active: location.pathname === "/admin/turni",
-      icon: CalendarSync,
-    },
-    {
-      label: "Eventi",
-      to: "/admin/eventi",
-      active: isEventiActive,
-      icon: BookmarkCheck,
-    },
-    {
-      label: "Presenze",
-      to: "/admin/presenze",
-      active: location.pathname === "/admin/presenze",
-      icon: UserRoundCheck,
-    },
-    {
-      label: "Operatori",
-      to: "/admin/operatori",
-      active: isOperatoriActive,
-      icon: Users,
-    },
-    {
-      label: "Clienti",
-      to: "/admin/clienti",
-      active: location.pathname === "/admin/clienti",
-      icon: Factory,
-    },
-    {
-      label: "Payroll",
-      to: "/admin/payroll",
-      active: location.pathname === "/admin/payroll",
-      icon: ReceiptEuro,
-    },
+    { label: "Turni", to: "/admin/turni", active: location.pathname === "/admin/turni", icon: CalendarSync },
+    { label: "Eventi", to: "/admin/eventi", active: isEventiActive, icon: BookmarkCheck },
+    { label: "Presenze", to: "/admin/presenze", active: location.pathname === "/admin/presenze", icon: UserRoundCheck },
+    { label: "Operatori", to: "/admin/operatori", active: isOperatoriActive, icon: Users },
+    { label: "Clienti", to: "/admin/clienti", active: location.pathname === "/admin/clienti", icon: Factory },
+    { label: "Payroll", to: "/admin/payroll", active: location.pathname === "/admin/payroll", icon: ReceiptEuro },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#2f3130]/95 shadow-[0_4px_18px_rgba(0,0,0,0.12)] backdrop-blur-md">
-      <div className="mx-auto flex h-[60px] max-w-[1600px] items-center justify-between gap-6 px-6">
-        <Link to="/admin/turni" className="flex shrink-0 items-center">
-          <img
-            src="/assets/logo.svg"
-            alt="Detelder"
-            className="h-[42px] w-[132px] object-contain"
-          />
+    <header className="admin-header sticky top-0 z-50 border-b border-[#183642] bg-[#061821]/95 shadow-[0_8px_28px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+      <div className="mx-auto flex h-[66px] max-w-[1760px] items-center justify-between gap-5 px-6">
+        <Link to="/admin/turni" className="flex shrink-0 items-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16f0c4]/60">
+          <img src="/assets/logo.svg" alt="Detelder" className="h-[43px] w-[138px] object-contain" />
         </Link>
 
-        <nav
-          className="flex flex-1 items-center justify-center gap-1"
-          style={{ fontFamily: "'Mulish', sans-serif" }}
-        >
+        <nav className="flex flex-1 items-center justify-center gap-1.5" style={{ fontFamily: "'Mulish', sans-serif" }}>
           {navItems.map(({ label, to, active, icon: Icon }) => (
             <Link
               key={label}
               to={to}
-              className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out ${
+              className={`group relative flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[14px] font-bold tracking-[-0.01em] transition-all duration-200 ${
                 active
-                  ? "bg-white/[0.08] text-[#a5e8cf] shadow-[inset_0_0_0_1px_rgba(165,232,207,0.08)]"
-                  : "text-white/80 hover:text-[#a5e8cf]"
+                  ? "bg-[#12313c] text-[#16f0c4] shadow-[inset_0_0_0_1px_rgba(22,240,196,0.18)]"
+                  : "text-[#b8c7cb] hover:bg-[#0c2631] hover:text-[#edf7f6]"
               }`}
             >
               <Icon
-                strokeWidth={1.5}
-                className={`h-5 w-5 transition-colors duration-200 ${
-                  active ? "text-[#a5e8cf]" : "text-white/55 group-hover:text-[#a5e8cf]"
+                strokeWidth={1.7}
+                className={`h-[19px] w-[19px] transition-colors ${
+                  active ? "text-[#16f0c4]" : "text-[#7f969e] group-hover:text-[#16f0c4]"
                 }`}
               />
               <span>{label}</span>
@@ -146,34 +107,31 @@ const Header = () => {
           <button
             type="button"
             onClick={() => setAccountOpen((open) => !open)}
-            className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[14px] font-semibold transition-all duration-200 focus:outline-none ${
+            className={`flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-[14px] font-bold transition-all focus:outline-none ${
               accountOpen
-                ? "bg-white/[0.08] text-[#a5e8cf]"
-                : "text-white/85 hover:text-[#a5e8cf]"
+                ? "border-[#16f0c4]/30 bg-[#12313c] text-[#16f0c4]"
+                : "border-transparent text-[#d6e1e3] hover:border-[#294653] hover:bg-[#0c2631] hover:text-white"
             }`}
             aria-expanded={accountOpen}
             aria-haspopup="menu"
           >
-            <CircleUserRound strokeWidth={1.5} className="h-5 w-5" />
+            <CircleUserRound strokeWidth={1.6} className="h-5 w-5" />
             <span>Admin</span>
-            <ChevronDown
-              strokeWidth={1.5}
-              className={`h-4 w-4 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`}
-            />
+            <ChevronDown strokeWidth={1.6} className={`h-4 w-4 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`} />
           </button>
 
           {accountOpen && (
             <div
               role="menu"
-              className="admin-account-menu absolute right-0 top-[calc(100%+10px)] min-w-[238px] overflow-hidden rounded-2xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.2)]"
+              className="admin-account-menu absolute right-0 top-[calc(100%+10px)] min-w-[248px] overflow-hidden rounded-2xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_20px_48px_rgba(0,0,0,0.28)]"
             >
-              <div className="admin-account-heading border-b border-[#edf1ef] px-3 py-2.5">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9a9a9a]">Account</div>
-                <div className="mt-0.5 text-sm font-extrabold text-[#313131]">Admin</div>
+              <div className="admin-account-heading border-b border-[#edf1ef] px-3 py-3">
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8d9b97]">Account</div>
+                <div className="mt-1 text-sm font-extrabold text-[#313131]">Amministratore</div>
               </div>
 
               <div className="px-3 py-3">
-                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8b9692]">Aspetto</div>
+                <div className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8d9b97]">Aspetto</div>
                 <div className="admin-theme-switch grid grid-cols-2 gap-1 rounded-xl bg-[#eef3f1] p-1">
                   <button
                     type="button"
@@ -185,7 +143,7 @@ const Header = () => {
                     }`}
                     aria-pressed={adminTheme === "light"}
                   >
-                    <Sun className="h-4 w-4" strokeWidth={1.7} />
+                    <Sun className="h-4 w-4" strokeWidth={1.8} />
                     Light
                   </button>
                   <button
@@ -193,12 +151,12 @@ const Header = () => {
                     onClick={() => setAdminTheme("dark")}
                     className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-extrabold transition-all ${
                       adminTheme === "dark"
-                        ? "bg-[#0c1d2d] text-[#16f0c4] shadow-sm"
+                        ? "bg-[#102934] text-[#16f0c4] shadow-sm"
                         : "text-[#66736e] hover:text-[#007a55]"
                     }`}
                     aria-pressed={adminTheme === "dark"}
                   >
-                    <Moon className="h-4 w-4" strokeWidth={1.7} />
+                    <Moon className="h-4 w-4" strokeWidth={1.8} />
                     Dark
                   </button>
                 </div>
@@ -208,9 +166,9 @@ const Header = () => {
                 type="button"
                 role="menuitem"
                 onClick={logout}
-                className="admin-logout mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
+                className="admin-logout mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:bg-[#f2f6f4] hover:text-[#007a55]"
               >
-                <LogOut strokeWidth={1.5} className="h-[18px] w-[18px]" />
+                <LogOut strokeWidth={1.6} className="h-[18px] w-[18px]" />
                 Logout
               </button>
             </div>
