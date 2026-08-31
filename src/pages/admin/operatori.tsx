@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   MinusCircle,
+  Paperclip,
+  RotateCcw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,8 @@ import { prefissi } from "@/pages/admin/utils/prefissi";
 
 type StatoContratto = "REGOLARE" | "SCADUTO" | "ASSENTE";
 type ColonnaSelezionabile = "nickname" | "email" | "telefono" | "attestati";
+type StatoAllegatoFiltro = "MANCANTE" | "SCADUTO";
+type ModalitaAllegatiFiltro = "ALMENO_UNO" | "TUTTI";
 
 type StatoContrattoResponse = {
   idOperatore: number;
@@ -75,12 +79,20 @@ type AllegatiOperatore = {
   attestatoSecurityManagerFronte?: string | null;
 };
 
+type DipendenteConAllegati = Dipendente & AllegatiOperatore;
+
 type DocumentoStatus = {
   key: string;
   label: string;
   presente: boolean;
   dataScadenza?: string | null;
   mostraScadenza?: boolean;
+};
+
+type DocumentoFiltroOption = {
+  key: string;
+  label: string;
+  gruppo: "IDENTITA" | "ATTESTATI";
 };
 
 const statoContrattoOptions: { value: StatoContratto; label: string }[] = [
@@ -96,6 +108,19 @@ const colonneOptions: { value: ColonnaSelezionabile; label: string }[] = [
   { value: "attestati", label: "Attestati" },
 ];
 
+const documentiFiltroOptions: DocumentoFiltroOption[] = [
+  { key: "carta-identita", label: "Carta d'identità", gruppo: "IDENTITA" },
+  { key: "tessera-sanitaria", label: "Tessera sanitaria", gruppo: "IDENTITA" },
+  { key: "permesso-soggiorno", label: "Permesso soggiorno", gruppo: "IDENTITA" },
+  { key: "passaporto", label: "Passaporto", gruppo: "IDENTITA" },
+  { key: "antincendio", label: "Antincendio", gruppo: "ATTESTATI" },
+  { key: "primo-soccorso", label: "Primo soccorso", gruppo: "ATTESTATI" },
+  { key: "sicurezza-lavoro", label: "Sicurezza lavoro", gruppo: "ATTESTATI" },
+  { key: "blsd", label: "BLSD", gruppo: "ATTESTATI" },
+  { key: "preposto", label: "Preposto", gruppo: "ATTESTATI" },
+  { key: "security-manager", label: "Security Manager", gruppo: "ATTESTATI" },
+];
+
 const Operatori = () => {
   const [formData, setFormData] = useState({ nome: "", cognome: "", email: "", prefisso: "", telefono: "", gpg: false });
   const navigate = useNavigate();
@@ -107,6 +132,10 @@ const Operatori = () => {
   const [loadingAllegati, setLoadingAllegati] = useState<Set<number>>(new Set());
   const [colonneVisibili, setColonneVisibili] = useState<Record<ColonnaSelezionabile, boolean>>({ nickname: false, email: true, telefono: true, attestati: true });
   const [statiSelezionati, setStatiSelezionati] = useState<StatoContratto[]>(["REGOLARE", "SCADUTO", "ASSENTE"]);
+  const [statiAllegatiSelezionati, setStatiAllegatiSelezionati] = useState<StatoAllegatoFiltro[]>(["MANCANTE"]);
+  const [documentiAllegatiSelezionati, setDocumentiAllegatiSelezionati] = useState<string[]>([]);
+  const [modalitaAllegatiFiltro, setModalitaAllegatiFiltro] = useState<ModalitaAllegatiFiltro>("ALMENO_UNO");
+  const [qualsiasiAllegatoMancante, setQualsiasiAllegatoMancante] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   type SortDirection = "asc" | "desc";
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -231,6 +260,17 @@ const Operatori = () => {
   const handleGpgChange = (gpg: boolean) => setFormData((prev) => ({ ...prev, gpg }));
   const toggleStatoContratto = (stato: StatoContratto) => setStatiSelezionati((prev) => prev.includes(stato) ? prev.filter((item) => item !== stato) : [...prev, stato]);
   const toggleColonna = (colonna: ColonnaSelezionabile) => setColonneVisibili((prev) => ({ ...prev, [colonna]: !prev[colonna] }));
+  const toggleStatoAllegato = (stato: StatoAllegatoFiltro) => setStatiAllegatiSelezionati((prev) => prev.includes(stato) ? prev.filter((item) => item !== stato) : [...prev, stato]);
+  const toggleDocumentoAllegato = (key: string) => {
+    setQualsiasiAllegatoMancante(false);
+    setDocumentiAllegatiSelezionati((prev) => prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]);
+  };
+  const resetFiltroAllegati = () => {
+    setStatiAllegatiSelezionati(["MANCANTE"]);
+    setDocumentiAllegatiSelezionati([]);
+    setModalitaAllegatiFiltro("ALMENO_UNO");
+    setQualsiasiAllegatoMancante(false);
+  };
 
   const getStatoContrattoLabel = (stato?: StatoContratto) => {
     if (stato === "REGOLARE") return "In regola";
@@ -281,27 +321,61 @@ const Operatori = () => {
     );
   };
 
-  const getDocumentiIdentita = (idOperatore: number): DocumentoStatus[] => {
-    const a = allegatiOperatori[idOperatore] || {};
+  const getDocumentiIdentitaDaAllegati = (a: AllegatiOperatore): DocumentoStatus[] => [
+    { key: "carta-identita", label: "Carta d'identità", presente: Boolean(a.cartaIdentitaImgFronte || a.cartaIdentitaImgRetro) },
+    { key: "tessera-sanitaria", label: "Tessera sanitaria", presente: Boolean(a.tesseraSanitariaImgFronte || a.tesseraSanitariaImgRetro) },
+    { key: "permesso-soggiorno", label: "Permesso soggiorno", presente: Boolean(a.permessoSoggiornoImgFronte || a.permessoSoggiornoImgRetro) },
+    { key: "passaporto", label: "Passaporto", presente: Boolean(a.passaportoImgFronte || a.passaportoImgRetro) },
+  ];
+
+  const getAttestatiDaAllegati = (a: AllegatiOperatore, stato?: AttestatiOperatore): DocumentoStatus[] => [
+    { key: "antincendio", label: "Antincendio", presente: Boolean(a.antincendioDocFronte || a.antincendioDocRetro || stato?.antincendioPresente), dataScadenza: stato?.antincendioDataScadenza, mostraScadenza: true },
+    { key: "primo-soccorso", label: "Primo soccorso", presente: Boolean(a.primoSoccorsoAttestatoFronte || a.primoSoccorsoAttestatoRetro || stato?.primoSoccorsoPresente), dataScadenza: stato?.primoSoccorsoDataScadenza, mostraScadenza: true },
+    { key: "sicurezza-lavoro", label: "Sicurezza lavoro", presente: Boolean(a.formazioneSicurezzaLavoroAttestatoFronte || a.formazioneSicurezzaLavoroAttestatoRetro || stato?.sicurezzaLavoroPresente), dataScadenza: stato?.sicurezzaLavoroDataScadenza, mostraScadenza: true },
+    { key: "blsd", label: "BLSD", presente: Boolean(a.blsdAttestatoFronte || a.blsdAttestatoRetro || stato?.blsdPresente), dataScadenza: stato?.blsdDataScadenza, mostraScadenza: true },
+    { key: "preposto", label: "Preposto", presente: Boolean(a.attestatoPrepostoFronte || a.attestatoPrepostoRetro) },
+    { key: "security-manager", label: "Security Manager", presente: Boolean(a.attestatoSecurityManagerFronte) },
+  ];
+
+  const getDocumentiIdentita = (idOperatore: number): DocumentoStatus[] => getDocumentiIdentitaDaAllegati(allegatiOperatori[idOperatore] || {});
+
+  const getAttestatiDettaglio = (idOperatore: number): DocumentoStatus[] => getAttestatiDaAllegati(allegatiOperatori[idOperatore] || {}, attestatiOperatori[idOperatore]);
+
+  const getDocumentiPerFiltro = (dipendente: Dipendente): DocumentoStatus[] => {
+    const allegatiDallaLista = dipendente as DipendenteConAllegati;
     return [
-      { key: "carta-identita", label: "Carta d'identità", presente: Boolean(a.cartaIdentitaImgFronte || a.cartaIdentitaImgRetro) },
-      { key: "tessera-sanitaria", label: "Tessera sanitaria", presente: Boolean(a.tesseraSanitariaImgFronte || a.tesseraSanitariaImgRetro) },
-      { key: "permesso-soggiorno", label: "Permesso soggiorno", presente: Boolean(a.permessoSoggiornoImgFronte || a.permessoSoggiornoImgRetro) },
-      { key: "passaporto", label: "Passaporto", presente: Boolean(a.passaportoImgFronte || a.passaportoImgRetro) },
+      ...getDocumentiIdentitaDaAllegati(allegatiDallaLista),
+      ...getAttestatiDaAllegati(allegatiDallaLista, attestatiOperatori[dipendente.id]),
     ];
   };
 
-  const getAttestatiDettaglio = (idOperatore: number): DocumentoStatus[] => {
-    const a = allegatiOperatori[idOperatore] || {};
-    const stato = attestatiOperatori[idOperatore];
-    return [
-      { key: "antincendio", label: "Antincendio", presente: Boolean(a.antincendioDocFronte || a.antincendioDocRetro || stato?.antincendioPresente), dataScadenza: stato?.antincendioDataScadenza, mostraScadenza: true },
-      { key: "primo-soccorso", label: "Primo soccorso", presente: Boolean(a.primoSoccorsoAttestatoFronte || a.primoSoccorsoAttestatoRetro || stato?.primoSoccorsoPresente), dataScadenza: stato?.primoSoccorsoDataScadenza, mostraScadenza: true },
-      { key: "sicurezza-lavoro", label: "Sicurezza lavoro", presente: Boolean(a.formazioneSicurezzaLavoroAttestatoFronte || a.formazioneSicurezzaLavoroAttestatoRetro || stato?.sicurezzaLavoroPresente), dataScadenza: stato?.sicurezzaLavoroDataScadenza, mostraScadenza: true },
-      { key: "blsd", label: "BLSD", presente: Boolean(a.blsdAttestatoFronte || a.blsdAttestatoRetro || stato?.blsdPresente), dataScadenza: stato?.blsdDataScadenza, mostraScadenza: true },
-      { key: "preposto", label: "Preposto", presente: Boolean(a.attestatoPrepostoFronte || a.attestatoPrepostoRetro) },
-      { key: "security-manager", label: "Security Manager", presente: Boolean(a.attestatoSecurityManagerFronte) },
-    ];
+  const documentoRispettaStatiFiltro = (documento: DocumentoStatus) => {
+    if (statiAllegatiSelezionati.length === 0) return true;
+    return statiAllegatiSelezionati.some((stato) => {
+      if (stato === "MANCANTE") return !documento.presente;
+      if (stato === "SCADUTO") return documento.presente && Boolean(documento.mostraScadenza) && isAttestatoScaduto(documento.dataScadenza);
+      return false;
+    });
+  };
+
+  const matchesFiltroAllegati = (dipendente: Dipendente) => {
+    const documenti = getDocumentiPerFiltro(dipendente);
+
+    if (qualsiasiAllegatoMancante) {
+      return documenti.some((documento) => !documento.presente);
+    }
+
+    if (documentiAllegatiSelezionati.length === 0) return true;
+
+    const selezionati = documentiAllegatiSelezionati
+      .map((key) => documenti.find((documento) => documento.key === key))
+      .filter((documento): documento is DocumentoStatus => Boolean(documento));
+
+    if (selezionati.length === 0) return true;
+
+    return modalitaAllegatiFiltro === "TUTTI"
+      ? selezionati.every(documentoRispettaStatiFiltro)
+      : selezionati.some(documentoRispettaStatiFiltro);
   };
 
   const renderDocumentoStatus = (documento: DocumentoStatus) => {
@@ -365,7 +439,7 @@ const Operatori = () => {
       .filter((dipendente) => {
         const matchesKeyword = dipendente.cognome.toLowerCase().includes(keyword) || dipendente.nome.toLowerCase().includes(keyword) || (dipendente.nickname ?? "").toLowerCase().includes(keyword) || dipendente.email.toLowerCase().includes(keyword) || dipendente.telefono.toLowerCase().includes(keyword);
         const stato = statiContratto[dipendente.id] ?? "ASSENTE";
-        return matchesKeyword && statiSelezionati.includes(stato);
+        return matchesKeyword && statiSelezionati.includes(stato) && matchesFiltroAllegati(dipendente);
       })
       .sort((a, b) => {
         const cognomeA = a.cognome.toLowerCase();
@@ -374,7 +448,7 @@ const Operatori = () => {
         if (cognomeA > cognomeB) return sortDirection === "asc" ? 1 : -1;
         return 0;
       });
-  }, [dipendenti, ricercaKeyword, sortDirection, statiContratto, statiSelezionati]);
+  }, [dipendenti, ricercaKeyword, sortDirection, statiContratto, statiSelezionati, attestatiOperatori, statiAllegatiSelezionati, documentiAllegatiSelezionati, modalitaAllegatiFiltro, qualsiasiAllegatoMancante]);
 
   const espandiTutto = async () => {
     const ids = filteredAndSortedDipendenti.map((d) => d.id);
@@ -385,6 +459,8 @@ const Operatori = () => {
   const comprimiTutto = () => setExpandedOperatori(new Set());
   const numeroColonneOpzionaliVisibili = Object.values(colonneVisibili).filter(Boolean).length;
   const numeroColonneTotali = 4 + numeroColonneOpzionaliVisibili;
+  const filtroAllegatiAttivo = qualsiasiAllegatoMancante || documentiAllegatiSelezionati.length > 0;
+  const numeroFiltriAllegati = qualsiasiAllegatoMancante ? 1 : documentiAllegatiSelezionati.length;
 
   return (
     <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
@@ -412,6 +488,83 @@ const Operatori = () => {
                       {option.label}
                     </label>
                   ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={`h-10 min-w-[165px] justify-between rounded-xl border px-4 font-bold ${filtroAllegatiAttivo ? "border-[#007a55] bg-[#e6f4ef] text-[#006f4d]" : "border-[#b8d2c8] bg-white text-[#007a55]"} hover:bg-[#f7fbf9] hover:text-[#006f4d]`}>
+                  <span className="flex items-center gap-2"><Paperclip className="h-4 w-4" />Allegati{filtroAllegatiAttivo ? ` (${numeroFiltriAllegati})` : ""}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[390px] p-0">
+                <div className="border-b border-[#e3ebe7] px-4 py-3">
+                  <div className="text-[14px] font-extrabold text-[#26342e]">Filtra per stato allegati</div>
+                  <div className="mt-0.5 text-[12px] text-[#7a837e]">Trova rapidamente gli operatori con documenti mancanti o attestati scaduti.</div>
+                </div>
+
+                <div className="max-h-[520px] overflow-y-auto p-4">
+                  <label className="mb-4 flex cursor-pointer items-start gap-3 rounded-xl border border-[#cfe2da] bg-[#f3f8f6] p-3">
+                    <input type="checkbox" checked={qualsiasiAllegatoMancante} onChange={(e) => { setQualsiasiAllegatoMancante(e.target.checked); if (e.target.checked) setDocumentiAllegatiSelezionati([]); }} className="mt-0.5 h-4 w-4 accent-[#007a55]" />
+                    <span>
+                      <span className="block text-[13px] font-extrabold text-[#007a55]">Qualsiasi allegato mancante</span>
+                      <span className="block text-[11px] leading-4 text-[#728079]">Mostra tutti gli operatori che hanno almeno un documento o attestato non caricato.</span>
+                    </span>
+                  </label>
+
+                  <div className="mb-4">
+                    <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#6a756f]">Stato</div>
+                    <div className="flex gap-2">
+                      <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-[#dbe5e1] px-3 py-2 text-[12px] font-bold text-[#3f4942]">
+                        <input type="checkbox" checked={statiAllegatiSelezionati.includes("MANCANTE")} onChange={() => toggleStatoAllegato("MANCANTE")} className="h-4 w-4 accent-[#007a55]" />Non caricato
+                      </label>
+                      <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-[#f0d7bf] px-3 py-2 text-[12px] font-bold text-[#8d5a21]">
+                        <input type="checkbox" checked={statiAllegatiSelezionati.includes("SCADUTO")} onChange={() => toggleStatoAllegato("SCADUTO")} className="h-4 w-4 accent-[#d97706]" />Scaduto
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Documenti d'identità</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {documentiFiltroOptions.filter((option) => option.gruppo === "IDENTITA").map((option) => (
+                        <label key={option.key} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-[#39433e] hover:bg-[#f3f8f6]">
+                          <input type="checkbox" checked={documentiAllegatiSelezionati.includes(option.key)} onChange={() => toggleDocumentoAllegato(option.key)} className="h-4 w-4 accent-[#007a55]" />{option.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#007a55]">Attestati</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {documentiFiltroOptions.filter((option) => option.gruppo === "ATTESTATI").map((option) => (
+                        <label key={option.key} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-[12px] font-semibold text-[#39433e] hover:bg-[#f3f8f6]">
+                          <input type="checkbox" checked={documentiAllegatiSelezionati.includes(option.key)} onChange={() => toggleDocumentoAllegato(option.key)} className="h-4 w-4 accent-[#007a55]" />{option.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-[#e2e8e5] bg-[#fafbfa] p-3">
+                    <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#6a756f]">Quando selezioni più allegati</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className={`cursor-pointer rounded-lg border p-2.5 ${modalitaAllegatiFiltro === "ALMENO_UNO" ? "border-[#8bc7b1] bg-[#edf7f3]" : "border-[#dfe6e3] bg-white"}`}>
+                        <input type="radio" name="modalita-allegati" checked={modalitaAllegatiFiltro === "ALMENO_UNO"} onChange={() => setModalitaAllegatiFiltro("ALMENO_UNO")} className="mr-2 accent-[#007a55]" />
+                        <span className="text-[12px] font-extrabold text-[#34423c]">Almeno uno</span>
+                      </label>
+                      <label className={`cursor-pointer rounded-lg border p-2.5 ${modalitaAllegatiFiltro === "TUTTI" ? "border-[#8bc7b1] bg-[#edf7f3]" : "border-[#dfe6e3] bg-white"}`}>
+                        <input type="radio" name="modalita-allegati" checked={modalitaAllegatiFiltro === "TUTTI"} onChange={() => setModalitaAllegatiFiltro("TUTTI")} className="mr-2 accent-[#007a55]" />
+                        <span className="text-[12px] font-extrabold text-[#34423c]">Tutti</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-[#e3ebe7] px-4 py-3">
+                  <Button variant="ghost" onClick={resetFiltroAllegati} className="h-9 gap-2 px-2 text-[12px] font-bold text-[#68736d] hover:bg-[#f2f5f4]"><RotateCcw className="h-3.5 w-3.5" />Azzera</Button>
+                  <div className="text-[12px] font-bold text-[#007a55]">{filteredAndSortedDipendenti.length} operatori trovati</div>
                 </div>
               </PopoverContent>
             </Popover>
