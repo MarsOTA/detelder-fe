@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarSync,
@@ -10,13 +10,32 @@ import {
   LogOut,
   CircleUserRound,
   ChevronDown,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
+
+type AdminTheme = "light" | "dark";
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [adminTheme, setAdminTheme] = useState<AdminTheme>(() =>
+    localStorage.getItem("adminTheme") === "dark" ? "dark" : "light"
+  );
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("admin-dark", adminTheme === "dark");
+    root.dataset.adminTheme = adminTheme;
+    localStorage.setItem("adminTheme", adminTheme);
+
+    return () => {
+      root.classList.remove("admin-dark");
+      delete root.dataset.adminTheme;
+    };
+  }, [adminTheme]);
 
   const logout = async () => {
     const resp = await fetch(ezystaffBEUrl + "auth/logout", {
@@ -146,18 +165,50 @@ const Header = () => {
           {accountOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-[calc(100%+10px)] min-w-[180px] overflow-hidden rounded-2xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.2)]"
+              className="admin-account-menu absolute right-0 top-[calc(100%+10px)] min-w-[238px] overflow-hidden rounded-2xl border border-[#dfe8e5] bg-white p-1.5 shadow-[0_16px_38px_rgba(0,0,0,0.2)]"
             >
-              <div className="border-b border-[#edf1ef] px-3 py-2.5">
+              <div className="admin-account-heading border-b border-[#edf1ef] px-3 py-2.5">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#9a9a9a]">Account</div>
                 <div className="mt-0.5 text-sm font-extrabold text-[#313131]">Admin</div>
+              </div>
+
+              <div className="px-3 py-3">
+                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8b9692]">Aspetto</div>
+                <div className="admin-theme-switch grid grid-cols-2 gap-1 rounded-xl bg-[#eef3f1] p-1">
+                  <button
+                    type="button"
+                    onClick={() => setAdminTheme("light")}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-extrabold transition-all ${
+                      adminTheme === "light"
+                        ? "bg-white text-[#007a55] shadow-sm"
+                        : "text-[#66736e] hover:text-[#007a55]"
+                    }`}
+                    aria-pressed={adminTheme === "light"}
+                  >
+                    <Sun className="h-4 w-4" strokeWidth={1.7} />
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAdminTheme("dark")}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-extrabold transition-all ${
+                      adminTheme === "dark"
+                        ? "bg-[#0c1d2d] text-[#16f0c4] shadow-sm"
+                        : "text-[#66736e] hover:text-[#007a55]"
+                    }`}
+                    aria-pressed={adminTheme === "dark"}
+                  >
+                    <Moon className="h-4 w-4" strokeWidth={1.7} />
+                    Dark
+                  </button>
+                </div>
               </div>
 
               <button
                 type="button"
                 role="menuitem"
                 onClick={logout}
-                className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
+                className="admin-logout mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-[#4d4d4d] transition-colors duration-150 hover:text-[#007a55]"
               >
                 <LogOut strokeWidth={1.5} className="h-[18px] w-[18px]" />
                 Logout
