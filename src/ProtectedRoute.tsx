@@ -99,10 +99,14 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     HeaderComponent = Header;
   }
 
+  const contentClassName = ruolo === 'OPERATORE'
+    ? "min-h-screen bg-[#031821] [&_h1_+_p]:!mt-[10px]"
+    : "pt-5 [&_h1_+_p]:!mt-[10px]";
+
   return (
     <>
       {HeaderComponent && <HeaderComponent />}
-      <div className="pt-5 [&_h1_+_p]:!mt-[10px]">
+      <div className={contentClassName}>
         <Outlet />
       </div>
     </>
