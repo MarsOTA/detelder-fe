@@ -158,25 +158,25 @@ html.admin-dark .admin-shell .text-gray-400 {
   color: #799099 !important;
 }
 
-/* Payroll: keep semantic state buttons, but remove light cell blocks. */
+/* Payroll base surfaces */
 html.admin-dark .admin-shell .bg-\[rgba\(65\,101\,89\,0\.2\)\] {
-  background: #102f3a !important;
+  background: #123846 !important;
 }
 
 html.admin-dark .admin-shell .bg-\[rgba\(0\,80\,50\,0\.2\)\] {
-  background: #10352f !important;
+  background: #123b34 !important;
 }
 
 html.admin-dark .admin-shell .bg-\[\#e6f4ff\] {
-  background: #15323f !important;
+  background: #2b1f4a !important;
 }
 
 html.admin-dark .admin-shell .bg-\[\#d0e8fe\] {
-  background: #18394a !important;
+  background: #173f59 !important;
 }
 
 html.admin-dark .admin-shell .bg-\[\#007a55\] {
-  background: #078866 !important;
+  background: linear-gradient(90deg, #087e65 0%, #0b9a78 100%) !important;
 }
 
 html.admin-dark .admin-shell .bg-\[\#8f8f8f\] {
@@ -190,23 +190,138 @@ html.admin-dark .admin-shell .ml-auto.mr-4.bg-white {
   box-shadow: inset 0 0 0 1px #365362 !important;
 }
 
-html.admin-dark .admin-shell input[type="time"],
-html.admin-dark .admin-shell input[type="number"] {
-  background: #102934 !important;
-  color: #edf7f6 !important;
-  border: 1px solid #365362 !important;
+/* PAYROLL: visual hierarchy by data type */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white thead th:nth-child(2) {
+  background: #183747 !important;
+  color: #7ee7ff !important;
 }
 
-/* Preserve semantic colors for payroll deltas and statuses. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white thead th:nth-child(3) {
+  background: #163d37 !important;
+  color: #7ff0ce !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white thead th:nth-child(6) {
+  background: #2e2050 !important;
+  color: #c6a7ff !important;
+  box-shadow: inset 0 -2px 0 #8b5cf6 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white thead th:nth-child(7) {
+  background: #173f59 !important;
+  color: #79cfff !important;
+  box-shadow: inset 0 -2px 0 #38bdf8 !important;
+}
+
+/* Definitivo: editable zone uses violet to communicate action. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) {
+  background: linear-gradient(180deg, rgba(99, 63, 156, .26), rgba(50, 34, 83, .34)) !important;
+  border-left-color: #6d50a8 !important;
+  border-right-color: #6d50a8 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="time"],
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="number"] {
+  background: #211933 !important;
+  border: 1px solid #7657b6 !important;
+  color: #f4efff !important;
+  box-shadow: inset 0 0 0 1px rgba(196, 167, 255, .06), 0 0 0 1px rgba(139, 92, 246, .08) !important;
+  border-radius: 9px !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="time"]:hover,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="number"]:hover {
+  border-color: #a78bfa !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="time"]:focus,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) input[type="number"]:focus {
+  border-color: #c4b5fd !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, .22) !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(8) svg {
+  color: #bca7f6 !important;
+}
+
+/* Ore definitive: cyan/blue break from the violet editable zone. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(9) {
+  background: linear-gradient(180deg, #174660 0%, #153a52 100%) !important;
+  color: #e8f8ff !important;
+  border-left-color: #2d6b8e !important;
+  border-right-color: #2d6b8e !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:nth-child(9) div {
+  color: #8edbff !important;
+  font-weight: 800 !important;
+}
+
+/* Operator name gets a restrained mint accent. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white tbody tr:not(:has(td[colspan])) > td:first-child {
+  color: #81e7c8 !important;
+  font-weight: 700 !important;
+}
+
+/* Delta anomaly remains the strongest warning. */
 html.admin-dark .admin-shell .text-\[\#ba1a1a\] {
-  color: #ff6b6b !important;
+  color: #ff6676 !important;
 }
 
-html.admin-dark .admin-shell button.bg-\[\#9df5c3\],
-html.admin-dark .admin-shell button.bg-\[\#ffedd5\],
-html.admin-dark .admin-shell button.bg-\[\#ffd5d5\],
-html.admin-dark .admin-shell button.bg-\[\#d5e2ff\] {
-  filter: saturate(.9) brightness(.95);
+/* Payroll CTA palette: brighter, visually distinct and still semantic. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#9df5c3\] {
+  background: linear-gradient(135deg, #18d99f 0%, #16f0c4 100%) !important;
+  border: 1px solid #55f3d2 !important;
+  color: #03251d !important;
+  box-shadow: 0 5px 16px rgba(22, 240, 196, .16) !important;
+  filter: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#9df5c3\]:hover {
+  background: linear-gradient(135deg, #28e9b0 0%, #51f7d5 100%) !important;
+  transform: translateY(-1px);
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#ffedd5\] {
+  background: #5a3516 !important;
+  border: 1px solid #d98935 !important;
+  color: #ffbd69 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 180, 91, .08) !important;
+  filter: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#ffedd5\]:hover {
+  background: #704218 !important;
+  border-color: #ffad52 !important;
+  color: #ffd09a !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#ffd5d5\] {
+  background: #57212a !important;
+  border: 1px solid #d95568 !important;
+  color: #ff8b9a !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 102, 118, .08) !important;
+  filter: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#ffd5d5\]:hover {
+  background: #6c2632 !important;
+  border-color: #ff7182 !important;
+  color: #ffacb7 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white button.bg-\[\#d5e2ff\] {
+  background: #38265c !important;
+  border: 1px solid #7c5cc4 !important;
+  color: #c9b4ff !important;
+  filter: none !important;
+}
+
+/* Quick period selectors: one subtle violet accent on hover to avoid a teal-only UI. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.gap-3 > button:nth-of-type(-n+3):hover {
+  background: #362555 !important;
+  border-color: #8969ca !important;
+  color: #d9c8ff !important;
 }
 
 /* Popovers, dialogs, selects and calendars live in portals. */
