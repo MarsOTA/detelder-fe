@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './operatori-filters-fix.css'
+import './admin-theme.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
 import App from './App.tsx'
@@ -10,6 +11,11 @@ import '@mantine/core/styles.css';
 //import { AuthProvider } from './AuthContext.tsx';
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
+
+if (localStorage.getItem('ruolo') === 'ADMIN' && localStorage.getItem('adminTheme') === 'dark') {
+  document.documentElement.classList.add('admin-dark');
+  document.documentElement.dataset.adminTheme = 'dark';
+}
 
 let isReloadingForUpdate = false;
 
@@ -31,4 +37,3 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </Fragment>
 )
-
