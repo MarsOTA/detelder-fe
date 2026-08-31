@@ -1,10 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { useEffect, useState } from "react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { MapPin, CalendarDays, ContactRound, UsersRound, Crown, MapPinCheckInside, MapPinXInside } from "lucide-react";
+import {
+    CalendarDays,
+    ChevronRight,
+    ContactRound,
+    Crown,
+    MapPin,
+    MapPinCheckInside,
+    MapPinXInside,
+    UsersRound
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { NotificaRitardoTimbraturaDialog } from "./dialog/notificaRitardoTimbraturaDialog";
+import { ReferenteEventoDialog } from "./dialog/referenteEventoDialog";
+import { ColleghiTurnoDialog } from "./dialog/colleghiTurnoDialog";
 
 type OrarioTurni = {
     oraInizio: string
@@ -44,53 +55,25 @@ type CheckInCheckOut = {
     motivazione: string
 }
 
-
 const TaskOperatore = () => {
-
-
     console.log('Sono in TaskOperatore***');
     const idOperatore = localStorage.getItem('idOperatore');
     console.log('idOperatore: ' + idOperatore);
 
-    //const [turnoGiornaliero, setTurnoGiornaliero] = useState<TurnoEvento>();
     const [turniGiornalieri, setTurniGiornalieri] = useState<TurnoEvento[]>([]);
     const [loading, setLoading] = useState(false);
     const [statoCheck, setStatoCheck] = useState<boolean>(true);
     const [notificaRitardoTimbraturaDialogOpen, setNotificaRitardoTimbraturaDialogOpen] = useState(false);
+    const [referenteEventoDialogOpen, setReferenteEventoDialogOpen] = useState(false);
+    const [colleghiTurnoDialogOpen, setColleghiTurnoDialogOpen] = useState(false);
     const [checkInValue, setCheckInValue] = useState<boolean>(true);
+    const [turnoSelezionato, setTurnoSelezionato] = useState<TurnoEvento | null>(null);
     const navigate = useNavigate();
 
-
     useEffect(() => {
-
-        /*
-        if (!navigator.geolocation) {
-            console.error('La geolocalizzazione non è supportata dal browser.');
-            return;
-        }
-
-        setWatcher(navigator.geolocation.watchPosition(
-            (pos: GeolocationPosition) => {
-                console.log("success inizio*****");
-                setPosition({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                });
-                console.log("success fine*****");
-            },
-            (err: GeolocationPositionError) => {
-                console.log("failure inizio*****");
-                console.error(err.message);
-                console.log("failure fine*****");
-            }
-        ));
-        */
-
         caricaTurniAssegnati();
         checkInCheckOutControl();
-        //getlocation();
     }, [])
-
 
     const caricaTurniAssegnati = async () => {
         const resp = await fetch(ezystaffBEUrl + `turni/turniGiornalieri/${idOperatore}`, {
@@ -106,7 +89,6 @@ const TaskOperatore = () => {
         console.log(data);
         console.log("Turni giornalieri fine******");
         setTurniGiornalieri(data);
-
     }
 
     const checkInCheckOutControl = async () => {
@@ -123,10 +105,7 @@ const TaskOperatore = () => {
         console.log("risposta: ******** " + JSON.stringify(data));
         console.log("data.statoCheck: " + data.statoCheck);
 
-        //if (data) {
         setStatoCheck(!data.statoCheck);
-        //}
-
     }
 
     const creaCheckInCheckOut = async (checkInCheckOut: CheckInCheckOut) => {
@@ -146,12 +125,6 @@ const TaskOperatore = () => {
         if (!resp.ok) {
             return { success: false, message: data.message };
         }
-        /*
-        if (!resp.ok) {
-            // alert("creaCheckInCheckOut!");
-            throw new Error(data.message || "Errore nella richiesta");
-        }
-            */
 
         console.log(data);
     }
@@ -177,12 +150,9 @@ const TaskOperatore = () => {
         motivazione: string
     ) => {
         e.preventDefault();
-
         setNotificaRitardoTimbraturaDialogOpen(false);
-
         await handleClick(checkIn, motivazione);
     };
-
 
     const verificaRitardoTimbratura = async () => {
         const resp = await fetch(ezystaffBEUrl + `operatori/richiediMotivazioneTimbratura/${idOperatore}`, {
@@ -229,9 +199,7 @@ const TaskOperatore = () => {
                         return;
                     }
 
-                    alert(
-                        `${checkIn ? 'Effettuato Check In' : 'Effettuato Check Out'}`
-                    );
+                    alert(`${checkIn ? 'Effettuato Check In' : 'Effettuato Check Out'}`);
                     checkInCheckOutControl();
                 } catch (err) {
                     console.error(err);
@@ -239,7 +207,6 @@ const TaskOperatore = () => {
                 } finally {
                     setLoading(false);
                 }
-                //setStatoCheck(!checkIn);
             },
             (error) => {
                 console.error("Errore:", error);
@@ -252,6 +219,16 @@ const TaskOperatore = () => {
                 timeout: 10000,
             }
         );
+    };
+
+    const apriReferenteEvento = (turno: TurnoEvento) => {
+        setTurnoSelezionato(turno);
+        setReferenteEventoDialogOpen(true);
+    };
+
+    const apriColleghiTurno = (turno: TurnoEvento) => {
+        setTurnoSelezionato(turno);
+        setColleghiTurnoDialogOpen(true);
     };
 
     const formatDateShort = (): string => {
@@ -292,38 +269,37 @@ const TaskOperatore = () => {
     }, []);
 
     return (
-        <section className="p-3">
-            <div className="pb-2 text-[24px] font-black text-[#006b44]">
+        <section className="min-h-screen bg-[#031821] p-3 font-['Mulish'] text-white">
+            <div className="pb-2 text-[24px] font-black text-[#19e6b3]">
                 Turni di oggi
             </div>
 
-            <div className="mb-6 flex items-center gap-2 text-[#424940] leading-none">
+            <div className="mb-6 flex items-center gap-2 text-[#9db7b6] leading-none">
                 <CalendarDays className="h-4 w-4" strokeWidth={1.5} />
                 <span className="text-[16px] font-normal">
                     {formatDateShort()}
                 </span>
             </div>
 
-            <div className="w-full max-w-xl mx-auto text-center mt-2 mb-6 border border-[#72ad97] pl-4 pr-4 pt-8 pb-8 rounded-[15px] bg-white">
+            <div className="w-full max-w-xl mx-auto text-center mt-2 mb-6 border border-[#0b6d5c] pl-4 pr-4 pt-8 pb-8 rounded-[20px] bg-[#061e28] shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
                 <div>
                     <div className="mb-6 leading-none text-center">
-                        <div className="text-[40px] font-semibold text-[#006b44]">
+                        <div className="text-[40px] font-semibold text-[#19e6b3]">
                             {oraCorrente}
                         </div>
-                        <div className="text-[12px] font-medium text-[#424940]">
+                        <div className="text-[12px] font-medium text-[#9db7b6]">
                             ORARIO CORRENTE
                         </div>
                     </div>
                     {turniGiornalieri.length === 0 ? (
                         <div className="flex flex-col items-center w-full gap-3">
-
-                            <span className="text-[22px] font-normal text-[#2b2b2b]">
+                            <span className="text-[22px] font-normal text-white">
                                 Nessun turno assegnato
                             </span>
 
                             <Button
                                 onClick={() => navigate("/operator/turniFuturi")}
-                                className="w-full rounded-[24px] bg-[#e48946] shadow-[0_2px_4px_0_rgba(0,0,0,0.5)] cursor-pointer"
+                                className="w-full rounded-[24px] bg-[#e48946] shadow-[0_2px_4px_0_rgba(0,0,0,0.5)] cursor-pointer hover:bg-[#cc773b]"
                                 size="lg"
                             >
                                 <span className="text-white text-[26px] font-bold">
@@ -333,11 +309,11 @@ const TaskOperatore = () => {
                         </div>
                     ) : (
                         <Button
-                            onClick={() => effettuaCheckInCheckOut(statoCheck)} disabled={loading}
-                            className={`w-full rounded-[25.5px] cursor-pointer 
-                             ${statoCheck
-                                    ? 'bg-[#019165] hover:bg-[#017a56]'
-                                    : 'bg-[#d64933] hover:bg-[#b63d2b]'}`}
+                            onClick={() => effettuaCheckInCheckOut(statoCheck)}
+                            disabled={loading}
+                            className={`w-full rounded-[25.5px] cursor-pointer ${statoCheck
+                                ? 'bg-[#019165] hover:bg-[#017a56]'
+                                : 'bg-[#d64933] hover:bg-[#b63d2b]'}`}
                             size="lg"
                         >
                             <span className="text-white text-[26px] font-bold flex items-center gap-2">
@@ -366,176 +342,142 @@ const TaskOperatore = () => {
                 </div>
             </div>
 
-
-
             {turniGiornalieri.map((turnoGiornaliero) => (
-                <>
-                    <Card className="shadow-lg w-full mx-auto mb-4 border-[#72ad97]">
+                <Card key={turnoGiornaliero.idTurno} className="shadow-lg w-full mx-auto mb-4 border-[#0b6d5c] bg-[#061e28] text-white">
+                    <CardContent className="space-y-6 px-0 pt-6">
+                        <div className="pr-4 pl-4 flex flex-col items-center">
+                            <span className="text-[#19e6b3] text-[16px] font-normal">EVENTO</span>
+                            <span className="text-[#19e6b3] text-[32px] font-extrabold leading-[1.2em] text-center">
+                                {turnoGiornaliero.titoloEvento}
+                            </span>
+                        </div>
 
-                        <CardContent className="space-y-6 px-0">
+                        <div className="border-b border-[#16464d] pr-4 pl-4 pb-4 flex flex-col items-center">
+                            <MapPin className="h-10 w-10" style={{ color: '#19e6b3' }} />
+                            <span className="text-[22px] font-normal text-[#cfe7e4] text-center">
+                                {turnoGiornaliero.localitaEvento}
+                            </span>
+                        </div>
 
-                            <div className="pr-4 pl-4 flex flex-col items-center">
-                                <span className="text-[#007a55] text-[16px] font-normal">EVENTO</span>
-                                <span className="text-[#007a55] text-[32px] font-extrabold leading-[1.2em]">{turnoGiornaliero.titoloEvento}</span>
-                            </div>
+                        <div className="items-center space-x-3 border-b border-[#16464d] pb-4">
+                            {turnoGiornaliero.orarioTurni.map((orarioTurno, index) => {
+                                const isEven = index % 2 === 0;
+                                const bgColor = isEven ? "bg-[#071f2c]" : "bg-[#082a24]";
 
-                            <div className="border-b border-gray-300 pr-4 pl-4 pb-4 flex flex-col items-center">
-                                <MapPin className="h-10 w-10" style={{ color: '#007a55' }} />
-                                <span className="text-[22px] font-normal text-[#5e5d5d]">{turnoGiornaliero.localitaEvento}</span>
-                            </div>
-
-                            <div className=" items-center space-x-3  border-b border-gray-300  pb-4">
-                                {turnoGiornaliero.orarioTurni.map((orarioTurno, index) => {
-                                    const isEven = index % 2 === 0;
-                                    const bgColor = isEven ? "bg-[#f7fbff]" : "bg-[#fffaf4]";
-
-                                    return (
-                                        <div key={index} className={`w-full space-y-1 p-4 ${bgColor}`}>
-
-                                            <div
-                                                className={`
-                                                        text-[18px] font-semibold mb-2 text-center rounded-[21px] py-2
-                                                        ${isEven
-                                                        ? "bg-[#e4f1ff] text-[#003a63]"  // PARI
-                                                        : "bg-[#fff4e6] text-[#7a4900]"  // DISPARI
-                                                    }
-                                                        `}
-                                            >
-                                                {index + 1 === 1
-                                                    ? "DETTAGLIO TURNO"
-                                                    : `DETTAGLIO TURNO ${index + 1}`}
-                                            </div>
-
-                                            <div className="border-b border-b-[#ececec] pt-5 pb-5 font-bold text-[20px] text-[#4f4f4f]">
-                                                Dalle {orarioTurno.oraInizio} alle {orarioTurno.oraFine}
-                                            </div>
-
-                                            <div className="space-y-2 pt-5 pb-5 border-b border-b-[#ececec]">
-                                                <div className="flex gap-2 text-[20px] ">
-                                                    <div className="text-[#4f4f4f] font-bold">
-                                                        Tipologia di turno:
-                                                    </div>
-                                                    <div className="text-[#2b2b2b] font-normal">
-                                                        {orarioTurno.tipologiaTurno}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-2 text-[20px]">
-                                                    <div className="text-[#4f4f4f]  font-bold">
-                                                        La tua mansione:
-                                                    </div>
-                                                    <div className="text-[#2b2b2b] font-normal">
-                                                        {orarioTurno.tipoMansione}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {orarioTurno.teamLeader ?
-                                                <div className="flex items-center w-full gap-2 pt-5 pb-5 border-b border-b-[#ececec]">
-                                                    <div className="text-[20px] font-bold text-[#4f4f4f]">
-                                                        SEI TEAM LEADER
-                                                    </div>
-                                                    <Crown className="h-6 w-6  stroke-[#007a55]" />
-                                                </div>
-                                                : ""}
-
-                                            <div className="items-center w-full text-[20px] gap-2 p-1 pt-5">
-                                                <div className="font-bold text-[#4f4f4f]">
-                                                    Note:
-                                                </div>
-                                                <div className="font-normal text-[#2b2b2b]" >
-                                                    {orarioTurno.notaTurno}
-                                                </div>
-                                            </div>
-
-
+                                return (
+                                    <div key={index} className={`w-full space-y-1 p-4 ${bgColor}`}>
+                                        <div
+                                            className={`text-[18px] font-semibold mb-2 text-center rounded-[21px] py-2 ${isEven
+                                                ? "bg-[#0b3242] text-[#9be7ff]"
+                                                : "bg-[#123b30] text-[#19e6b3]"
+                                            }`}
+                                        >
+                                            {index + 1 === 1
+                                                ? "DETTAGLIO TURNO"
+                                                : `DETTAGLIO TURNO ${index + 1}`}
                                         </div>
-                                    );
-                                })}
 
-                            </div>
+                                        <div className="border-b border-b-[#16464d] pt-5 pb-5 font-bold text-[20px] text-white">
+                                            Dalle {orarioTurno.oraInizio} alle {orarioTurno.oraFine}
+                                        </div>
 
-                            {/*
-                            <div className="border-b border-gray-300 pb-4">
-                                <div className="flex items-center gap-2">
-                                    <Pin className="h-6 w-6 text-[#007a55]" strokeWidth={1.5} />
-                                    <span className="text-[26px] font-extrabold text-[#007a55]">Info incarico</span>
-                                </div>
-
-                                <div className="flex gap-2 ml-4 p-1">
-                                    <div className="text-[#656565] text-[16px] font-bold">
-                                        Tipologia di turno:
-                                    </div>
-                                    <div className="text-[#5e8a7a] text-[16px] font-normal">
-                                        {turnoGiornaliero?.tipologiaTurno}
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2 ml-4 p-1">
-                                    <div className="text-[#656565] text-[16px] font-bold">
-                                        La tua mansione:
-                                    </div>
-                                    <div className="text-[#5e8a7a] text-[16px] font-normal">
-                                        {turnoGiornaliero?.tipoMansione}
-                                    </div>
-                                </div>
-                            </div>
-                            */}
-
-                            <div className="border-b border-gray-300 p-4 pb-4">
-                                {/* Titolo con icona */}
-                                <div className="flex items-center gap-2">
-                                    <ContactRound className="h-7 w-7 text-[#007a55]" strokeWidth={1.5} />
-                                    <span className="text-[26px] font-extrabold text-[#007a55]">Referente evento</span>
-                                </div>
-
-                                {/* Dettagli referente */}
-                                <div className="flex gap-2 ml-4 p-1">
-                                    <div className="text-[#656565] text-[16px] font-bold">
-                                        {turnoGiornaliero?.nomeCognomeReferente}:
-                                    </div>
-                                    <div className="text-[#5e8a7a] text-[16px] font-normal">
-                                        <a href={`tel:${turnoGiornaliero?.telefonoReferente}`} style={{ color: 'blue', textDecoration: 'underline' }}>
-                                            {turnoGiornaliero?.telefonoReferente}
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-4">
-                                <div className="flex items-center gap-2">
-                                    <UsersRound className="h-6 w-6" style={{ color: '#007a55' }} strokeWidth={1.5} />
-                                    <span className="text-[26px] font-extrabold text-[#007a55]">Colleghi</span>
-                                </div>
-
-                                {turnoGiornaliero.listaColleghi.map((collega) => (
-                                    <>
-                                        <div className="w-full ml-4 p-1">
-                                            <div className="flex gap-2">
-                                                <div className="text-[#656565] text-[16px] font-bold">
-                                                    {`${collega.nome} ${collega.cognome}`}
+                                        <div className="space-y-2 pt-5 pb-5 border-b border-b-[#16464d]">
+                                            <div className="flex flex-col gap-1 text-[20px]">
+                                                <div className="text-[#9db7b6] font-bold">
+                                                    Tipologia di turno:
                                                 </div>
-                                                <div className="text-[#5e8a7a] text-[16px] font-normal">
-                                                    {collega.telefono}
+                                                <div className="text-white font-normal">
+                                                    {orarioTurno.tipologiaTurno}
                                                 </div>
                                             </div>
-                                            <div className="flex gap-4">
-                                                <div className="text-[#656565] text-[16px] font-normal">
-                                                    Dalle {collega.oraInizio} alle {collega.oraFine}
+
+                                            <div className="flex flex-col gap-1 text-[20px]">
+                                                <div className="text-[#9db7b6] font-bold">
+                                                    La tua mansione:
                                                 </div>
-                                                <div className="text-[#333333] text-[16px] font-light">
-                                                    {collega.teamLeader ? "TEAM LEADER" : ""}
+                                                <div className="text-white font-normal">
+                                                    {orarioTurno.tipoMansione}
                                                 </div>
                                             </div>
                                         </div>
-                                    </>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
 
-                </>
+                                        {orarioTurno.teamLeader ? (
+                                            <div className="flex items-center w-full gap-2 pt-5 pb-5 border-b border-b-[#16464d]">
+                                                <div className="text-[20px] font-bold text-[#19e6b3]">
+                                                    SEI TEAM LEADER
+                                                </div>
+                                                <Crown className="h-6 w-6 stroke-[#19e6b3]" />
+                                            </div>
+                                        ) : null}
+
+                                        <div className="items-center w-full text-[20px] gap-2 p-1 pt-5">
+                                            <div className="font-bold text-[#9db7b6]">
+                                                Note:
+                                            </div>
+                                            <div className="font-normal text-white">
+                                                {orarioTurno.notaTurno}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="space-y-3 p-4 pt-0">
+                            <button
+                                type="button"
+                                onClick={() => apriReferenteEvento(turnoGiornaliero)}
+                                className="flex w-full items-center justify-between rounded-[18px] border border-[#16464d] bg-[#071f2c] p-4 text-left shadow-[0_10px_24px_rgba(0,0,0,0.22)]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0b3b38] text-[#19e6b3]">
+                                        <ContactRound className="h-6 w-6" strokeWidth={1.5} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[19px] font-extrabold text-white">Referente evento</div>
+                                        <div className="text-[13px] font-normal text-[#9db7b6]">
+                                            {turnoGiornaliero.nomeCognomeReferente || "Apri contatto referente"}
+                                        </div>
+                                    </div>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-[#19e6b3]" strokeWidth={2} />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => apriColleghiTurno(turnoGiornaliero)}
+                                className="flex w-full items-center justify-between rounded-[18px] border border-[#16464d] bg-[#071f2c] p-4 text-left shadow-[0_10px_24px_rgba(0,0,0,0.22)]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0b3b38] text-[#19e6b3]">
+                                        <UsersRound className="h-6 w-6" strokeWidth={1.5} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[19px] font-extrabold text-white">Colleghi</div>
+                                        <div className="text-[13px] font-normal text-[#9db7b6]">
+                                            {turnoGiornaliero.listaColleghi?.length || 0} persone collegate al turno
+                                        </div>
+                                    </div>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-[#19e6b3]" strokeWidth={2} />
+                            </button>
+                        </div>
+                    </CardContent>
+                </Card>
             ))}
+
+            <ReferenteEventoDialog
+                open={referenteEventoDialogOpen}
+                setOpen={setReferenteEventoDialogOpen}
+                nomeCognomeReferente={turnoSelezionato?.nomeCognomeReferente}
+                telefonoReferente={turnoSelezionato?.telefonoReferente}
+            />
+
+            <ColleghiTurnoDialog
+                open={colleghiTurnoDialogOpen}
+                setOpen={setColleghiTurnoDialogOpen}
+                colleghi={turnoSelezionato?.listaColleghi ?? []}
+            />
 
             <NotificaRitardoTimbraturaDialog
                 open={notificaRitardoTimbraturaDialogOpen}
@@ -543,7 +485,6 @@ const TaskOperatore = () => {
                 onSubmit={handleSubmitRitardo}
                 checkIn={checkInValue}
             />
-
         </section>
     )
 }
