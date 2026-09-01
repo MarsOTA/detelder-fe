@@ -22,3 +22,24 @@ html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] 
 html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-head"] {
   background-color: #123442 !important;
 }
+
+/* Gestione Turni day-summary bar: this is the full-width row with Assegnate / Mancano. */
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-body"] [data-slot="table-cell"][colspan] {
+  background: #162d38 !important;
+  background-color: #162d38 !important;
+  background-image: none !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  border-top: 1px solid #365362 !important;
+  border-bottom: 1px solid #365362 !important;
+}
+
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-body"] [data-slot="table-cell"][colspan] span {
+  color: #c5d3d8 !important;
+  -webkit-text-fill-color: #c5d3d8 !important;
+}
+
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-body"] [data-slot="table-cell"][colspan] span.text-\[18px\] {
+  color: #ffad66 !important;
+  -webkit-text-fill-color: #ffad66 !important;
+}
