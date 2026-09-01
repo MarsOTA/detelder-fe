@@ -124,3 +124,50 @@ html.admin-dark .admin-shell section.m-6 [data-slot="tabs-trigger"][data-state="
   border-color: #16f0c4 !important;
   box-shadow: none !important;
 }
+
+/* Payroll: edit fields must stay dark and readable, including legacy !bg-white utilities. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"],
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="number"] {
+  background: #0f2834 !important;
+  background-color: #0f2834 !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  caret-color: #16f0c4 !important;
+  border: 1px solid #365362 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color-scheme: dark !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"]:focus,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="number"]:focus {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 3px rgba(22, 240, 196, .14) !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.35) !important;
+  opacity: .9 !important;
+}
+
+/* Payroll: one border color for the entire grid; remove the white divider before the action column. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border table,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border th,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border td,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tr {
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border th,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border td {
+  border-right-color: #294653 !important;
+  border-left-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border th:last-child,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border td:last-child {
+  border-left: 1px solid #294653 !important;
+  border-right: 0 !important;
+}
