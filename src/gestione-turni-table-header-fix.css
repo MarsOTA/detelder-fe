@@ -43,3 +43,48 @@ html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-body"] [d
   color: #ffad66 !important;
   -webkit-text-fill-color: #ffad66 !important;
 }
+
+/* Gestione Turni filter toolbar: exact source div with bg-[#ecf3f1]. */
+html.admin-dark section.m-6 > div[class~="flex"][class~="items-center"][class*="bg-[#ecf3f1]"][class~="p-4"][class~="mb-1"] {
+  background: #0d2532 !important;
+  background-color: #0d2532 !important;
+  background-image: none !important;
+  border: 1px solid #294653 !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  gap: 0 !important;
+}
+
+/* Date + Filtra are one attached control. */
+html.admin-dark section.m-6 > div[class~="flex"][class~="items-center"][class*="bg-[#ecf3f1]"][class~="p-4"][class~="mb-1"] > div:first-child > button {
+  min-height: 44px !important;
+  margin: 0 !important;
+  border-radius: 14px 0 0 14px !important;
+  border-right-width: 0 !important;
+  background: #102934 !important;
+  border-color: #365362 !important;
+  color: #edf7f6 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark section.m-6 > div[class~="flex"][class~="items-center"][class*="bg-[#ecf3f1]"][class~="p-4"][class~="mb-1"] > div:nth-child(2) {
+  margin: 0 24px 0 0 !important;
+  padding: 0 !important;
+}
+
+html.admin-dark section.m-6 > div[class~="flex"][class~="items-center"][class*="bg-[#ecf3f1]"][class~="p-4"][class~="mb-1"] > div:nth-child(2) > button {
+  min-height: 44px !important;
+  margin: 0 0 0 -1px !important;
+  border-radius: 0 14px 14px 0 !important;
+  border-left-width: 0 !important;
+  background: #16f0c4 !important;
+  border-color: #16f0c4 !important;
+  color: #031821 !important;
+  -webkit-text-fill-color: #031821 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark section.m-6 > div[class~="flex"][class~="items-center"][class*="bg-[#ecf3f1]"][class~="p-4"][class~="mb-1"] > div:nth-child(2) > button:hover {
+  background: #19dfb8 !important;
+  border-color: #19dfb8 !important;
+}
