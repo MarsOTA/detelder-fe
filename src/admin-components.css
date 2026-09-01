@@ -1,0 +1,218 @@
+/* Shared semantic classes for admin pages.
+   Keep layout/states in JSX and theme colors here so page styling is not tied
+   to Tailwind-generated utility selectors such as bg-[#ecf3f1]. */
+
+.admin-page-heading {
+  border-color: #e4ebe8;
+}
+
+.admin-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 4px;
+  padding: 16px;
+  border: 1px solid #e4ebe8;
+  border-radius: 14px;
+  background: #f7f9f8;
+  box-shadow: none;
+}
+
+.admin-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.admin-filter-input,
+.admin-filter-date,
+.admin-filter-submit {
+  min-height: 40px;
+}
+
+.admin-filter-input {
+  width: 192px;
+  border-radius: 10px 0 0 10px !important;
+  border-color: #b9d0c7 !important;
+  background: #fff !important;
+}
+
+.admin-filter-date {
+  min-width: 190px;
+  border-radius: 0 !important;
+  margin-left: -1px;
+  border-color: #b9d0c7 !important;
+  background: #fff !important;
+  color: #2f3d38 !important;
+}
+
+.admin-filter-submit {
+  margin-left: -1px;
+  padding-inline: 18px;
+  border-radius: 0 10px 10px 0 !important;
+  background: #007a55 !important;
+  color: #fff !important;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+
+.admin-filter-submit:hover {
+  background: #006f4d !important;
+}
+
+.admin-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.admin-secondary-action {
+  min-height: 40px;
+  padding-inline: 20px;
+  border: 1px solid #b9d0c7 !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+  color: #007a55 !important;
+  font-weight: 700;
+  box-shadow: 0 2px 7px rgba(20, 55, 43, .04) !important;
+}
+
+.admin-secondary-action:hover {
+  border-color: #007a55 !important;
+  background: #007a55 !important;
+  color: #fff !important;
+}
+
+.admin-list-header {
+  background: #ebebeb !important;
+  color: #4d4d4d;
+  border: 1px solid #e4ebe8;
+  border-bottom: 0;
+}
+
+.admin-list-header > * {
+  color: inherit;
+}
+
+.admin-events-accordion {
+  border: 1px solid #e4ebe8;
+  border-top: 0;
+}
+
+.admin-events-accordion [data-slot="accordion-item"] {
+  border-color: #e4ebe8;
+}
+
+.admin-events-accordion [data-slot="accordion-trigger"] {
+  color: #326455;
+}
+
+.admin-events-subtable {
+  background: #fff;
+}
+
+.admin-events-subtable thead,
+.admin-events-subtable thead tr,
+.admin-events-subtable thead th {
+  background: #edf3f1 !important;
+  color: #4d4d4d !important;
+}
+
+.admin-events-subtable tbody {
+  background: #f8f8f8;
+}
+
+/* Dark theme: semantic selectors have one responsibility and replace the
+   brittle page-specific selectors previously based on utility-class strings. */
+html.admin-dark .admin-page-heading {
+  border-color: var(--admin-border) !important;
+}
+
+html.admin-dark .admin-filter-bar {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+}
+
+html.admin-dark .admin-filter-input,
+html.admin-dark .admin-filter-date {
+  border-color: var(--admin-border-strong) !important;
+  background: #0f2834 !important;
+  color: var(--admin-text) !important;
+  -webkit-text-fill-color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-filter-input::placeholder {
+  color: #78909a !important;
+  -webkit-text-fill-color: #78909a !important;
+}
+
+html.admin-dark .admin-filter-submit {
+  border-color: #008f67 !important;
+  background: #008f67 !important;
+  color: #f4fffb !important;
+}
+
+html.admin-dark .admin-filter-submit:hover {
+  background: #00a679 !important;
+}
+
+html.admin-dark .admin-secondary-action {
+  border-color: #456574 !important;
+  background: var(--admin-surface-2) !important;
+  color: var(--admin-accent) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-secondary-action:hover {
+  border-color: var(--admin-accent) !important;
+  background: #173744 !important;
+  color: var(--admin-accent) !important;
+}
+
+html.admin-dark .admin-list-header {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface-3) !important;
+  color: #d5e2e5 !important;
+}
+
+html.admin-dark .admin-events-accordion {
+  border-color: var(--admin-border) !important;
+  background: #0b2230;
+}
+
+html.admin-dark .admin-events-accordion [data-slot="accordion-item"] {
+  background: #0b2230 !important;
+  border-color: var(--admin-border) !important;
+}
+
+html.admin-dark .admin-events-accordion [data-slot="accordion-trigger"] {
+  color: #dce8ea !important;
+}
+
+html.admin-dark .admin-events-subtable,
+html.admin-dark .admin-events-subtable tbody,
+html.admin-dark .admin-events-subtable tbody tr {
+  background: #0b2230 !important;
+  color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-events-subtable thead,
+html.admin-dark .admin-events-subtable thead tr,
+html.admin-dark .admin-events-subtable thead th {
+  background: var(--admin-surface-3) !important;
+  color: #d5e2e5 !important;
+  border-color: var(--admin-border) !important;
+}
+
+@media (max-width: 1100px) {
+  .admin-filter-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .admin-filter-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+}
