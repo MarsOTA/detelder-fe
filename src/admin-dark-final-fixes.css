@@ -1,0 +1,95 @@
+/* Last-pass dark fixes for event dialog and admin filter groups. */
+
+/* Create event: custom address autocomplete (not Google .pac-container). */
+html.admin-dark .admin-address-suggestions {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border-strong) !important;
+  color: var(--admin-text) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .42) !important;
+}
+
+html.admin-dark .admin-address-suggestion {
+  background: transparent !important;
+  color: var(--admin-text) !important;
+  border-top: 1px solid var(--admin-border) !important;
+}
+
+html.admin-dark .admin-address-suggestion:first-child {
+  border-top: 0 !important;
+}
+
+html.admin-dark .admin-address-suggestion:hover {
+  background: var(--admin-control-hover) !important;
+  color: var(--admin-accent) !important;
+}
+
+html.admin-dark .admin-create-event-dialog .admin-dialog-secondary {
+  background: var(--admin-surface-2) !important;
+  color: var(--admin-text) !important;
+  border: 1px solid var(--admin-border-strong) !important;
+  -webkit-text-fill-color: var(--admin-text) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-create-event-dialog .admin-dialog-secondary:hover {
+  background: var(--admin-control-hover) !important;
+  color: var(--admin-accent) !important;
+  border-color: var(--admin-accent) !important;
+  -webkit-text-fill-color: var(--admin-accent) !important;
+}
+
+html.admin-dark .admin-create-event-dialog .admin-dialog-primary {
+  border-radius: 12px !important;
+}
+
+html.admin-dark .admin-create-event-actions {
+  gap: 14px !important;
+}
+
+/* Eventi: date/filter controls are now separate, coherent controls instead of a broken joined pair. */
+.admin-filter-group {
+  gap: 12px !important;
+}
+
+.admin-filter-date,
+.admin-filter-input,
+.admin-filter-submit {
+  border-radius: 12px !important;
+}
+
+.admin-filter-submit {
+  margin-left: 0 !important;
+  border-left: 1px solid #007a55 !important;
+  padding-inline: 22px !important;
+}
+
+html.admin-dark .admin-filter-submit {
+  border: 1px solid #008f67 !important;
+  background: #008f67 !important;
+  color: #ffffff !important;
+}
+
+html.admin-dark .admin-filter-submit:hover {
+  background: #00a679 !important;
+}
+
+/* Lista Operatori: force visible spacing between every filter control. */
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3,
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 {
+  display: flex !important;
+  column-gap: 16px !important;
+  row-gap: 12px !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > *,
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > div.flex.items-center.gap-2.border-l,
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > div.flex.items-center.gap-2.border-l {
+  margin-left: 4px !important;
+  padding-left: 18px !important;
+  gap: 10px !important;
+}
