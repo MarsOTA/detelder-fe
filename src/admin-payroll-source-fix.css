@@ -24,13 +24,15 @@ html.admin-dark section.m-6 table input[type="time"] {
   color-scheme: dark !important;
 }
 
-/* The visible clock is rendered in JSX; hide only the browser icon, not the time input itself. */
+/* The visible clock is the Lucide Clock rendered in JSX. Remove the browser icon entirely. */
 html.admin-dark section.m-6 table input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none !important;
   opacity: 0 !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 0 !important;
+  height: 0 !important;
   margin: 0 !important;
-  cursor: pointer !important;
+  padding: 0 !important;
+  pointer-events: none !important;
 }
 
 html.admin-dark .admin-payroll-time-trigger {
