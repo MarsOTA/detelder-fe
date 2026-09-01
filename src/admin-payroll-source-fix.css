@@ -19,23 +19,33 @@ html.admin-dark section.m-6 table input[type="number"] {
   outline: none !important;
 }
 
-/* Keep the browser time picker fully functional and only tone its native icon. */
 html.admin-dark section.m-6 table input[type="time"] {
-  padding-right: 12px !important;
+  padding-right: 34px !important;
   color-scheme: dark !important;
 }
 
+/* The visible clock is rendered in JSX; hide only the browser icon, not the time input itself. */
 html.admin-dark section.m-6 table input[type="time"]::-webkit-calendar-picker-indicator {
-  display: block !important;
-  -webkit-appearance: auto !important;
-  appearance: auto !important;
-  opacity: .72 !important;
-  width: 16px !important;
-  height: 16px !important;
-  margin: 0 2px 0 6px !important;
-  padding: 0 !important;
+  opacity: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
   cursor: pointer !important;
-  filter: invert(67%) sepia(8%) saturate(451%) hue-rotate(153deg) brightness(91%) contrast(88%) !important;
+}
+
+html.admin-dark .admin-payroll-time-trigger {
+  z-index: 2;
+  color: #8fa4ac !important;
+  background: transparent !important;
+  border: 0 !important;
+  min-height: 0 !important;
+  border-radius: 6px !important;
+  line-height: 0;
+}
+
+html.admin-dark .admin-payroll-time-trigger:hover {
+  color: #a9bbc2 !important;
+  background: rgba(255,255,255,.04) !important;
 }
 
 html.admin-dark section.m-6 table input[type="time"]:focus,
