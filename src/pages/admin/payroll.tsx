@@ -188,22 +188,14 @@ const payroll = () => {
     return parti.length >= 2 ? `${parti[0]}:${parti[1]}` : String(valore);
   };
 
-  // Il contatore deve rappresentare esclusivamente le ore della colonna azzurra ORE
-  // dei turni già ELABORATI. Non usa le ore effettive delle timbrature.
   const getTotalHours = (records: TurnoCompleto[]): string => {
     const totalMinutes = records
       .filter((turno) => turno.statoPayroll === "ELABORATO")
       .reduce(
         (totale, turno) =>
-          totale +
-          calcolaMinutiDefinitivi(
-            turno.oraInizioDefinitivo,
-            turno.oraFineDefinitivo,
-            turno.orePausaDefinitiva ?? 0
-          ),
+          totale + calcolaMinutiDefinitivi(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva ?? 0),
         0
       );
-
     return formatMinuti(totalMinutes);
   };
 
@@ -236,7 +228,7 @@ const payroll = () => {
   };
 
   return (
-    <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
+    <section className="admin-payroll-page m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
       <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
         <div>
           <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">Rendicontazione ore operatori</h1>
@@ -291,19 +283,19 @@ const payroll = () => {
         </div>
       </div>
 
-      <div className="border rounded-md bg-white border-r border-r-[#e5e7eb]">
-        <Table>
+      <div className="admin-payroll-table-wrap border rounded-md">
+        <Table className="admin-payroll-table">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOMINATIVO</TableHead>
-              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(65,101,89,0.2)] border-r border-r-[#e5e7eb]">PREVISTO</TableHead>
-              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(0,80,50,0.2)] border-r border-r-[#e5e7eb]">EFFETTIVO</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">DELTA</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#e6f4ff] border-r border-r-[#e5e7eb]">DEFINITIVO</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#d0e8fe] border-r border-r-[#e5e7eb]">ORE</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#e5e7eb]">NOTA</TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-[#3f4942]">STATO</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#294653]">NOMINATIVO</TableHead>
+              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(65,101,89,0.2)] border-r border-r-[#294653]">PREVISTO</TableHead>
+              <TableHead colSpan={2} className="text-center text-[12px] font-bold text-[#3f4942] bg-[rgba(0,80,50,0.2)] border-r border-r-[#294653]">EFFETTIVO</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#294653]">DELTA</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#294653]">NOTA</TableHead>
+              <TableHead className="admin-payroll-definitive-head text-center text-[12px] font-bold text-[#3f4942] bg-[#e6f4ff] border-r border-r-[#294653]">DEFINITIVO</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] bg-[#d0e8fe] border-r border-r-[#294653]">ORE</TableHead>
+              <TableHead className="text-center text-[12px] font-bold text-[#3f4942] border-r border-r-[#294653]">NOTA</TableHead>
+              <TableHead className="admin-payroll-state-head text-center text-[12px] font-bold text-[#3f4942] border-l border-l-[#294653]">STATO</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -352,23 +344,23 @@ const payroll = () => {
                     <TableCell className="bg-[rgba(0,80,50,0.2)] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{formatOreBrevi(turno.oreLavorateTurno)} h</div></TableCell>
                     <TableCell><div className={`h-full w-full flex items-center justify-center px-2 text-[16px] ${turno.delta === "00:00:00" ? "font-normal text-[#3f4942]" : "font-bold text-[#ba1a1a]"}`}>{formatOreBrevi(turno.delta)} h</div></TableCell>
                     <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneRitardo || "Nessuna motivazione"}>{turno.motivazioneRitardo || "—"}</span></TableCell>
-                    <TableCell>
+                    <TableCell className="admin-payroll-edit-cell border-r border-r-[#294653]">
                       <div className="flex flex-col gap-2 w-full">
                         <div className="flex items-center gap-2 w-full">
-                          <Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" />
-                          <Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="flex-1 bg-white !border-0 !shadow-none !outline-none" />
+                          <Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input flex-1 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
+                          <Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input flex-1 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
                         </div>
                         <div className="flex justify-center">
                           <div className="relative w-fit">
-                            <CirclePause size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                            <Input type="number" min={0} max={5} step={0.5} value={turno.orePausaDefinitiva} onChange={(e) => setNumeroOrePausa(turno.idTurno, e.target.value !== "" ? parseFloat(e.target.value) : undefined)} className="w-[100px] pl-8 !bg-white !border-0 !shadow-none !outline-none" />
+                            <CirclePause size={18} className="admin-payroll-pause-icon absolute left-2 top-1/2 -translate-y-1/2 text-[#8fa4ac] pointer-events-none" />
+                            <Input type="number" min={0} max={5} step={0.5} value={turno.orePausaDefinitiva} onChange={(e) => setNumeroOrePausa(turno.idTurno, e.target.value !== "" ? parseFloat(e.target.value) : undefined)} className="admin-payroll-edit-input w-[100px] pl-8 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="bg-[#d0e8fe] p-0"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{calcolaTotaleOre(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva)} h</div></TableCell>
-                    <TableCell className="text-center"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneContestazione || "Nessuna motivazione"}>{turno.motivazioneContestazione || "—"}</span></TableCell>
-                    <TableCell>
+                    <TableCell className="bg-[#d0e8fe] p-0 border-r border-r-[#294653]"><div className="h-full w-full flex items-center justify-center px-2 text-[16px] font-bold text-[#191c1d]">{calcolaTotaleOre(turno.oraInizioDefinitivo, turno.oraFineDefinitivo, turno.orePausaDefinitiva)} h</div></TableCell>
+                    <TableCell className="admin-payroll-note-cell text-center border-r border-r-[#294653]"><span className="block max-w-[160px] truncate text-[13px] text-[#656565]" title={turno.motivazioneContestazione || "Nessuna motivazione"}>{turno.motivazioneContestazione || "—"}</span></TableCell>
+                    <TableCell className="admin-payroll-state-cell border-l border-l-[#294653]">
                       {turno.statoPayroll === "DA_ELABORARE" && <Button onClick={() => salvaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffedd5] text-[11px] font-bold text-[#c2410c] hover:bg-[#ffedd5] hover:text-[#c2410c]">Da elaborare</Button>}
                       {turno.statoPayroll === "ELABORATO" && <Button onClick={() => eliminaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#9df5c3] text-[11px] font-bold text-[#002112] hover:bg-[#9df5c3] hover:text-[#002112]">Rielabora</Button>}
                       {turno.statoPayroll === "CONTESTATO" && <Button onClick={() => modificaPayroll(turno.idTurno)} className="w-full cursor-pointer rounded-[5px] bg-[#ffd5d5] text-[11px] font-bold text-[#c2410c] hover:bg-[#ffd5d5] hover:text-[#c2410c]">Contestato</Button>}
