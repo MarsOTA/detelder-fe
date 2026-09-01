@@ -47,7 +47,6 @@
   color: #2f3d38 !important;
 }
 
-/* Only the control immediately before Filtra is joined to it. */
 .admin-filter-date:has(+ .admin-filter-submit),
 .admin-filter-input:has(+ .admin-filter-submit) {
   border-top-right-radius: 0 !important;
@@ -133,7 +132,6 @@
   background: #f8f8f8;
 }
 
-/* Presenze: same control rhythm as Eventi. */
 .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl {
   gap: 8px !important;
   padding: 14px 16px !important;
@@ -167,7 +165,6 @@
   border-radius: 10px !important;
 }
 
-/* Operatori: controls are separate items, never visually fused. */
 .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 {
   padding: 14px 16px !important;
   border: 1px solid #e4ebe8;
@@ -197,7 +194,6 @@
   border-radius: 10px !important;
 }
 
-/* Dark theme */
 html.admin-dark .admin-page-heading {
   border-color: var(--admin-border) !important;
 }
@@ -313,7 +309,6 @@ html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-ce
   color: #55f0c9 !important;
 }
 
-/* Clienti: sort button and empty/detail panels must never remain white in dark mode. */
 html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .col-span-1 > div:first-child .flex.gap-2 > button {
   border-color: var(--admin-border-strong) !important;
   background: #0f2834 !important;
@@ -333,9 +328,11 @@ html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 .te
   color: var(--admin-muted) !important;
 }
 
-/* Payroll: force the full toolbar dark without depending on arbitrary Tailwind class escaping. */
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 {
+/* Payroll: match the actual class attribute instead of trying to escape
+   arbitrary Tailwind classes as CSS selectors. */
+html.admin-dark .admin-shell section.m-6 > div[class*="bg-[#ecf3f1]"][class*="mb-1"] {
   background: var(--admin-surface) !important;
+  background-color: var(--admin-surface) !important;
   border: 1px solid var(--admin-border) !important;
   border-radius: 14px !important;
   padding: 12px !important;
@@ -343,16 +340,24 @@ html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 {
   box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 > div.flex.items-center.p-4.mb-1 {
+html.admin-dark .admin-shell section.m-6 > div[class*="bg-[#ecf3f1]"][class*="mb-1"] > div[class*="bg-[#ecf3f1]"] {
   background: transparent !important;
+  background-color: transparent !important;
   border: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
   box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 > div.flex.items-center.p-4.mb-1 ~ div {
-  background-color: transparent;
+/* Extra guard for the exact Payroll toolbar structure. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center {
+  background: var(--admin-surface) !important;
+  background-color: var(--admin-surface) !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center > .flex.items-center:first-child {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 @media (max-width: 1100px) {
