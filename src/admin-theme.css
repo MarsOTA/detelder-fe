@@ -329,3 +329,58 @@ html.admin-dark .admin-logout:hover {
   background: #12303b !important;
   color: var(--admin-accent) !important;
 }
+
+/* Final legacy normalization: some admin pages still hard-code light utility classes on table headers. */
+html.admin-dark body #root .admin-shell thead[class*="bg-white"],
+html.admin-dark body #root .admin-shell thead[class*="bg-gray-50"],
+html.admin-dark body #root .admin-shell thead tr[class*="bg-white"],
+html.admin-dark body #root .admin-shell thead tr[class*="bg-gray-50"],
+html.admin-dark body #root .admin-shell thead th[class*="bg-white"],
+html.admin-dark body #root .admin-shell thead th[class*="bg-gray-50"],
+html.admin-dark body #root .admin-shell thead [class*="bg-[#fff"],
+html.admin-dark body #root .admin-shell thead [class*="bg-[#FFF"] {
+  background: var(--admin-surface-3) !important;
+  color: #d5e2e5 !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Table-header toolbars: inputs/selects/actions share the same visual language. */
+html.admin-dark body #root .admin-shell thead input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark body #root .admin-shell thead textarea,
+html.admin-dark body #root .admin-shell thead [role="combobox"],
+html.admin-dark body #root .admin-shell thead button:not([class*="bg-[#9df5c3]"]):not([class*="bg-[#ffedd5]"]):not([class*="bg-[#ffd5d5]"]):not([class*="bg-[#d5e2ff]"]) {
+  min-height: 38px !important;
+  background: #0f2834 !important;
+  border: 1px solid #3b5865 !important;
+  color: #edf7f6 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark body #root .admin-shell thead button:not([class*="bg-[#9df5c3]"]):not([class*="bg-[#ffedd5]"]):not([class*="bg-[#ffd5d5]"]):not([class*="bg-[#d5e2ff]"]):hover {
+  background: #173744 !important;
+  border-color: var(--admin-accent) !important;
+  color: var(--admin-accent) !important;
+}
+
+/* Neutral legacy buttons left outside thead. Semantic/status buttons are intentionally excluded. */
+html.admin-dark body #root .admin-shell button.bg-gray-50,
+html.admin-dark body #root .admin-shell button.bg-gray-100,
+html.admin-dark body #root .admin-shell button.bg-slate-50,
+html.admin-dark body #root .admin-shell button.bg-slate-100,
+html.admin-dark body #root .admin-shell button[class*="bg-[#f7f9f8]"],
+html.admin-dark body #root .admin-shell button[class*="bg-[#f8f8f8]"],
+html.admin-dark body #root .admin-shell button[class*="bg-[#F8F8F8]"] {
+  background: var(--admin-surface-2) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-text) !important;
+  box-shadow: none !important;
+}
+
+/* Admin filter/search rows get consistent control height and spacing without touching page layout. */
+html.admin-dark body #root .admin-shell section.m-6 input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark body #root .admin-shell section.m-6 [role="combobox"],
+html.admin-dark body #root .admin-shell section.m-6 button[data-slot="popover-trigger"] {
+  min-height: 40px;
+  border-radius: 10px !important;
+}
