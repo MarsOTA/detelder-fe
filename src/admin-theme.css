@@ -32,6 +32,21 @@ html.admin-dark .admin-shell .text-\[\#656565\] {
   color: var(--admin-muted) !important;
 }
 
+/* Structural borders: wrappers, tables and dividers use one dark border token.
+   Buttons, badges and form controls are intentionally excluded because they can
+   carry semantic border colours. */
+html.admin-dark .admin-shell section[class*="border"],
+html.admin-dark .admin-shell div[class*="border"],
+html.admin-dark .admin-shell table,
+html.admin-dark .admin-shell thead,
+html.admin-dark .admin-shell tbody,
+html.admin-dark .admin-shell tr,
+html.admin-dark .admin-shell th,
+html.admin-dark .admin-shell td,
+html.admin-dark .admin-shell hr {
+  border-color: var(--admin-border) !important;
+}
+
 /* Legacy toolbars. These selectors intentionally override the old light rule in index.css. */
 html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
 html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
@@ -112,13 +127,6 @@ html.admin-dark .admin-shell tbody tr:nth-child(even) {
 
 html.admin-dark .admin-shell tbody tr:hover {
   background: #12303b;
-}
-
-html.admin-dark .admin-shell table,
-html.admin-dark .admin-shell tr,
-html.admin-dark .admin-shell td,
-html.admin-dark .admin-shell th {
-  border-color: var(--admin-border) !important;
 }
 
 /* Eventi accordion */
