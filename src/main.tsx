@@ -1,12 +1,12 @@
 import { Fragment } from 'react'
 import { createRoot } from 'react-dom/client'
+import '@mantine/core/styles.css';
 import './index.css'
 import './operatori-filters-fix.css'
-import './admin-theme.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
+import './admin-theme.css'
 import App from './App.tsx'
-import '@mantine/core/styles.css';
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
 
