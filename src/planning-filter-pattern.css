@@ -1,0 +1,83 @@
+/* Shared attached-field + Filtra pattern based on Planning Turni. */
+
+/* PRESENZE: title filter + Filtra */
+section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"] {
+  min-height: 44px !important;
+  border-radius: 14px 0 0 14px !important;
+  border-right: 0 !important;
+  margin-right: 0 !important;
+}
+
+section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"] + button {
+  min-height: 44px !important;
+  margin-left: -12px !important;
+  border-radius: 0 14px 14px 0 !important;
+  border-left: 0 !important;
+  padding-inline: 22px !important;
+}
+
+/* PAYROLL: second date + Filtra */
+section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 {
+  gap: 0 !important;
+}
+
+section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:first-child > button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  margin-right: 10px !important;
+}
+
+section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) > button {
+  min-height: 44px !important;
+  border-radius: 14px 0 0 14px !important;
+  border-right: 0 !important;
+}
+
+section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) + button {
+  min-height: 44px !important;
+  margin-left: 0 !important;
+  border-radius: 0 14px 14px 0 !important;
+  border-left: 0 !important;
+  padding-inline: 22px !important;
+}
+
+/* Dark palette */
+html.admin-dark section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"],
+html.admin-dark section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div > button {
+  background: #0f2834 !important;
+  border-color: #365362 !important;
+  color: #16f0c4 !important;
+  -webkit-text-fill-color: #16f0c4 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"]::placeholder {
+  color: #8fa4ac !important;
+  -webkit-text-fill-color: #8fa4ac !important;
+}
+
+html.admin-dark section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"] + button,
+html.admin-dark section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) + button {
+  background: #16f0c4 !important;
+  border-color: #16f0c4 !important;
+  color: #031821 !important;
+  -webkit-text-fill-color: #031821 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"] + button:hover,
+html.admin-dark section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) + button:hover {
+  background: #19dfb8 !important;
+  border-color: #19dfb8 !important;
+}
+
+@media (max-width: 1100px) {
+  section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"],
+  section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input[type="text"] + button,
+  section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) > button,
+  section.m-6 > div.flex.items-center.bg-transparent.mb-1 > div.flex.items-center.bg-transparent.p-4.mb-1 > div:nth-child(2) + button {
+    border: 1px solid #365362 !important;
+    border-radius: 14px !important;
+    margin-left: 0 !important;
+  }
+}
