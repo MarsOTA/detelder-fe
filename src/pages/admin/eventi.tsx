@@ -392,7 +392,7 @@ const eventi = () => {
             </div>
 
             <div>
-                <div className="grid w-full grid-cols-[40px_1fr_1fr_1fr_0.5fr_1fr_1fr_80px_40px] gap-2 bg-[#ebebeb] pt-4 pb-4">
+                <div className="admin-events-table-header grid w-full grid-cols-[40px_1fr_1fr_1fr_0.5fr_1fr_1fr_80px_40px] gap-2 bg-[#ebebeb] pt-4 pb-4">
                     <div></div>
                     <div onClick={() => sortEventiBy("nomeEvento")} className="cursor-pointer select-none text-left font-semibold hover:underline">Nome evento {renderArrowEventi("nomeEvento")}</div>
                     <div onClick={() => sortEventiBy("dataIniziale")} className="cursor-pointer select-none text-left font-semibold hover:underline">Dal {renderArrowEventi("dataIniziale")}</div>
