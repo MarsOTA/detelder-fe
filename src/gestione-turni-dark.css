@@ -58,13 +58,11 @@ html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:last-child > div h
   -webkit-text-fill-color: #16f0c4 !important;
 }
 
-/* Icon chips in event info */
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:first-child svg[style] {
   background: #173a48 !important;
   color: #b7c8d0 !important;
 }
 
-/* Inputs/selects in the creation card */
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch input,
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[role="combobox"],
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[data-slot="select-trigger"] {
@@ -93,15 +91,13 @@ html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[class*="bg-[#72ad
   font-weight: 800 !important;
 }
 
-/* Divider between cards and planning list */
 html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 {
   border-color: #294653 !important;
   margin: 18px 0 !important;
 }
 
-/* Filter/copy card */
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center,
-html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+/* Exact source class: flex items-center bg-[#ecf3f1] p-4 mb-1 */
+html.admin-dark section.m-6 > div[class*="bg-[#ecf3f1]"][class*="items-center"][class*="p-4"][class*="mb-1"] {
   background: #0d2532 !important;
   background-color: #0d2532 !important;
   border: 1px solid #294653 !important;
@@ -113,8 +109,7 @@ html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
   box-shadow: 0 8px 24px rgba(0,0,0,.14) !important;
 }
 
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > div:first-child button,
-html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child button {
+html.admin-dark section.m-6 > div[class*="bg-[#ecf3f1]"][class*="items-center"][class*="p-4"][class*="mb-1"] > div:first-child button {
   background: #102d3a !important;
   border-color: #365362 !important;
   color: #edf7f6 !important;
@@ -123,8 +118,7 @@ html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > d
   min-height: 42px !important;
 }
 
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > .mr-8 button,
-html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > .mr-8 button {
+html.admin-dark section.m-6 > div[class*="bg-[#ecf3f1]"][class*="items-center"][class*="p-4"][class*="mb-1"] > .mr-8 button {
   background: #16f0c4 !important;
   color: #031821 !important;
   -webkit-text-fill-color: #031821 !important;
@@ -134,8 +128,7 @@ html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > .
   margin-left: -1px !important;
 }
 
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > div:last-child button,
-html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:last-child button {
+html.admin-dark section.m-6 > div[class*="bg-[#ecf3f1]"][class*="items-center"][class*="p-4"][class*="mb-1"] > div:last-child button {
   background: #17283d !important;
   color: #b8c8ff !important;
   -webkit-text-fill-color: #b8c8ff !important;
@@ -143,9 +136,7 @@ html.admin-dark section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > d
   border-radius: 12px !important;
 }
 
-/* Turn table */
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center + table,
-html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center + div table {
+html.admin-dark section.m-6 table.mt-1 {
   background: #0b2230 !important;
   border: 1px solid #294653 !important;
   border-radius: 14px !important;
@@ -177,7 +168,6 @@ html.admin-dark section.m-6 table.mt-1 tbody td {
   border-color: #294653 !important;
 }
 
-/* Day summary row */
 html.admin-dark section.m-6 table.mt-1 tbody td[colspan] {
   background: #162d38 !important;
   border-top: 1px solid #365362 !important;
@@ -194,7 +184,6 @@ html.admin-dark section.m-6 table.mt-1 tbody td[colspan] span.text-\[18px\] {
   -webkit-text-fill-color: #ffad66 !important;
 }
 
-/* Bottom totals */
 html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end > div {
   background: #0d2c2a !important;
   border: 1px solid #28544d !important;
@@ -211,7 +200,6 @@ html.admin-dark section.m-6 > .w-full.mt-4.flex.just-end span[style*="25px"] {
   color: #16f0c4 !important;
 }
 
-/* Assign operator dialog: explicit dark contract, no inherited black text. */
 html.admin-dark .admin-assign-operator-dialog {
   background: #0c1d2d !important;
   color: #edf7f6 !important;
