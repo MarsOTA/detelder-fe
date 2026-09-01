@@ -1,0 +1,206 @@
+/* Final admin dark normalization layer. Loaded last on purpose. */
+html.admin-dark {
+  --admin-control: #0f2834;
+  --admin-control-hover: #173744;
+  --admin-control-border: #365362;
+  --admin-control-text: #edf7f6;
+  --admin-control-muted: #8fa4ac;
+}
+
+/* Generic legacy light surfaces still used in admin pages/components. */
+html.admin-dark .admin-shell .bg-white,
+html.admin-dark .admin-shell .bg-\[\#fff\],
+html.admin-dark .admin-shell .bg-\[\#ffffff\],
+html.admin-dark .admin-shell .bg-gray-50,
+html.admin-dark .admin-shell .bg-\[\#eaeff4\],
+html.admin-dark .admin-shell [style*="background-color: rgb(234, 239, 244)"],
+html.admin-dark .admin-shell [style*="background-color:#eaeff4"],
+html.admin-dark .admin-shell [style*="background-color: #eaeff4"] {
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+  color: var(--admin-text) !important;
+}
+
+/* Legacy typography used heavily in operator detail/anagraphic components. */
+html.admin-dark .admin-shell .text-\[\#4c4a4a\],
+html.admin-dark .admin-shell .text-\[\#4d4d4d\],
+html.admin-dark .admin-shell .text-\[\#3f4942\],
+html.admin-dark .admin-shell .text-\[\#5e5d5d\],
+html.admin-dark .admin-shell .text-\[\#191c1d\] {
+  color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-shell .text-\[\#747474\],
+html.admin-dark .admin-shell .text-\[\#656565\],
+html.admin-dark .admin-shell .text-gray-500,
+html.admin-dark .admin-shell .text-gray-600,
+html.admin-dark .admin-shell .text-gray-700,
+html.admin-dark .admin-shell .text-muted-foreground {
+  color: var(--admin-muted) !important;
+}
+
+html.admin-dark .admin-shell h2,
+html.admin-dark .admin-shell h3,
+html.admin-dark .admin-shell h4,
+html.admin-dark [data-slot="dialog-title"] {
+  color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-shell h3.text-\[\#007a55\],
+html.admin-dark .admin-shell h2.text-\[\#007a55\] {
+  color: var(--admin-accent) !important;
+}
+
+/* Every editable native/shadcn field in the admin. */
+html.admin-dark .admin-shell input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark .admin-shell textarea,
+html.admin-dark .admin-shell select,
+html.admin-dark .admin-shell [data-slot="input"],
+html.admin-dark .admin-shell [data-slot="select-trigger"],
+html.admin-dark .admin-shell [role="combobox"] {
+  background: var(--admin-control) !important;
+  background-color: var(--admin-control) !important;
+  color: var(--admin-control-text) !important;
+  -webkit-text-fill-color: var(--admin-control-text) !important;
+  border-color: var(--admin-control-border) !important;
+  box-shadow: none !important;
+  color-scheme: dark;
+}
+
+html.admin-dark .admin-shell input::placeholder,
+html.admin-dark .admin-shell textarea::placeholder {
+  color: var(--admin-control-muted) !important;
+  -webkit-text-fill-color: var(--admin-control-muted) !important;
+  opacity: 1 !important;
+}
+
+html.admin-dark .admin-shell input:focus,
+html.admin-dark .admin-shell textarea:focus,
+html.admin-dark .admin-shell select:focus,
+html.admin-dark .admin-shell [data-slot="select-trigger"]:focus,
+html.admin-dark .admin-shell [data-slot="select-trigger"][data-state="open"] {
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 3px rgba(22, 240, 196, .13) !important;
+  outline: none !important;
+}
+
+html.admin-dark .admin-shell input:disabled,
+html.admin-dark .admin-shell textarea:disabled,
+html.admin-dark .admin-shell [data-slot="select-trigger"][data-disabled] {
+  background: #0b202a !important;
+  color: #83969d !important;
+  -webkit-text-fill-color: #83969d !important;
+  opacity: .78 !important;
+}
+
+/* Checkbox/switch visibility. */
+html.admin-dark .admin-shell [data-slot="checkbox"] {
+  border-color: #5b7783 !important;
+  background: #0c2430 !important;
+}
+html.admin-dark .admin-shell [data-slot="checkbox"][data-state="checked"] {
+  background: var(--admin-accent) !important;
+  border-color: var(--admin-accent) !important;
+  color: #031821 !important;
+}
+
+/* Portalled Dialog, Popover and Select: these live outside .admin-shell. */
+html.admin-dark [data-slot="dialog-content"],
+html.admin-dark [data-slot="popover-content"],
+html.admin-dark [data-slot="select-content"],
+html.admin-dark [role="dialog"],
+html.admin-dark [role="listbox"] {
+  background: var(--admin-surface) !important;
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+  border-color: var(--admin-border-strong) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .42) !important;
+}
+
+html.admin-dark [data-slot="dialog-content"] label,
+html.admin-dark [data-slot="dialog-content"] span:not(.sr-only),
+html.admin-dark [data-slot="popover-content"] label,
+html.admin-dark [data-slot="select-content"] {
+  color: var(--admin-text);
+}
+
+html.admin-dark [data-slot="dialog-description"],
+html.admin-dark [data-slot="select-label"] {
+  color: var(--admin-muted) !important;
+}
+
+html.admin-dark [data-slot="dialog-content"] input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark [data-slot="dialog-content"] textarea,
+html.admin-dark [data-slot="dialog-content"] select,
+html.admin-dark [data-slot="dialog-content"] [data-slot="select-trigger"],
+html.admin-dark [data-slot="popover-content"] input:not([type="checkbox"]):not([type="radio"]),
+html.admin-dark [data-slot="popover-content"] textarea,
+html.admin-dark [data-slot="popover-content"] [data-slot="select-trigger"] {
+  background: var(--admin-control) !important;
+  background-color: var(--admin-control) !important;
+  color: var(--admin-control-text) !important;
+  -webkit-text-fill-color: var(--admin-control-text) !important;
+  border-color: var(--admin-control-border) !important;
+  box-shadow: none !important;
+  color-scheme: dark;
+}
+
+html.admin-dark [data-slot="dialog-content"] input::placeholder,
+html.admin-dark [data-slot="dialog-content"] textarea::placeholder,
+html.admin-dark [data-slot="popover-content"] input::placeholder {
+  color: var(--admin-control-muted) !important;
+  -webkit-text-fill-color: var(--admin-control-muted) !important;
+}
+
+html.admin-dark [data-slot="select-item"] {
+  color: var(--admin-text) !important;
+}
+html.admin-dark [data-slot="select-item"]:focus,
+html.admin-dark [data-slot="select-item"][data-highlighted] {
+  background: #173744 !important;
+  color: var(--admin-accent) !important;
+}
+
+html.admin-dark [data-slot="dialog-close"] {
+  color: var(--admin-muted) !important;
+}
+html.admin-dark [data-slot="dialog-close"]:hover {
+  background: #173744 !important;
+  color: var(--admin-accent) !important;
+}
+
+/* Calendar inside popovers. */
+html.admin-dark [data-slot="popover-content"] button:not([class*="bg-[#"]),
+html.admin-dark [data-slot="popover-content"] [data-day] {
+  color: var(--admin-text);
+}
+html.admin-dark [data-slot="popover-content"] button:hover {
+  background-color: #173744;
+}
+
+/* Tables: force readable text and one border language everywhere. */
+html.admin-dark .admin-shell table,
+html.admin-dark .admin-shell th,
+html.admin-dark .admin-shell td {
+  border-color: var(--admin-border) !important;
+}
+html.admin-dark .admin-shell tbody td {
+  color: var(--admin-text);
+}
+
+/* Native date/time controls. */
+html.admin-dark input[type="date"]::-webkit-calendar-picker-indicator,
+html.admin-dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html.admin-dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.45);
+  opacity: .85;
+}
+
+/* Keep primary actions visually strong. */
+html.admin-dark .admin-shell button.bg-\[\#007a55\],
+html.admin-dark [data-slot="dialog-content"] button.bg-\[\#007a55\] {
+  background: #008f67 !important;
+  color: #fff !important;
+  border-color: #008f67 !important;
+}
