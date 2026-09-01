@@ -1,0 +1,171 @@
+/* Final dark-admin rules. Loaded last on purpose: these neutralize hardcoded light Tailwind classes,
+   including !bg-white used by Payroll editable inputs. */
+
+html.admin-dark .admin-shell {
+  --admin-page: #031821;
+  --admin-surface: #0c1d2d;
+  --admin-surface-2: #102934;
+  --admin-surface-3: #12303d;
+  --admin-border: #294653;
+  --admin-text: #edf7f6;
+  --admin-muted: #a9bbc2;
+  --admin-accent: #16f0c4;
+}
+
+/* Kill every remaining hardcoded light toolbar/surface in admin dark mode. */
+html.admin-dark .admin-shell [class*="bg-[#ecf3f1]"],
+html.admin-dark .admin-shell [class*="bg-[#f7f9f8]"],
+html.admin-dark .admin-shell [class*="bg-[#ebebeb]"],
+html.admin-dark .admin-shell [class*="bg-[#F8F8F8]"],
+html.admin-dark .admin-shell [class~="bg-gray-50"] {
+  background-color: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+/* Generic white surfaces/buttons inside admin become dark unless they are semantic status chips. */
+html.admin-dark .admin-shell div[class*="bg-white"],
+html.admin-dark .admin-shell section > div[class*="bg-white"] {
+  background-color: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* EVENTI toolbar: explicit because it previously remained white. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"] {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 14px !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"] input,
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"] button {
+  background: var(--admin-surface-2) !important;
+  border-color: #365362 !important;
+  color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"] button:hover {
+  border-color: var(--admin-accent) !important;
+  color: var(--admin-accent) !important;
+}
+
+/* Table headers: never white in dark mode. */
+html.admin-dark .admin-shell [data-slot="table-header"],
+html.admin-dark .admin-shell [data-slot="table-header"] tr,
+html.admin-dark .admin-shell [data-slot="table-head"],
+html.admin-dark .admin-shell thead,
+html.admin-dark .admin-shell thead tr,
+html.admin-dark .admin-shell thead th {
+  background-color: var(--admin-surface-3) !important;
+  color: #cbd9dd !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Eventi custom grid header (not a TableHead component). */
+html.admin-dark .admin-shell div.grid[class*="bg-[#ebebeb]"] {
+  background: var(--admin-surface-3) !important;
+  color: #cbd9dd !important;
+  border: 1px solid var(--admin-border) !important;
+}
+html.admin-dark .admin-shell div.grid[class*="bg-[#ebebeb]"] > div {
+  color: #cbd9dd !important;
+}
+
+/* Planning contract badges: replace pale/white badges with dark semantic pills. */
+html.admin-dark .admin-shell span[class*="bg-[#e9f7f1]"] {
+  background: #0c342c !important;
+  border-color: #1fc99e !important;
+  color: #55f0c9 !important;
+  box-shadow: none !important;
+}
+html.admin-dark .admin-shell span[class*="bg-[#fff4e5]"] {
+  background: #3d2a16 !important;
+  border-color: #c78032 !important;
+  color: #ffbe72 !important;
+  box-shadow: none !important;
+}
+html.admin-dark .admin-shell span[class*="bg-[#fff0f0]"] {
+  background: #3a2026 !important;
+  border-color: #c65363 !important;
+  color: #ff8997 !important;
+  box-shadow: none !important;
+}
+
+/* Payroll outer toolbar: both nested wrappers are hardcoded #ecf3f1. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"],
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center[class*="bg-[#ecf3f1]"] > div.flex.items-center[class*="bg-[#ecf3f1]"] {
+  background: #0b2230 !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Payroll editable definitive area: overrides Tailwind !bg-white + !border-0. */
+html.admin-dark .admin-shell table input[type="time"],
+html.admin-dark .admin-shell table input[type="number"] {
+  background-color: #132c38 !important;
+  color: #f2f8f7 !important;
+  border: 1px solid #3d5c69 !important;
+  border-radius: 10px !important;
+  min-height: 42px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025) !important;
+  outline: none !important;
+  color-scheme: dark !important;
+}
+html.admin-dark .admin-shell table input[type="time"]:hover,
+html.admin-dark .admin-shell table input[type="number"]:hover {
+  border-color: #537685 !important;
+  background-color: #173542 !important;
+}
+html.admin-dark .admin-shell table input[type="time"]:focus,
+html.admin-dark .admin-shell table input[type="number"]:focus {
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 3px rgba(22,240,196,.14) !important;
+}
+
+/* Definitivo cell: no pale/violet block; keep a restrained editable-zone surface. */
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(8) {
+  background: #0f2936 !important;
+  border-left-color: #31515e !important;
+  border-right-color: #31515e !important;
+}
+
+/* Ore cell: subtle cyan surface, never pale blue/white. */
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(9),
+html.admin-dark .admin-shell td[class*="bg-[#d0e8fe]"] {
+  background: #123746 !important;
+  color: #8fe6ff !important;
+}
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(9) * {
+  color: #8fe6ff !important;
+}
+
+/* Payroll total hours pill. */
+html.admin-dark .admin-shell div[class*="bg-white"][class*="Totale"],
+html.admin-dark .admin-shell .ml-auto.mr-4[class*="bg-white"] {
+  background: #102934 !important;
+  color: var(--admin-accent) !important;
+  box-shadow: inset 0 0 0 1px #365362 !important;
+}
+
+/* Preserve semantic status buttons in dark mode, but use dark fills. */
+html.admin-dark .admin-shell button[class*="bg-[#9df5c3]"] {
+  background: #0c3a31 !important;
+  border: 1px solid #1fc99e !important;
+  color: #55f0c9 !important;
+}
+html.admin-dark .admin-shell button[class*="bg-[#ffedd5]"] {
+  background: #3d2a16 !important;
+  border: 1px solid #c78032 !important;
+  color: #ffbe72 !important;
+}
+html.admin-dark .admin-shell button[class*="bg-[#ffd5d5]"] {
+  background: #3a2026 !important;
+  border: 1px solid #c65363 !important;
+  color: #ff8997 !important;
+}
+html.admin-dark .admin-shell button[class*="bg-[#d5e2ff]"] {
+  background: #292645 !important;
+  border: 1px solid #7168b5 !important;
+  color: #c3bcff !important;
+}
