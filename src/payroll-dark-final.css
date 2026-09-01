@@ -1,0 +1,62 @@
+/* Final Payroll dark overrides. Loaded last to neutralize legacy !bg-white / !border-0 utilities. */
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md {
+  background: #0c1d2d !important;
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md table,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md thead,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tr,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md th,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md td {
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md th,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md td {
+  border-right-color: #294653 !important;
+  border-left-color: #294653 !important;
+}
+
+/* Kill the remaining bright divider immediately before the STATO/action column. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md th:nth-last-child(2),
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md td:nth-last-child(2),
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md th:last-child,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md td:last-child {
+  border-left: 1px solid #294653 !important;
+  border-right: 1px solid #294653 !important;
+}
+
+/* Definitivo edit fields: override Tailwind !bg-white and !border-0 at the source location. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="time"],
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="number"],
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[class*="bg-white"] {
+  background: #0f2834 !important;
+  background-color: #0f2834 !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  caret-color: #16f0c4 !important;
+  border: 1px solid #365362 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="time"]:focus,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="number"]:focus {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 2px rgba(22, 240, 196, .18) !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.35) !important;
+  opacity: .9 !important;
+}
+
+/* Pause icon inside the number field. */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody input[type="number"] + *,
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md tbody .text-gray-400 {
+  color: #8fa4ac !important;
+}
