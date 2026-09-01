@@ -13,6 +13,7 @@ import './admin-dark-final-fixes.css'
 import './payroll-dark-final.css'
 import './admin-payroll-source-fix.css'
 import './planning-filter-pattern.css'
+import './gestione-turni-dark.css'
 import App from './App.tsx'
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
