@@ -333,25 +333,26 @@ html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 .te
   color: var(--admin-muted) !important;
 }
 
-/* Payroll: normalize the whole filter toolbar, including the nested legacy wrapper. */
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+/* Payroll: force the full toolbar dark without depending on arbitrary Tailwind class escaping. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 {
   background: var(--admin-surface) !important;
-  border-color: var(--admin-border) !important;
-  box-shadow: none !important;
-}
-
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 {
   border: 1px solid var(--admin-border) !important;
   border-radius: 14px !important;
   padding: 12px !important;
   gap: 12px !important;
+  box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 > div.flex.items-center.p-4.mb-1 {
+  background: transparent !important;
+  border: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.mb-1 > div.flex.items-center.p-4.mb-1 ~ div {
+  background-color: transparent;
 }
 
 @media (max-width: 1100px) {
