@@ -191,6 +191,10 @@ const Turni = () => {
     window.open(`/admin/gestione-turni/${idEvento}/${format(new Date(dataTurno), "yyyy-MM-dd")}`, "_blank", "noopener,noreferrer");
   };
 
+  const navigaAlDettaglioEvento = (idEvento: number) => {
+    window.location.href = `/admin/gestione-turni/${idEvento}`;
+  };
+
   const isMancataTimbratura = (dataTurno: Date | undefined, oraInizio: string): boolean => {
     if (!dataTurno || !oraInizio) return false;
     const turnoDate = new Date(dataTurno);
@@ -198,6 +202,9 @@ const Turni = () => {
     turnoDate.setHours(parseInt(oreStr, 10), parseInt(minutiStr, 10), 0, 0);
     return turnoDate < new Date();
   };
+
+  const titoloEvento = (turno: TurnoCompleto) =>
+    (turno.nomeEvento?.trim() ? turno.nomeEvento : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`).toUpperCase();
 
   return (
     <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
@@ -280,7 +287,9 @@ const Turni = () => {
                       <TableCell colSpan={7} className="bg-[#007a55] text-white">
                         <div className="flex justify-between gap-4">
                           <span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span>
-                          <span className="w-[45%] uppercase font-bold">{(turno.nomeEvento?.trim() ? turno.nomeEvento : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`).toUpperCase()}</span>
+                          <button type="button" onClick={() => navigaAlDettaglioEvento(turno.idEvento)} className="w-[45%] text-left uppercase font-bold underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm" title="Apri dettaglio evento">
+                            {titoloEvento(turno)}
+                          </button>
                           <span className="w-[45%] text-right">{turno.via}</span>
                         </div>
                       </TableCell>
@@ -292,7 +301,9 @@ const Turni = () => {
                       <TableCell colSpan={7} className="bg-[#8f8f8f] text-white">
                         <div className="flex justify-between gap-4">
                           <span className="w-[10%] font-bold">{turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}</span>
-                          <span className="w-[45%] uppercase font-bold">{(turno.nomeEvento?.trim() ? turno.nomeEvento : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`).toUpperCase()}</span>
+                          <button type="button" onClick={() => navigaAlDettaglioEvento(turno.idEvento)} className="w-[45%] text-left uppercase font-bold underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm" title="Apri dettaglio evento">
+                            {titoloEvento(turno)}
+                          </button>
                           <span className="w-[45%] text-right">{turno.via}</span>
                         </div>
                       </TableCell>
