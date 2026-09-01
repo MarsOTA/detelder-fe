@@ -9,6 +9,7 @@ import './admin-theme.css'
 import './admin-components.css'
 import './admin-payroll.css'
 import './admin-dark-global.css'
+import './admin-dark-final-fixes.css'
 import App from './App.tsx'
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
