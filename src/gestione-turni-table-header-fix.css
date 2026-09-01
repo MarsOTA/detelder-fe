@@ -1,13 +1,24 @@
-/* Gestione Turni: exact table header dark fix */
-html.admin-dark section.m-6 table.mt-1 > thead,
-html.admin-dark section.m-6 table.mt-1 > thead > tr,
-html.admin-dark section.m-6 table.mt-1 > thead > tr > th {
+/* Gestione Turni: target the actual shadcn DOM slots, not Tailwind structure. */
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"],
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-row"],
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-head"] {
   background: #123442 !important;
   background-color: #123442 !important;
+  background-image: none !important;
 }
 
-html.admin-dark section.m-6 table.mt-1 > thead > tr > th {
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-head"] {
   color: #c5d3d8 !important;
   -webkit-text-fill-color: #c5d3d8 !important;
   border-color: #294653 !important;
+}
+
+/* Last-resort guard: no light fill may survive inside this exact header. */
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] * {
+  background-color: transparent !important;
+}
+
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-row"],
+html.admin-dark section.m-6 [data-slot="table"].mt-1 [data-slot="table-header"] [data-slot="table-head"] {
+  background-color: #123442 !important;
 }
