@@ -328,8 +328,7 @@ html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 .te
   color: var(--admin-muted) !important;
 }
 
-/* Payroll: match the actual class attribute instead of trying to escape
-   arbitrary Tailwind classes as CSS selectors. */
+/* Payroll toolbar */
 html.admin-dark .admin-shell section.m-6 > div[class*="bg-[#ecf3f1]"][class*="mb-1"] {
   background: var(--admin-surface) !important;
   background-color: var(--admin-surface) !important;
@@ -349,7 +348,6 @@ html.admin-dark .admin-shell section.m-6 > div[class*="bg-[#ecf3f1]"][class*="mb
   box-shadow: none !important;
 }
 
-/* Extra guard for the exact Payroll toolbar structure. */
 html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center {
   background: var(--admin-surface) !important;
   background-color: var(--admin-surface) !important;
@@ -358,6 +356,133 @@ html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center {
 html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center > .flex.items-center:first-child {
   background: transparent !important;
   background-color: transparent !important;
+}
+
+/* Payroll table: darker surfaces, stronger contrast and clear column groups. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border {
+  background: #0a202b !important;
+  border-color: #31505d !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border table {
+  color: #e9f1f3 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead tr,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead th {
+  background: #173440 !important;
+  color: #f2f7f8 !important;
+  border-color: #42616d !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead th[class*="rgba(65,101,89"] {
+  background: #24515c !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead th[class*="rgba(0,80,50"] {
+  background: #165543 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead th[class*="bg-[#e6f4ff]"],
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border thead th[class*="bg-[#d0e8fe]"] {
+  background: #255273 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody > tr:not(:has(td[colspan="11"])) {
+  background: #0b2430 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody > tr:not(:has(td[colspan="11"])):nth-of-type(even) {
+  background: #102c38 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td {
+  color: #e4edef !important;
+  border-color: #2d4b57 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td > div,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td span {
+  color: inherit;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td[class*="rgba(65,101,89"] {
+  background: #173e49 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td[class*="rgba(0,80,50"] {
+  background: #123f34 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody td[class*="bg-[#d0e8fe]"] {
+  background: #1e4761 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border input[type="time"],
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border input[type="number"] {
+  background: #102e3a !important;
+  color: #f0f6f7 !important;
+  -webkit-text-fill-color: #f0f6f7 !important;
+  border: 1px solid #365763 !important;
+  border-radius: 8px !important;
+}
+
+/* Payroll toolbar: replace pale chips with solid buttons. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#f3fffa]"] {
+  background: #155d4d !important;
+  border-color: #23846d !important;
+  color: #ffffff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#f3fffa]"]:hover {
+  background: #1b725d !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#9df5c3]"] {
+  background: #07875c !important;
+  border-color: #0aa06d !important;
+  color: #ffffff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#ffedd5]"] {
+  background: #b9610d !important;
+  border-color: #d27618 !important;
+  color: #ffffff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#d5e2ff]"] {
+  background: #5268b5 !important;
+  border-color: #667ed0 !important;
+  color: #ffffff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center button[class*="bg-[#ffd5d5]"] {
+  background: #b94040 !important;
+  border-color: #d15353 !important;
+  color: #ffffff !important;
+}
+
+/* Same solid palette for status actions inside Payroll rows. */
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody button[class*="bg-[#9df5c3]"] {
+  background: #07875c !important;
+  color: #fff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody button[class*="bg-[#ffedd5]"] {
+  background: #b9610d !important;
+  color: #fff !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody button[class*="bg-[#d5e2ff]"] {
+  background: #5268b5 !important;
+  color: #fff !important;
+  opacity: .78;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody button[class*="bg-[#ffd5d5]"] {
+  background: #b94040 !important;
+  color: #fff !important;
 }
 
 @media (max-width: 1100px) {
