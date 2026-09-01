@@ -130,6 +130,64 @@
   background: #f8f8f8;
 }
 
+/* Presenze: use the same control rhythm as Eventi. Date fields stay standalone,
+   while search + Filtra form one intentional joined control. */
+.admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl {
+  gap: 8px !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > div > button {
+  min-width: 176px;
+  min-height: 42px;
+  border-radius: 10px !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input {
+  width: 230px !important;
+  min-height: 42px;
+  border-radius: 10px 0 0 10px !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button {
+  min-height: 42px;
+  margin-left: -8px;
+  padding-inline: 22px;
+  border-left: 0 !important;
+  border-radius: 0 10px 10px 0 !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button + button {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 10px !important;
+}
+
+/* Operatori: same spacing, height and radius system without coupling controls. */
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 {
+  padding: 14px 16px !important;
+  border: 1px solid #e4ebe8;
+  border-radius: 14px;
+  background: #f7f9f8 !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 {
+  gap: 8px !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > input,
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > button,
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > div > button {
+  min-height: 42px !important;
+  border-radius: 10px !important;
+}
+
+.admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > button:last-child {
+  min-height: 42px;
+  border-radius: 10px !important;
+}
+
 /* Dark theme: semantic selectors have one responsibility and replace the
    brittle page-specific selectors previously based on utility-class strings. */
 html.admin-dark .admin-page-heading {
@@ -212,6 +270,41 @@ html.admin-dark .admin-events-subtable thead th {
   border-color: var(--admin-border) !important;
 }
 
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > div > button,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > input,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > div > button,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > button,
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > button:last-child {
+  border-color: var(--admin-border-strong) !important;
+  background: #0f2834 !important;
+  color: var(--admin-text) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button {
+  border-color: #008f67 !important;
+  background: #008f67 !important;
+  color: #f4fffb !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button:hover {
+  background: #00a679 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > button[class*="bg-[#e6f4ef]"] {
+  border-color: #1fc99e !important;
+  background: #0c342c !important;
+  color: #55f0c9 !important;
+}
+
 @media (max-width: 1100px) {
   .admin-filter-bar {
     flex-wrap: wrap;
@@ -233,5 +326,13 @@ html.admin-dark .admin-events-subtable thead th {
   .admin-filter-actions {
     width: 100%;
     margin-left: 0;
+  }
+
+  .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl {
+    flex-wrap: wrap;
+  }
+
+  .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button {
+    margin-left: -8px;
   }
 }
