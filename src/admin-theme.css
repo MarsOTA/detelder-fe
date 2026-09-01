@@ -45,30 +45,73 @@ html.admin-dark .admin-shell hr {
   border-color: var(--admin-border) !important;
 }
 
-/* Legacy Eventi / Payroll toolbar */
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\] {
-  background: var(--admin-surface) !important;
-  border: 1px solid var(--admin-border) !important;
-  border-radius: 14px !important;
-  box-shadow: none !important;
-}
-
-/* Planning turni surfaces */
-html.admin-dark .admin-shell .bg-\[\#f7f9f8\],
-html.admin-dark .admin-shell .bg-gray-50 {
+/* Legacy light surfaces still present in admin JSX. Keep their mapping in one place. */
+html.admin-dark body #root .admin-shell div.bg-\[\#ecf3f1\],
+html.admin-dark body #root .admin-shell div.bg-\[\#f7f9f8\],
+html.admin-dark body #root .admin-shell div.bg-gray-50,
+html.admin-dark body #root .admin-shell div.bg-white,
+html.admin-dark body #root .admin-shell div.bg-\[\#fff\],
+html.admin-dark body #root .admin-shell div.bg-\[\#F8F8F8\] {
   background: var(--admin-surface) !important;
   border-color: var(--admin-border) !important;
   box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell .bg-\[\#f7f9f8\] label {
-  color: var(--admin-muted) !important;
+/* Eventi: dark toolbar + compact contiguous filter controls. */
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 14px !important;
+  gap: 1px !important;
+  box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell .bg-\[\#f7f9f8\] > .bg-\[\#d8dfdc\] {
-  background: var(--admin-border) !important;
+/* Eventi utility actions remain visually separated on the right. */
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto {
+  gap: 12px !important;
+}
+
+/* Operatori toolbar and filter group. */
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > div.flex.flex-wrap.items-center.gap-3 {
+  gap: 1px !important;
+}
+
+/* Clienti: list/search header and section headers. */
+html.admin-dark body #root .admin-shell section.m-6 .grid.grid-cols-3 > .col-span-1 > div.bg-\[\#ecf3f1\] {
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 .grid.grid-cols-3 > .col-span-1 > div.bg-\[\#ecf3f1\] > div.flex.gap-2 {
+  gap: 1px !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 div.flex.items-center.px-8.bg-\[\#ecf3f1\] {
+  background: var(--admin-surface-2) !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Payroll: the old global rule in index.css is intentionally overridden here. */
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 14px !important;
+  gap: 12px !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 1px !important;
 }
 
 /* Inputs and date selectors */
@@ -95,20 +138,24 @@ html.admin-dark .admin-shell [role="combobox"]:focus {
   outline: none !important;
 }
 
-/* Neutral secondary buttons */
-html.admin-dark .admin-shell button.bg-white,
-html.admin-dark .admin-shell button.bg-\[\#ffffff\],
-html.admin-dark .admin-shell button[class*="bg-[#f3fffa]"] {
+/* White/light secondary buttons in legacy admin pages. ID specificity beats old index.css !important rules. */
+html.admin-dark body #root .admin-shell button.bg-white,
+html.admin-dark body #root .admin-shell button.bg-\[\#ffffff\],
+html.admin-dark body #root .admin-shell button[class*="bg-[#f3fffa]"],
+html.admin-dark body #root .admin-shell button[class*="bg-white"] {
   background: var(--admin-surface-2) !important;
   border-color: var(--admin-border-strong) !important;
   color: var(--admin-accent) !important;
+  box-shadow: none !important;
 }
 
-html.admin-dark .admin-shell button.bg-white:hover,
-html.admin-dark .admin-shell button.bg-\[\#ffffff\]:hover,
-html.admin-dark .admin-shell button[class*="bg-[#f3fffa]"]:hover {
+html.admin-dark body #root .admin-shell button.bg-white:hover,
+html.admin-dark body #root .admin-shell button.bg-\[\#ffffff\]:hover,
+html.admin-dark body #root .admin-shell button[class*="bg-[#f3fffa]"]:hover,
+html.admin-dark body #root .admin-shell button[class*="bg-white"]:hover {
   background: #173744 !important;
   border-color: var(--admin-accent) !important;
+  color: var(--admin-accent) !important;
 }
 
 /* Tables */
@@ -153,24 +200,23 @@ html.admin-dark .admin-shell [data-slot="accordion-trigger"] {
   color: #dce8ea !important;
 }
 
-html.admin-dark .admin-shell .bg-\[\#F8F8F8\] {
-  background: var(--admin-surface) !important;
-}
-
-/* Planning contract badges */
-html.admin-dark .admin-shell span[class*="bg-[#e9f7f1]"] {
+/* Planning/Operatori contract badges */
+html.admin-dark .admin-shell span[class*="bg-[#e9f7f1]"],
+html.admin-dark .admin-shell span.bg-emerald-50 {
   background: #0c342c !important;
   border-color: #1fc99e !important;
   color: #55f0c9 !important;
 }
 
-html.admin-dark .admin-shell span[class*="bg-[#fff4e5]"] {
+html.admin-dark .admin-shell span[class*="bg-[#fff4e5]"],
+html.admin-dark .admin-shell span.bg-orange-50 {
   background: #3d2a16 !important;
   border-color: #c78032 !important;
   color: #ffbe72 !important;
 }
 
-html.admin-dark .admin-shell span[class*="bg-[#fff0f0]"] {
+html.admin-dark .admin-shell span[class*="bg-[#fff0f0]"],
+html.admin-dark .admin-shell span.bg-red-50 {
   background: #3a2026 !important;
   border-color: #c65363 !important;
   color: #ff8997 !important;
