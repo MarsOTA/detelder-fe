@@ -1,4 +1,4 @@
-/* Payroll table polish. Every rule is scoped to the Payroll table wrapper. */
+/* Payroll table layout only. Theme colors live in admin-theme.css. */
 
 section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]) {
   border-bottom: 1px solid #e8efec;
@@ -13,11 +13,8 @@ section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbod
   border-right-color: #d9e5e0;
 }
 
-/* LIGHT ONLY: the old white cells must never leak into admin dark mode. */
 html:not(.admin-dark) body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(4) {
-  background-color: #ffffff !important;
-  background-image: linear-gradient(#ffffff, #ffffff) !important;
-  box-shadow: inset 0 0 0 9999px #ffffff !important;
+  background: #fff !important;
   text-align: center !important;
   vertical-align: middle !important;
 }
@@ -35,60 +32,8 @@ html:not(.admin-dark) body #root section.m-6 > div.border.rounded-md.bg-white.bo
   min-height: 38px !important;
   border: 1px solid #bfc8c4 !important;
   border-radius: 8px !important;
-  background: #ffffff !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 1px 2px rgba(20,55,43,0.045) !important;
+  background: #fff !important;
   color: #2f3d38 !important;
-}
-
-/* DARK: native payroll surfaces, no white remnants. */
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] {
-  background: #0b2230 !important;
-  border-color: #294653 !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]) {
-  background: #0b2230 !important;
-  border-color: #294653 !important;
-  color: #e8f1f3 !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr:nth-child(even) > td:not([colspan]) {
-  background: #0d2633 !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(4) {
-  background: #102a37 !important;
-  background-image: none !important;
-  box-shadow: inset 3px 0 0 rgba(56,189,248,.28) !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(8) {
-  background: #101f31 !important;
-  border-left: 1px solid #57458a !important;
-  border-right: 1px solid #57458a !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(8) input,
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(8) input.bg-white,
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(8) input.\!bg-white {
-  min-height: 38px !important;
-  background: #172536 !important;
-  color: #f1f5f9 !important;
-  -webkit-text-fill-color: #f1f5f9 !important;
-  border: 1px solid #64528f !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(8) input:focus {
-  background: #1c2d42 !important;
-  border-color: #a78bfa !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,.14) !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(9) {
-  background: #102b3b !important;
-  border-color: #24536d !important;
 }
 
 html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(7),
@@ -105,10 +50,6 @@ html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\
 html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(10) {
   border-left: 1px solid #e1e9e6 !important;
   border-right: 1px solid #e1e9e6 !important;
-}
-
-html.admin-dark body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(10) {
-  border-color: #294653 !important;
 }
 
 html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(11) {
