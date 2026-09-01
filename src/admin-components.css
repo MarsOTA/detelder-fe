@@ -9,7 +9,7 @@
 .admin-filter-bar {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 16px;
   margin-bottom: 4px;
   padding: 16px;
   border: 1px solid #e4ebe8;
@@ -20,35 +20,42 @@
 
 .admin-filter-group {
   display: flex;
-  align-items: center;
-  gap: 0;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
 }
 
 .admin-filter-input,
 .admin-filter-date,
 .admin-filter-submit {
-  min-height: 40px;
+  min-height: 42px;
 }
 
 .admin-filter-input {
-  width: 192px;
-  border-radius: 10px 0 0 10px !important;
+  width: 260px;
+  border-radius: 10px !important;
   border-color: #b9d0c7 !important;
   background: #fff !important;
 }
 
 .admin-filter-date {
   min-width: 190px;
-  border-radius: 0 !important;
-  margin-left: -1px;
+  border-radius: 10px !important;
+  margin-left: 0;
   border-color: #b9d0c7 !important;
   background: #fff !important;
   color: #2f3d38 !important;
 }
 
+.admin-filter-date:last-of-type {
+  border-radius: 10px 0 0 10px !important;
+}
+
 .admin-filter-submit {
-  margin-left: -1px;
-  padding-inline: 18px;
+  margin-left: -8px;
+  padding-inline: 22px;
+  border: 1px solid #007a55 !important;
+  border-left: 0 !important;
   border-radius: 0 10px 10px 0 !important;
   background: #007a55 !important;
   color: #fff !important;
@@ -209,6 +216,18 @@ html.admin-dark .admin-events-subtable thead th {
   .admin-filter-bar {
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .admin-filter-group {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-filter-date:last-of-type,
+  .admin-filter-submit {
+    margin-left: 0;
+    border: 1px solid #007a55 !important;
+    border-radius: 10px !important;
   }
 
   .admin-filter-actions {
