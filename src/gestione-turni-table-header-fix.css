@@ -1,0 +1,13 @@
+/* Gestione Turni: exact table header dark fix */
+html.admin-dark section.m-6 table.mt-1 > thead,
+html.admin-dark section.m-6 table.mt-1 > thead > tr,
+html.admin-dark section.m-6 table.mt-1 > thead > tr > th {
+  background: #123442 !important;
+  background-color: #123442 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 > thead > tr > th {
+  color: #c5d3d8 !important;
+  -webkit-text-fill-color: #c5d3d8 !important;
+  border-color: #294653 !important;
+}
