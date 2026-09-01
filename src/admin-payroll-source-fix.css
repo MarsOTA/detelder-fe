@@ -26,9 +26,10 @@ html.admin-dark section.m-6 table input[type="number"]:focus {
   box-shadow: 0 0 0 2px rgba(22, 240, 196, .16) !important;
 }
 
+/* Native time picker icon: medium grey instead of black/white. */
 html.admin-dark section.m-6 table input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(1.4) !important;
-  opacity: .9 !important;
+  filter: invert(68%) !important;
+  opacity: .78 !important;
 }
 
 /* Remove the light vertical rule immediately before the status/action column. */
