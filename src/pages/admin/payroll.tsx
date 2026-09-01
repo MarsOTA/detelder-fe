@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { CalendarIcon, CirclePause } from "lucide-react";
+import { CalendarIcon, CirclePause, Clock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { it } from "date-fns/locale";
@@ -208,6 +208,21 @@ const payroll = () => {
   const setNumeroOrePausa = (idTurno: number, numero: number | undefined) =>
     setTurni((prev) => prev.map((t) => (t.idTurno === idTurno ? { ...t, orePausaDefinitiva: numero } : t)));
 
+  const openTimePicker = (button: HTMLButtonElement) => {
+    const input = button.parentElement?.querySelector('input[type="time"]') as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!input) return;
+    input.focus();
+    try {
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+      } else {
+        input.click();
+      }
+    } catch {
+      input.click();
+    }
+  };
+
   const handlePeriodoClick = (periodo: "giorno" | "settimana" | "mese") => {
     const dataFine = new Date();
     const dataInizio = new Date(dataFine);
@@ -347,8 +362,18 @@ const payroll = () => {
                     <TableCell className="admin-payroll-edit-cell border-r border-r-[#294653]">
                       <div className="flex flex-col gap-2 w-full">
                         <div className="flex items-center gap-2 w-full">
-                          <Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input flex-1 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
-                          <Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input flex-1 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
+                          <div className="relative flex-1">
+                            <Input type="time" value={turno.oraInizioDefinitivo} onChange={(e) => setOraInizioTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input admin-payroll-time-input w-full pr-9 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
+                            <button type="button" aria-label="Seleziona ora inizio" className="admin-payroll-time-trigger absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#8fa4ac]" onClick={(e) => openTimePicker(e.currentTarget)}>
+                              <Clock className="h-[14px] w-[14px]" strokeWidth={2} />
+                            </button>
+                          </div>
+                          <div className="relative flex-1">
+                            <Input type="time" value={turno.oraFineDefinitivo} onChange={(e) => setOraFineTurno(turno.idTurno, e.target.value)} className="admin-payroll-edit-input admin-payroll-time-input w-full pr-9 border border-[#365362] bg-[#0f2834] text-white shadow-none outline-none" />
+                            <button type="button" aria-label="Seleziona ora fine" className="admin-payroll-time-trigger absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#8fa4ac]" onClick={(e) => openTimePicker(e.currentTarget)}>
+                              <Clock className="h-[14px] w-[14px]" strokeWidth={2} />
+                            </button>
+                          </div>
                         </div>
                         <div className="flex justify-center">
                           <div className="relative w-fit">
