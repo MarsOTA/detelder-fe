@@ -1,0 +1,47 @@
+/* Payroll dark source-level fallback: avoid dependence on .admin-shell wrappers. */
+html.admin-dark section.m-6 table,
+html.admin-dark section.m-6 table th,
+html.admin-dark section.m-6 table td,
+html.admin-dark section.m-6 table tr {
+  border-color: #294653 !important;
+}
+
+html.admin-dark section.m-6 table input[type="time"],
+html.admin-dark section.m-6 table input[type="number"] {
+  background: #0f2834 !important;
+  background-color: #0f2834 !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  caret-color: #16f0c4 !important;
+  border: 1px solid #365362 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color-scheme: dark !important;
+}
+
+html.admin-dark section.m-6 table input[type="time"]:focus,
+html.admin-dark section.m-6 table input[type="number"]:focus {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 2px rgba(22, 240, 196, .16) !important;
+}
+
+html.admin-dark section.m-6 table input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.4) !important;
+  opacity: .9 !important;
+}
+
+/* Remove the light vertical rule immediately before the status/action column. */
+html.admin-dark section.m-6 table th:nth-last-child(2),
+html.admin-dark section.m-6 table td:nth-last-child(2),
+html.admin-dark section.m-6 table th:last-child,
+html.admin-dark section.m-6 table td:last-child {
+  border-left-color: #294653 !important;
+  border-right-color: #294653 !important;
+}
+
+/* The table wrapper itself must not reintroduce a white edge/surface in dark. */
+html.admin-dark section.m-6 > div.border.rounded-md.bg-white {
+  background: #0b2230 !important;
+  border-color: #294653 !important;
+}
