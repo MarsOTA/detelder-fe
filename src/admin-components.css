@@ -47,8 +47,11 @@
   color: #2f3d38 !important;
 }
 
-.admin-filter-date:last-of-type {
-  border-radius: 10px 0 0 10px !important;
+/* Only the control immediately before Filtra is joined to it. */
+.admin-filter-date:has(+ .admin-filter-submit),
+.admin-filter-input:has(+ .admin-filter-submit) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 .admin-filter-submit {
@@ -130,8 +133,7 @@
   background: #f8f8f8;
 }
 
-/* Presenze: use the same control rhythm as Eventi. Date fields stay standalone,
-   while search + Filtra form one intentional joined control. */
+/* Presenze: same control rhythm as Eventi. */
 .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl {
   gap: 8px !important;
   padding: 14px 16px !important;
@@ -161,10 +163,11 @@
 .admin-shell section.m-6 > .space-y-5 > .flex.items-center.gap-3.rounded-xl > input + button + button {
   min-width: 42px;
   min-height: 42px;
+  margin-left: 0 !important;
   border-radius: 10px !important;
 }
 
-/* Operatori: same spacing, height and radius system without coupling controls. */
+/* Operatori: controls are separate items, never visually fused. */
 .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 {
   padding: 14px 16px !important;
   border: 1px solid #e4ebe8;
@@ -173,7 +176,7 @@
 }
 
 .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 {
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-center.justify-between.gap-3 > .flex.flex-wrap.items-center.gap-3 > input,
@@ -188,8 +191,7 @@
   border-radius: 10px !important;
 }
 
-/* Dark theme: semantic selectors have one responsibility and replace the
-   brittle page-specific selectors previously based on utility-class strings. */
+/* Dark theme */
 html.admin-dark .admin-page-heading {
   border-color: var(--admin-border) !important;
 }
@@ -305,6 +307,47 @@ html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-ce
   color: #55f0c9 !important;
 }
 
+/* Clienti: sort button and empty/detail panels must never remain white in dark mode. */
+html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .col-span-1 > div:first-child .flex.gap-2 > button {
+  border-color: var(--admin-border-strong) !important;
+  background: #0f2834 !important;
+  color: var(--admin-text) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2,
+html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 > *,
+html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 .bg-white {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+}
+
+html.admin-dark .admin-shell section.m-8 .grid.grid-cols-3 > .lg\:col-span-2 .text-muted-foreground {
+  color: var(--admin-muted) !important;
+}
+
+/* Payroll: normalize the whole filter toolbar, including the nested legacy wrapper. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 {
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 14px !important;
+  padding: 12px !important;
+  gap: 12px !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
 @media (max-width: 1100px) {
   .admin-filter-bar {
     flex-wrap: wrap;
@@ -316,7 +359,8 @@ html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-ce
     gap: 8px;
   }
 
-  .admin-filter-date:last-of-type,
+  .admin-filter-date:has(+ .admin-filter-submit),
+  .admin-filter-input:has(+ .admin-filter-submit),
   .admin-filter-submit {
     margin-left: 0;
     border: 1px solid #007a55 !important;
