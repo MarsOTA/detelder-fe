@@ -1,108 +1,55 @@
-/* Admin dark theme: palette aligned with the operator mobile UI. */
+/* Single source of truth for the admin dark theme. */
 html.admin-dark {
-  --background: #031821;
-  --foreground: #eef7f6;
-  --card: #0c1d2d;
-  --card-foreground: #eef7f6;
-  --popover: #0c1d2d;
-  --popover-foreground: #eef7f6;
-  --primary: #16f0c4;
-  --primary-foreground: #031821;
-  --secondary: #102934;
-  --secondary-foreground: #e6f2f1;
-  --muted: #102934;
-  --muted-foreground: #9fb3ba;
-  --accent: #153743;
-  --accent-foreground: #16f0c4;
-  --border: #294653;
-  --input: #294653;
-  --ring: #16f0c4;
+  color-scheme: dark;
+  --admin-page: #031821;
+  --admin-surface: #0c1d2d;
+  --admin-surface-2: #102934;
+  --admin-surface-3: #12303d;
+  --admin-border: #294653;
+  --admin-border-strong: #365362;
+  --admin-text: #edf7f6;
+  --admin-muted: #a9bbc2;
+  --admin-accent: #16f0c4;
 }
 
-html.admin-dark body {
-  background: #031821 !important;
-  color: #eef7f6 !important;
-}
-
+html.admin-dark body,
 html.admin-dark .admin-shell {
-  background: #031821 !important;
-  color: #e9f3f4 !important;
-}
-
-/* Main surfaces */
-html.admin-dark .admin-shell .bg-white,
-html.admin-dark .admin-shell .bg-\[\#ffffff\],
-html.admin-dark .admin-shell .bg-\[\#fff\],
-html.admin-dark .admin-shell .bg-gray-50,
-html.admin-dark .admin-shell .bg-slate-50 {
-  background-color: #0c1d2d !important;
-}
-
-html.admin-dark .admin-shell .bg-\[\#ecf3f1\],
-html.admin-dark .admin-shell .bg-\[\#f7f9f8\],
-html.admin-dark .admin-shell .bg-\[\#f8fafc\],
-html.admin-dark .admin-shell .bg-\[\#f9fafb\],
-html.admin-dark .admin-shell .bg-gray-100,
-html.admin-dark .admin-shell .bg-slate-100 {
-  background-color: #102934 !important;
-}
-
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
-html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.items-center.justify-between.bg-\[\#ecf3f1\],
-html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3.bg-\[\#ecf3f1\].px-6.py-4 {
-  background: #0b2530 !important;
-  border-color: #294653 !important;
+  background: var(--admin-page);
+  color: var(--admin-text);
 }
 
 /* Typography */
 html.admin-dark .admin-shell h1,
-html.admin-dark .admin-shell h2,
-html.admin-dark .admin-shell h3,
-html.admin-dark .admin-shell h4,
-html.admin-dark .admin-shell .text-\[\#313131\],
-html.admin-dark .admin-shell .text-gray-900,
-html.admin-dark .admin-shell .text-gray-800,
-html.admin-dark .admin-shell .text-slate-900,
-html.admin-dark .admin-shell .text-slate-800 {
-  color: #eef7f6 !important;
-}
-
-html.admin-dark .admin-shell .detelder-page-title,
 html.admin-dark .admin-shell .text-\[\#007a55\] {
-  color: #16f0c4 !important;
+  color: var(--admin-accent) !important;
 }
 
 html.admin-dark .admin-shell p,
-html.admin-dark .admin-shell .text-gray-700,
+html.admin-dark .admin-shell .text-\[\#7a7a7a\],
 html.admin-dark .admin-shell .text-gray-600,
-html.admin-dark .admin-shell .text-\[\#6b7280\],
-html.admin-dark .admin-shell .text-\[\#707070\],
-html.admin-dark .admin-shell .text-\[\#777\],
-html.admin-dark .admin-shell .text-slate-600 {
-  color: #afc0c5 !important;
+html.admin-dark .admin-shell .text-gray-700,
+html.admin-dark .admin-shell .text-\[\#656565\] {
+  color: var(--admin-muted) !important;
 }
 
-/* Borders/dividers */
-html.admin-dark .admin-shell .border,
-html.admin-dark .admin-shell .border-b,
-html.admin-dark .admin-shell .border-t,
-html.admin-dark .admin-shell .border-l,
-html.admin-dark .admin-shell .border-r,
-html.admin-dark .admin-shell table,
-html.admin-dark .admin-shell tr,
-html.admin-dark .admin-shell td,
-html.admin-dark .admin-shell th {
-  border-color: #294653 !important;
+/* Legacy toolbars. These selectors intentionally override the old light rule in index.css. */
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
+html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\] {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
 }
 
-/* Forms */
+/* Inputs and date selectors */
 html.admin-dark .admin-shell input:not([type="checkbox"]):not([type="radio"]),
 html.admin-dark .admin-shell textarea,
+html.admin-dark .admin-shell button[data-slot="popover-trigger"],
 html.admin-dark .admin-shell [role="combobox"] {
-  background: #0c1d2d !important;
-  border-color: #365362 !important;
-  color: #edf7f6 !important;
+  background: var(--admin-surface-2) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-text) !important;
   box-shadow: none !important;
 }
 
@@ -114,94 +61,192 @@ html.admin-dark .admin-shell textarea::placeholder {
 html.admin-dark .admin-shell input:focus,
 html.admin-dark .admin-shell textarea:focus,
 html.admin-dark .admin-shell [role="combobox"]:focus {
-  border-color: #16f0c4 !important;
-  box-shadow: 0 0 0 2px rgba(22, 240, 196, 0.12) !important;
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 3px rgba(22, 240, 196, .12) !important;
+  outline: none !important;
 }
 
-/* Tables */
-html.admin-dark .admin-shell thead,
-html.admin-dark .admin-shell thead tr,
-html.admin-dark .admin-shell thead th {
-  background: #102934 !important;
-  color: #b9cbd0 !important;
-}
-
-html.admin-dark .admin-shell tbody tr {
-  background: #0c1d2d !important;
-  color: #e8f2f3 !important;
-}
-
-html.admin-dark .admin-shell tbody tr:hover {
-  background: #12303b !important;
-}
-
-/* Neutral secondary buttons only; primary/status colors stay untouched. */
+/* Neutral secondary buttons */
 html.admin-dark .admin-shell button.bg-white,
-html.admin-dark .admin-shell button.bg-\[\#ffffff\] {
-  background: #102934 !important;
-  border-color: #365362 !important;
-  color: #16f0c4 !important;
+html.admin-dark .admin-shell button.bg-\[\#ffffff\],
+html.admin-dark .admin-shell button[class*="bg-[#f3fffa]"] {
+  background: var(--admin-surface-2) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-accent) !important;
 }
 
 html.admin-dark .admin-shell button.bg-white:hover,
-html.admin-dark .admin-shell button.bg-\[\#ffffff\]:hover {
+html.admin-dark .admin-shell button.bg-\[\#ffffff\]:hover,
+html.admin-dark .admin-shell button[class*="bg-[#f3fffa]"]:hover {
   background: #173744 !important;
-  border-color: #16f0c4 !important;
+  border-color: var(--admin-accent) !important;
 }
 
-/* Existing toolbar rules in index.css use high-specificity !important declarations. */
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto > button,
-html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.items-center.justify-between.bg-\[\#ecf3f1\] > button,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.gap-3 > button:nth-of-type(-n+3) {
-  background: #102934 !important;
-  border-color: #365362 !important;
-  color: #16f0c4 !important;
+/* Tables */
+html.admin-dark .admin-shell table {
+  background: #0b2230;
+  color: var(--admin-text);
 }
 
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div.flex.items-center.gap-4.ml-auto > button:hover,
-html.admin-dark .admin-shell section.m-6 > .space-y-5 > div.flex.items-center.justify-between.bg-\[\#ecf3f1\] > button:hover,
-html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.gap-3 > button:nth-of-type(-n+3):hover {
-  background: #16f0c4 !important;
-  border-color: #16f0c4 !important;
-  color: #031821 !important;
+html.admin-dark .admin-shell thead,
+html.admin-dark .admin-shell thead tr,
+html.admin-dark .admin-shell thead th,
+html.admin-dark .admin-shell .admin-events-table-header {
+  background: var(--admin-surface-3) !important;
+  color: #cbd9dd !important;
+  border-color: var(--admin-border) !important;
 }
 
-/* Popovers/dialogs/selects are rendered through portals, outside admin-shell. */
+html.admin-dark .admin-shell .admin-events-table-header > div {
+  color: #cbd9dd !important;
+}
+
+html.admin-dark .admin-shell tbody tr {
+  background: #0b2230;
+  color: var(--admin-text);
+}
+
+html.admin-dark .admin-shell tbody tr:nth-child(even) {
+  background: #0d2633;
+}
+
+html.admin-dark .admin-shell tbody tr:hover {
+  background: #12303b;
+}
+
+html.admin-dark .admin-shell table,
+html.admin-dark .admin-shell tr,
+html.admin-dark .admin-shell td,
+html.admin-dark .admin-shell th {
+  border-color: var(--admin-border) !important;
+}
+
+/* Eventi accordion */
+html.admin-dark .admin-shell [data-slot="accordion-item"] {
+  background: #0b2230;
+  border-color: var(--admin-border) !important;
+}
+
+html.admin-dark .admin-shell [data-slot="accordion-trigger"] {
+  color: #dce8ea !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#F8F8F8\] {
+  background: var(--admin-surface) !important;
+}
+
+/* Planning contract badges */
+html.admin-dark .admin-shell span[class*="bg-[#e9f7f1]"] {
+  background: #0c342c !important;
+  border-color: #1fc99e !important;
+  color: #55f0c9 !important;
+}
+
+html.admin-dark .admin-shell span[class*="bg-[#fff4e5]"] {
+  background: #3d2a16 !important;
+  border-color: #c78032 !important;
+  color: #ffbe72 !important;
+}
+
+html.admin-dark .admin-shell span[class*="bg-[#fff0f0]"] {
+  background: #3a2026 !important;
+  border-color: #c65363 !important;
+  color: #ff8997 !important;
+}
+
+/* Payroll shell and editable definitive fields */
+html.admin-dark .admin-shell section.m-6 > div.border.rounded-md.bg-white {
+  background: #0b2230 !important;
+  border-color: var(--admin-border) !important;
+  overflow: hidden;
+}
+
+html.admin-dark .admin-shell table input[type="time"],
+html.admin-dark .admin-shell table input[type="number"],
+html.admin-dark .admin-shell table input.\!bg-white {
+  background: #132c38 !important;
+  color: #f2f8f7 !important;
+  -webkit-text-fill-color: #f2f8f7 !important;
+  border: 1px solid #3d5c69 !important;
+  border-radius: 10px !important;
+  min-height: 42px !important;
+  box-shadow: none !important;
+  color-scheme: dark;
+}
+
+html.admin-dark .admin-shell table input[type="time"]:focus,
+html.admin-dark .admin-shell table input[type="number"]:focus {
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 3px rgba(22, 240, 196, .14) !important;
+}
+
+html.admin-dark .admin-shell table input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.4);
+  opacity: .8;
+}
+
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(8) {
+  background: #0f2936 !important;
+}
+
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(9),
+html.admin-dark .admin-shell td[class*="bg-[#d0e8fe]"] {
+  background: #123746 !important;
+  color: #8fe6ff !important;
+}
+
+html.admin-dark .admin-shell table tbody tr:not(:has(td[colspan])) > td:nth-child(9) * {
+  color: #8fe6ff !important;
+}
+
+/* Payroll total */
+html.admin-dark .admin-shell .ml-auto.mr-4.bg-white {
+  background: var(--admin-surface-2) !important;
+  color: var(--admin-accent) !important;
+  box-shadow: inset 0 0 0 1px var(--admin-border-strong) !important;
+}
+
+/* Semantic payroll states */
+html.admin-dark .admin-shell button[class*="bg-[#9df5c3]"] {
+  background: #0c3a31 !important;
+  border: 1px solid #1fc99e !important;
+  color: #55f0c9 !important;
+}
+
+html.admin-dark .admin-shell button[class*="bg-[#ffedd5]"] {
+  background: #3d2a16 !important;
+  border: 1px solid #c78032 !important;
+  color: #ffbe72 !important;
+}
+
+html.admin-dark .admin-shell button[class*="bg-[#ffd5d5]"] {
+  background: #3a2026 !important;
+  border: 1px solid #c65363 !important;
+  color: #ff8997 !important;
+}
+
+html.admin-dark .admin-shell button[class*="bg-[#d5e2ff]"] {
+  background: #292645 !important;
+  border: 1px solid #7168b5 !important;
+  color: #c3bcff !important;
+}
+
+/* Portalled components */
 html.admin-dark [data-slot="popover-content"],
 html.admin-dark [data-slot="dialog-content"],
 html.admin-dark [data-slot="select-content"],
 html.admin-dark [role="dialog"],
 html.admin-dark [role="listbox"] {
-  background: #0c1d2d !important;
-  border-color: #365362 !important;
-  color: #edf7f6 !important;
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-text) !important;
 }
 
-html.admin-dark [data-slot="select-item"],
-html.admin-dark [role="option"] {
-  color: #dce9ea !important;
-}
-
-html.admin-dark [data-slot="select-item"]:focus,
-html.admin-dark [role="option"]:focus,
-html.admin-dark [role="option"][data-highlighted] {
-  background: #153743 !important;
-  color: #16f0c4 !important;
-}
-
-/* Admin account dropdown */
+/* Admin account menu */
 html.admin-dark .admin-account-menu {
-  background: #0c1d2d !important;
-  border-color: #365362 !important;
-  color: #edf7f6 !important;
-}
-
-html.admin-dark .admin-account-heading {
-  border-color: #294653 !important;
-}
-
-html.admin-dark .admin-account-heading > div:last-child {
-  color: #edf7f6 !important;
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-text) !important;
 }
 
 html.admin-dark .admin-theme-switch {
@@ -214,10 +259,5 @@ html.admin-dark .admin-logout {
 
 html.admin-dark .admin-logout:hover {
   background: #12303b !important;
-  color: #16f0c4 !important;
-}
-
-/* Scrollbars: subtle but visible on dense admin tables/popovers. */
-html.admin-dark .admin-shell * {
-  scrollbar-color: #365362 #0c1d2d;
+  color: var(--admin-accent) !important;
 }
