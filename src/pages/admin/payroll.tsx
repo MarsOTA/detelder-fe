@@ -244,8 +244,8 @@ const payroll = () => {
         </div>
       </div>
 
-      <div className="flex items-center bg-[#ecf3f1] mb-1">
-        <div className="flex items-center bg-[#ecf3f1] p-4 mb-1">
+      <div className="flex items-center bg-transparent mb-1">
+        <div className="flex items-center bg-transparent p-4 mb-1">
           <div>
             <Popover>
               <PopoverTrigger asChild>
@@ -286,7 +286,7 @@ const payroll = () => {
           <Button onClick={() => filtraPerStatoElaborazione("CONTESTATO")} className="rounded-full border border-[#ffacac] bg-[#ffd5d5] text-[#ba1a1a] text-[13px] font-semibold cursor-pointer hover:bg-[#ffd5d5] hover:text-[#ba1a1a]">Contestato</Button>
         </div>
 
-        <div className="ml-auto mr-4 whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
+        <div className="ml-auto mr-4 whitespace-nowrap rounded-lg bg-transparent px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
           Totale ore: {getTotalHours(turni)}
         </div>
       </div>
