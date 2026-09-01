@@ -318,7 +318,7 @@ const eventi = () => {
 
     return (
         <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-            <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+            <div className="admin-page-heading mb-5 flex items-center justify-between gap-6 border-b pb-5">
                 <div>
                     <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">
                         Gestione eventi
@@ -348,14 +348,18 @@ const eventi = () => {
                 </div>
             </div>
 
-            <div className="flex items-center bg-[#ecf3f1] p-4 mb-1">
-                <div>
-                    <Input type="text" placeholder="Ricerca per keyword" value={filtriRicerca?.ricercaKeyword} onChange={(e) => setRicercaKeyword(e.target.value)} className="border border-gray-300 rounded-l-md px-2 py-1 w-48 bg-white rounded-r-none" />
-                </div>
-                <div>
+            <div className="admin-filter-bar">
+                <div className="admin-filter-group">
+                    <Input
+                        type="text"
+                        placeholder="Ricerca per keyword"
+                        value={filtriRicerca?.ricercaKeyword}
+                        onChange={(e) => setRicercaKeyword(e.target.value)}
+                        className="admin-filter-input px-2 py-1"
+                    />
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full rounded-none">
+                            <Button variant="outline" className="admin-filter-date">
                                 {filtriRicerca?.dataInizio ? filtriRicerca.dataInizio.toLocaleDateString() : "Seleziona data"}
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                             </Button>
@@ -364,11 +368,9 @@ const eventi = () => {
                             <Calendar mode="single" selected={filtriRicerca?.dataInizio} onSelect={setDataInizio} locale={it} className="pointer-events-auto" />
                         </PopoverContent>
                     </Popover>
-                </div>
-                <div>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full rounded-none">
+                            <Button variant="outline" className="admin-filter-date">
                                 {filtriRicerca?.dataFine ? filtriRicerca.dataFine.toLocaleDateString() : "Seleziona data"}
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                             </Button>
@@ -377,22 +379,22 @@ const eventi = () => {
                             <Calendar mode="single" selected={filtriRicerca?.dataFine} onSelect={setDataFine} locale={it} className="pointer-events-auto" />
                         </PopoverContent>
                     </Popover>
+                    <Button className="admin-filter-submit cursor-pointer" onClick={() => filtriRicerca && cercaListaTurniEventi(filtriRicerca)}>
+                        Filtra
+                    </Button>
                 </div>
-                <Button className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px" onClick={() => filtriRicerca && cercaListaTurniEventi(filtriRicerca)}>
-                    Filtra
-                </Button>
 
-                <div className="flex items-center gap-4 ml-auto">
-                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer px-8" onClick={toggleAll}>
+                <div className="admin-filter-actions">
+                    <Button className="admin-secondary-action cursor-pointer" onClick={toggleAll}>
                         {expandedItems.length === eventiTurni.length ? "Comprimi tutti" : "Espandi tutti"}
                     </Button>
-                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer pl-8 pr-8" onClick={handleExportToExcel}>Scarica .csv</Button>
-                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer px-8" onClick={() => filtriRicerca && stampaReport(filtriRicerca)}>Scarica pdf</Button>
+                    <Button className="admin-secondary-action cursor-pointer" onClick={handleExportToExcel}>Scarica .csv</Button>
+                    <Button className="admin-secondary-action cursor-pointer" onClick={() => filtriRicerca && stampaReport(filtriRicerca)}>Scarica pdf</Button>
                 </div>
             </div>
 
             <div>
-                <div className="admin-events-table-header grid w-full grid-cols-[40px_1fr_1fr_1fr_0.5fr_1fr_1fr_80px_40px] gap-2 bg-[#ebebeb] pt-4 pb-4">
+                <div className="admin-list-header admin-events-table-header grid w-full grid-cols-[40px_1fr_1fr_1fr_0.5fr_1fr_1fr_80px_40px] gap-2 pt-4 pb-4">
                     <div></div>
                     <div onClick={() => sortEventiBy("nomeEvento")} className="cursor-pointer select-none text-left font-semibold hover:underline">Nome evento {renderArrowEventi("nomeEvento")}</div>
                     <div onClick={() => sortEventiBy("dataIniziale")} className="cursor-pointer select-none text-left font-semibold hover:underline">Dal {renderArrowEventi("dataIniziale")}</div>
@@ -404,10 +406,10 @@ const eventi = () => {
                     <div></div>
                 </div>
 
-                <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="w-full">
+                <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="admin-events-accordion w-full">
                     {eventiTurni.map((evento) => (
                         <AccordionItem key={evento.idEvento} value={`item-${evento.idEvento}`}>
-                            <AccordionTrigger className="text-lg font-semibold text-[#326455] hover:no-underline hover:text-[#5e8a7a] [&>svg:last-child]:hidden cursor-pointer">
+                            <AccordionTrigger className="text-lg font-semibold hover:no-underline [&>svg:last-child]:hidden cursor-pointer">
                                 <div className="grid w-full grid-cols-[40px_1fr_1fr_1fr_0.5fr_1fr_1fr_80px_40px] gap-2">
                                     <div><Checkbox checked={selectedEventi.has(evento.idEvento)} onClick={(e) => e.stopPropagation()} onCheckedChange={(checked) => checkedUncheckedEventi(evento.idEvento, checked)} /></div>
                                     <div>{evento.nomeEvento}</div>
@@ -421,7 +423,7 @@ const eventi = () => {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent className="text-gray-700">
-                                <Table>
+                                <Table className="admin-events-subtable">
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Data turno</TableHead>
@@ -432,7 +434,7 @@ const eventi = () => {
                                             <TableHead>Operatore</TableHead>
                                         </TableRow>
                                     </TableHeader>
-                                    <TableBody className="bg-[#F8F8F8]">
+                                    <TableBody>
                                         {evento.turni.map((turno, index) => {
                                             const prevTurno = evento.turni[index - 1];
                                             const isNewDate = index === 0 || (prevTurno?.dataTurno && turno.dataTurno && format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") !== format(new Date(turno.dataTurno), "yyyy-MM-dd"));
