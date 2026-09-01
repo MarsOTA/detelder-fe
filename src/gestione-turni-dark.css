@@ -1,0 +1,217 @@
+/* Gestione Turni — dedicated dark hierarchy */
+html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 {
+  padding: 4px 2px 14px;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid #294653;
+}
+
+html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 h1 {
+  color: #16f0c4 !important;
+  -webkit-text-fill-color: #16f0c4 !important;
+}
+
+html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 > .text-right > div:first-child {
+  color: #16f0c4 !important;
+  background: rgba(22,240,196,.10) !important;
+  border: 1px solid rgba(22,240,196,.32) !important;
+}
+
+html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 > .text-right > div:last-child {
+  color: #b8c8ff !important;
+  background: rgba(117,141,255,.11) !important;
+  border: 1px solid rgba(117,141,255,.28) !important;
+}
+
+/* Two functional cards at the top */
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch {
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:first-child > div {
+  background: #0b1f31 !important;
+  color: #edf7f6 !important;
+  border: 1px solid #294653 !important;
+  border-left: 4px solid #4b8cff !important;
+  border-radius: 16px !important;
+  padding: 18px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16) !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:first-child > div h3 {
+  color: #8db8ff !important;
+  -webkit-text-fill-color: #8db8ff !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:last-child > div {
+  background: #0b2a2a !important;
+  color: #edf7f6 !important;
+  border: 1px solid #28544d !important;
+  border-left: 4px solid #16f0c4 !important;
+  border-radius: 16px !important;
+  padding: 18px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16) !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:last-child > div h3 {
+  color: #16f0c4 !important;
+  -webkit-text-fill-color: #16f0c4 !important;
+}
+
+/* Icon chips in event info */
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:first-child svg[style] {
+  background: #173a48 !important;
+  color: #b7c8d0 !important;
+}
+
+/* Inputs/selects in the creation card */
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch input,
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[role="combobox"],
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[data-slot="select-trigger"] {
+  background: #102d34 !important;
+  background-color: #102d34 !important;
+  border: 1px solid #365b5b !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch input:focus,
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch button:focus-visible {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 3px rgba(22,240,196,.12) !important;
+}
+
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[class*="bg-[#72ad97]"] {
+  background: #16f0c4 !important;
+  color: #031821 !important;
+  -webkit-text-fill-color: #031821 !important;
+  border: 1px solid #16f0c4 !important;
+  min-height: 44px;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+}
+
+/* Divider between cards and planning list */
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 {
+  border-color: #294653 !important;
+  margin: 18px 0 !important;
+}
+
+/* Filter/copy card */
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center {
+  background: #0d2532 !important;
+  border: 1px solid #294653 !important;
+  border-left: 4px solid #8d7cff !important;
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 12px !important;
+  gap: 0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.14) !important;
+}
+
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > div:first-child button {
+  background: #102d3a !important;
+  border-color: #365362 !important;
+  color: #edf7f6 !important;
+  -webkit-text-fill-color: #edf7f6 !important;
+  border-radius: 12px 0 0 12px !important;
+  min-height: 42px !important;
+}
+
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > .mr-8 button {
+  background: #16f0c4 !important;
+  color: #031821 !important;
+  -webkit-text-fill-color: #031821 !important;
+  border-color: #16f0c4 !important;
+  border-radius: 0 12px 12px 0 !important;
+  min-height: 42px !important;
+  margin-left: -1px !important;
+}
+
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center > div:last-child button {
+  background: #17283d !important;
+  color: #b8c8ff !important;
+  -webkit-text-fill-color: #b8c8ff !important;
+  border: 1px solid #4b5475 !important;
+  border-radius: 12px !important;
+}
+
+/* Turn table */
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center + table,
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + .flex.items-center + div table {
+  background: #0b2230 !important;
+  border: 1px solid #294653 !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+html.admin-dark section.m-6 table.mt-1 thead tr {
+  background: #123442 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 thead th {
+  color: #c5d3d8 !important;
+  -webkit-text-fill-color: #c5d3d8 !important;
+  border-color: #294653 !important;
+  font-size: 13px !important;
+  letter-spacing: .02em;
+}
+
+html.admin-dark section.m-6 table.mt-1 tbody tr:not(:has(td[colspan])) {
+  background: #0d2735 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 tbody tr:not(:has(td[colspan])):hover {
+  background: #123241 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 tbody td {
+  color: #edf7f6 !important;
+  border-color: #294653 !important;
+}
+
+/* Day summary row */
+html.admin-dark section.m-6 table.mt-1 tbody td[colspan] {
+  background: #162d38 !important;
+  border-top: 1px solid #365362 !important;
+  border-bottom: 1px solid #365362 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 tbody td[colspan] span {
+  color: #c5d3d8 !important;
+  -webkit-text-fill-color: #c5d3d8 !important;
+}
+
+html.admin-dark section.m-6 table.mt-1 tbody td[colspan] span.text-\[18px\] {
+  color: #ffad66 !important;
+  -webkit-text-fill-color: #ffad66 !important;
+}
+
+/* Bottom totals */
+html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end > div {
+  background: #0d2c2a !important;
+  border: 1px solid #28544d !important;
+  border-radius: 14px !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+}
+
+html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end span[style*="18px"] {
+  color: #a9bbc2 !important;
+}
+
+html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end span[style*="25px"] {
+  color: #16f0c4 !important;
+}
+
+@media (max-width: 1200px) {
+  html.admin-dark section.m-6 > .flex.gap-3.items-stretch {
+    flex-direction: column !important;
+  }
+  html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div {
+    flex-basis: auto !important;
+    width: 100% !important;
+  }
+}
