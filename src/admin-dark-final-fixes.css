@@ -94,24 +94,33 @@ html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-ce
   gap: 10px !important;
 }
 
-/* Dettaglio operatore: aqua segmented tabs. */
+/* Dettaglio operatore: aqua segmented tabs, no light surfaces. */
+html.admin-dark .operator-detail-tabs-list,
 html.admin-dark .admin-shell section.m-6 [data-slot="tabs-list"] {
-  border-color: #16f0c4 !important;
-  background: transparent !important;
+  border: 1px solid #16f0c4 !important;
+  background: #0f2834 !important;
+  background-color: #0f2834 !important;
+  box-shadow: none !important;
 }
 
+html.admin-dark .operator-detail-tab,
 html.admin-dark .admin-shell section.m-6 [data-slot="tabs-trigger"] {
   border: 1px solid #16f0c4 !important;
   background: transparent !important;
+  background-color: transparent !important;
   color: #16f0c4 !important;
   -webkit-text-fill-color: #16f0c4 !important;
   box-shadow: none !important;
 }
 
+html.admin-dark .operator-detail-tab:hover,
+html.admin-dark .operator-detail-tab[data-state="active"],
 html.admin-dark .admin-shell section.m-6 [data-slot="tabs-trigger"]:hover,
 html.admin-dark .admin-shell section.m-6 [data-slot="tabs-trigger"][data-state="active"] {
   background: #16f0c4 !important;
+  background-color: #16f0c4 !important;
   color: #031821 !important;
   -webkit-text-fill-color: #031821 !important;
   border-color: #16f0c4 !important;
+  box-shadow: none !important;
 }
