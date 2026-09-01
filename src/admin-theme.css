@@ -32,9 +32,7 @@ html.admin-dark .admin-shell .text-\[\#656565\] {
   color: var(--admin-muted) !important;
 }
 
-/* Structural borders: wrappers, tables and dividers use one dark border token.
-   Buttons, badges and form controls are intentionally excluded because they can
-   carry semantic border colours. */
+/* Structural borders */
 html.admin-dark .admin-shell section[class*="border"],
 html.admin-dark .admin-shell div[class*="border"],
 html.admin-dark .admin-shell table,
@@ -47,7 +45,7 @@ html.admin-dark .admin-shell hr {
   border-color: var(--admin-border) !important;
 }
 
-/* Legacy toolbars. These selectors intentionally override the old light rule in index.css. */
+/* Legacy Eventi / Payroll toolbar */
 html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1,
 html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1,
 html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].mb-1 > div.flex.items-center.bg-\[\#ecf3f1\] {
@@ -55,6 +53,22 @@ html.admin-dark .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\]
   border: 1px solid var(--admin-border) !important;
   border-radius: 14px !important;
   box-shadow: none !important;
+}
+
+/* Planning turni surfaces */
+html.admin-dark .admin-shell .bg-\[\#f7f9f8\],
+html.admin-dark .admin-shell .bg-gray-50 {
+  background: var(--admin-surface) !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#f7f9f8\] label {
+  color: var(--admin-muted) !important;
+}
+
+html.admin-dark .admin-shell .bg-\[\#f7f9f8\] > .bg-\[\#d8dfdc\] {
+  background: var(--admin-border) !important;
 }
 
 /* Inputs and date selectors */
