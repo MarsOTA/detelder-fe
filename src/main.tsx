@@ -3,17 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './operatori-filters-fix.css'
 import './admin-theme.css'
-import './admin-theme-refine.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
-import './payroll-dark-fix.css'
-import './admin-theme-hotfix.css'
-import './admin-dark-final.css'
-import './events-dark-fix.css'
 import App from './App.tsx'
 import '@mantine/core/styles.css';
-//import { AuthProvider } from './AuthContext';
-//import { AuthProvider } from './AuthContext.tsx';
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
 
@@ -38,7 +31,7 @@ const updateSW = registerSW({
 createRoot(document.getElementById('root')!).render(
   <Fragment>
     <BrowserRouter>
-        <App />
+      <App />
     </BrowserRouter>
   </Fragment>
 )
