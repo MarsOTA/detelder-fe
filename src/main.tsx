@@ -6,6 +6,7 @@ import './operatori-filters-fix.css'
 import './presenze-pagination.css'
 import './payroll-table.css'
 import './admin-theme.css'
+import './admin-components.css'
 import App from './App.tsx'
 import { BrowserRouter } from 'react-router'
 import { registerSW } from 'virtual:pwa-register';
