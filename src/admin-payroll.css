@@ -1,0 +1,64 @@
+/* Payroll dark refinements. Loaded after the shared admin styles so the page
+   keeps a single, explicit visual contract without affecting light mode. */
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center > .flex.items-center:first-child > button {
+  background: #16f0c4 !important;
+  border-color: #16f0c4 !important;
+  color: #031821 !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center > .flex.items-center:first-child > button:hover {
+  background: #33f3cd !important;
+  border-color: #33f3cd !important;
+  color: #031821 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center > div:last-child {
+  background: transparent !important;
+  border: 1px solid #16f0c4 !important;
+  color: #16f0c4 !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border table,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border th,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border td,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tr {
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"],
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="number"] {
+  background: #0f2834 !important;
+  background-color: #0f2834 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #16f0c4 !important;
+  border: 1px solid #365764 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"]:focus,
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="number"]:focus {
+  border-color: #16f0c4 !important;
+  box-shadow: 0 0 0 1px #16f0c4 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: .85;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody tr:has(td[colspan="11"]) td[colspan="11"] {
+  background: #0b765d !important;
+  color: #ffffff !important;
+  border-color: #294653 !important;
+}
+
+html.admin-dark .admin-shell section.m-6 > .mb-5 + .flex.items-center + div.border tbody tr:has(td[colspan="11"]):hover td[colspan="11"] {
+  background: #0d8468 !important;
+}
