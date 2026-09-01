@@ -9,6 +9,7 @@ import './payroll-table.css'
 import './payroll-dark-fix.css'
 import './admin-theme-hotfix.css'
 import './admin-dark-final.css'
+import './events-dark-fix.css'
 import App from './App.tsx'
 import '@mantine/core/styles.css';
 //import { AuthProvider } from './AuthContext';
