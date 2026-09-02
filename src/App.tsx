@@ -13,7 +13,7 @@ import Eventi from "./pages/admin/eventi";
 import Turni from "./pages/admin/turni";
 import CreaCliente from "./pages/admin/creaCliente";
 import PresenzeTotali from "./pages/admin/presenze";
-import GetsioneTurni from "./pages/admin/getsioneTurni";
+import GetsioneTurni from "./pages/admin/getsioneTurniRuntime";
 import DettaglioOperatore from "./pages/admin/dettaglioOperatore";
 import AssegnaOperatore from "./pages/admin/assegnaOperatore";
 import ProgrammazioneEvento from "./pages/admin/programmazioneEvento";
