@@ -7,7 +7,7 @@ import { ProtectedRoute } from "@/ProtectedRoute";
 import Login from "./pages/auth/login";
 
 import Dashboard from "./pages/admin/dashboard";
-import Operatori from "./pages/admin/operatori";
+import Operatori from "./pages/admin/operatoriRuntime";
 import Clienti from "./pages/admin/clienti";
 import Eventi from "./pages/admin/eventi";
 import Turni from "./pages/admin/turni";
