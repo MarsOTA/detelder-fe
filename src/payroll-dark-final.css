@@ -5,9 +5,15 @@
   border-color: #e5e7eb;
 }
 
-/* Payroll has no vertical column grid in either theme. */
-.admin-payroll-page .admin-payroll-table th,
-.admin-payroll-page .admin-payroll-table td {
+/* Subtle vertical column dividers: visible but not heavy. */
+.admin-payroll-page .admin-payroll-table th:not(:last-child),
+.admin-payroll-page .admin-payroll-table td:not(:last-child) {
+  border-right: 1px solid #dfe7e3 !important;
+  border-left: 0 !important;
+}
+
+.admin-payroll-page .admin-payroll-table th:last-child,
+.admin-payroll-page .admin-payroll-table td:last-child {
   border-left: 0 !important;
   border-right: 0 !important;
 }
@@ -26,6 +32,11 @@ html.admin-dark .admin-payroll-table-wrap {
   border-color: #294653 !important;
 }
 
+html.admin-dark .admin-payroll-page .admin-payroll-table th:not(:last-child),
+html.admin-dark .admin-payroll-page .admin-payroll-table td:not(:last-child) {
+  border-right-color: #294653 !important;
+}
+
 html.admin-dark .admin-payroll-table th,
 html.admin-dark .admin-payroll-table td {
   border-bottom-color: #294653 !important;
@@ -33,15 +44,6 @@ html.admin-dark .admin-payroll-table td {
 
 html.admin-dark .admin-payroll-table tr {
   border-color: #294653 !important;
-}
-
-html.admin-dark .admin-payroll-edit-cell,
-html.admin-dark .admin-payroll-note-cell,
-html.admin-dark .admin-payroll-state-cell,
-html.admin-dark .admin-payroll-state-head,
-html.admin-dark .admin-payroll-definitive-head {
-  border-left: 0 !important;
-  border-right: 0 !important;
 }
 
 html.admin-dark .admin-payroll-edit-input {
