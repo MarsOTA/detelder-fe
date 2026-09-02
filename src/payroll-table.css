@@ -4,13 +4,10 @@ section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbod
   border-bottom: 1px solid #e8efec;
 }
 
-section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):not(:last-child) {
-  border-right: 1px solid #e8efec;
-}
-
-section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(1),
-section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]):nth-child(4) {
-  border-right-color: #d9e5e0;
+/* No vertical column grid in Payroll. */
+section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:not([colspan]) {
+  border-left: 0 !important;
+  border-right: 0 !important;
 }
 
 html:not(.admin-dark) body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(4) {
@@ -45,11 +42,6 @@ html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\
   padding-right: 6px !important;
   text-align: center !important;
   overflow: hidden !important;
-}
-
-html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(10) {
-  border-left: 1px solid #e1e9e6 !important;
-  border-right: 1px solid #e1e9e6 !important;
 }
 
 html body #root section.m-6 > div.border.rounded-md.bg-white.border-r.border-r-\[\#e5e7eb\] tbody > tr > td:nth-child(11) {
