@@ -5,6 +5,13 @@
   border-color: #e5e7eb;
 }
 
+/* Payroll has no vertical column grid in either theme. */
+.admin-payroll-page .admin-payroll-table th,
+.admin-payroll-page .admin-payroll-table td {
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
 .admin-payroll-edit-input {
   background: #ffffff !important;
   color: #191c1d !important;
@@ -19,11 +26,8 @@ html.admin-dark .admin-payroll-table-wrap {
   border-color: #294653 !important;
 }
 
-/* Keep only horizontal row separators: no dark vertical column grid. */
 html.admin-dark .admin-payroll-table th,
 html.admin-dark .admin-payroll-table td {
-  border-left: 0 !important;
-  border-right: 0 !important;
   border-bottom-color: #294653 !important;
 }
 
