@@ -59,3 +59,44 @@ html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center[clas
   border-radius: 12px !important;
   box-shadow: none !important;
 }
+
+/* Lista operatori — CSV action. Final rule, valid in light and dark. */
+body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between[class~="bg-[#ecf3f1]"][class~="px-6"][class~="py-4"] > button:last-child {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 24px !important;
+  margin-left: 12px !important;
+  border: 1px solid #b8d2c8 !important;
+  border-radius: 12px !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  background: #ffffff !important;
+  color: #007a55 !important;
+  -webkit-text-fill-color: #007a55 !important;
+  box-shadow: none !important;
+}
+
+body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between[class~="bg-[#ecf3f1]"][class~="px-6"][class~="py-4"] > button:last-child:hover {
+  background: #f7fbf9 !important;
+  border-color: #007a55 !important;
+  color: #006f4d !important;
+  -webkit-text-fill-color: #006f4d !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between[class~="bg-[#ecf3f1]"][class~="px-6"][class~="py-4"] > button:last-child {
+  background: #102934 !important;
+  border: 1px solid #365362 !important;
+  color: #16f0c4 !important;
+  -webkit-text-fill-color: #16f0c4 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between[class~="bg-[#ecf3f1]"][class~="px-6"][class~="py-4"] > button:last-child:hover {
+  background: #173744 !important;
+  border-color: #16f0c4 !important;
+  color: #16f0c4 !important;
+  -webkit-text-fill-color: #16f0c4 !important;
+}
