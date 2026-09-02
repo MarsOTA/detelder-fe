@@ -4,6 +4,30 @@ section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3
   display: none !important;
 }
 
+/* Scarica .csv: azione indipendente e coerente in light theme. */
+section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3.bg-\[\#ecf3f1\].px-6.py-4 > button:last-child {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 20px !important;
+  margin-left: 12px !important;
+  border: 1px solid #b8d2c8 !important;
+  border-radius: 12px !important;
+  border-top-left-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  background: #ffffff !important;
+  color: #007a55 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.gap-3.bg-\[\#ecf3f1\].px-6.py-4 > button:last-child:hover {
+  background: #f7fbf9 !important;
+  border-color: #8fbcae !important;
+  color: #006f4d !important;
+}
+
 /* Lista operatori dark: mantieni la stessa spaziatura leggibile del light theme. */
 html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > div.flex.flex-wrap.items-center.gap-3 {
   gap: 12px !important;
@@ -15,10 +39,26 @@ html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex
   margin-left: 0 !important;
 }
 
-/* Scarica .csv è un'azione indipendente: radius completo anche in dark. */
+/* Scarica .csv in dark: stessa geometria, palette dark. */
 html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > button:last-child {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 20px !important;
+  margin-left: 12px !important;
+  border: 1px solid #365362 !important;
   border-radius: 12px !important;
   border-top-left-radius: 12px !important;
   border-bottom-left-radius: 12px !important;
-  margin-left: 12px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  background: #102934 !important;
+  color: #16f0c4 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > button:last-child:hover {
+  background: #173744 !important;
+  border-color: #16f0c4 !important;
+  color: #16f0c4 !important;
 }
