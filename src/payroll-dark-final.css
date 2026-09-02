@@ -19,9 +19,14 @@ html.admin-dark .admin-payroll-table-wrap {
   border-color: #294653 !important;
 }
 
-html.admin-dark .admin-payroll-table,
+/* Keep only horizontal row separators: no dark vertical column grid. */
 html.admin-dark .admin-payroll-table th,
-html.admin-dark .admin-payroll-table td,
+html.admin-dark .admin-payroll-table td {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom-color: #294653 !important;
+}
+
 html.admin-dark .admin-payroll-table tr {
   border-color: #294653 !important;
 }
@@ -31,7 +36,8 @@ html.admin-dark .admin-payroll-note-cell,
 html.admin-dark .admin-payroll-state-cell,
 html.admin-dark .admin-payroll-state-head,
 html.admin-dark .admin-payroll-definitive-head {
-  border-color: #294653 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
 }
 
 html.admin-dark .admin-payroll-edit-input {
@@ -59,14 +65,4 @@ html.admin-dark .admin-payroll-edit-input[type="time"]::-webkit-calendar-picker-
 
 html.admin-dark .admin-payroll-pause-icon {
   color: #8fa4ac !important;
-}
-
-/* Explicitly kill the bright divider before STATO. */
-html.admin-dark .admin-payroll-note-cell {
-  border-right: 1px solid #294653 !important;
-}
-
-html.admin-dark .admin-payroll-state-cell,
-html.admin-dark .admin-payroll-state-head {
-  border-left: 1px solid #294653 !important;
 }
