@@ -1,5 +1,5 @@
 /* Gestione Turni toolbar — exact DOM-level correction. */
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 {
   display: flex !important;
   align-items: center !important;
   gap: 0 !important;
@@ -14,12 +14,12 @@ html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf
   margin-bottom: 12px !important;
 }
 
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child > button {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:first-child > button {
   min-height: 44px !important;
   margin: 0 !important;
   background: #102d3a !important;
@@ -30,12 +30,12 @@ html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf
   box-shadow: none !important;
 }
 
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(2) {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(2) {
   margin: 0 24px 0 0 !important;
   padding: 0 !important;
 }
 
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(2) > button {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(2) > button {
   min-height: 44px !important;
   margin: 0 0 0 -1px !important;
   background: #16f0c4 !important;
@@ -45,7 +45,7 @@ html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf
   box-shadow: none !important;
 }
 
-html.admin-dark body .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(3) button {
+html.admin-dark body #root .admin-shell section.m-6 > div.flex.items-center.bg-\[\#ecf3f1\].p-4.mb-1 > div:nth-child(3) button {
   min-height: 44px !important;
   background: #17283d !important;
   color: #b8c8ff !important;
