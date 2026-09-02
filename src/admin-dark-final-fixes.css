@@ -94,6 +94,26 @@ html.admin-dark .admin-shell section.m-6 > .space-y-5 > .flex.flex-wrap.items-ce
   gap: 10px !important;
 }
 
+/* Operatori dark: match admin-theme #root specificity so spacing/radius cannot be collapsed. */
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > div.flex.flex-wrap.items-center.gap-3 {
+  gap: 12px !important;
+  column-gap: 12px !important;
+  row-gap: 12px !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > div.flex.flex-wrap.items-center.gap-3 > div.flex.items-center.gap-2.border-l {
+  gap: 8px !important;
+}
+
+html.admin-dark body #root .admin-shell section.m-6 > .space-y-5 > div.flex.flex-wrap.items-center.justify-between.bg-\[\#ecf3f1\] > button:last-child {
+  margin-left: 12px !important;
+  border-radius: 12px !important;
+  border-top-left-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
 /* Dettaglio operatore: aqua segmented tabs, no light surfaces. */
 html.admin-dark .operator-detail-tabs-list,
 html.admin-dark .admin-shell section.m-6 [data-slot="tabs-list"] {
