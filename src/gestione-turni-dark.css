@@ -1,7 +1,12 @@
-/* Gestione Turni — single dedicated dark stylesheet */
+/* Gestione Turni — compact, source-specific dark styling */
+
+/* Reduce top spacing of the page. */
+html.admin-dark section.m-6 {
+  margin-top: 0.75rem !important;
+}
 
 html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 {
-  padding: 4px 2px 14px;
+  padding: 0 2px 12px;
   margin-bottom: 14px !important;
   border-bottom: 1px solid #294653;
 }
@@ -22,7 +27,7 @@ html.admin-dark section.m-6 > .flex.justify-between.items-center.mb-4 > .text-ri
   border: 1px solid rgba(117, 141, 255, .28) !important;
 }
 
-/* Top functional cards */
+/* Functional cards. */
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch {
   gap: 16px !important;
   align-items: stretch !important;
@@ -54,6 +59,19 @@ html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:last-child > div h
   color: #16f0c4 !important;
 }
 
+/* Info-event icons: no colored square background. */
+html.admin-dark section.m-6 > .flex.gap-3.items-stretch > div:first-child > div svg:not(button svg) {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #8db8ff !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px;
+}
+
+/* Inputs in the turn-entry card. */
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch input,
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[role="combobox"],
 html.admin-dark section.m-6 > .flex.gap-3.items-stretch button[data-slot="select-trigger"] {
@@ -78,8 +96,8 @@ html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 {
   margin: 18px 0 !important;
 }
 
-/* Filter toolbar: direct structural target. This excludes the page header (.justify-between). */
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) {
+/* Filter toolbar: it is the div immediately after the horizontal divider. */
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center {
   display: flex !important;
   align-items: center !important;
   gap: 0 !important;
@@ -93,13 +111,13 @@ html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-betw
   box-shadow: none !important;
 }
 
-/* Date + Filtra behave as one joined control. */
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) > div:first-child {
+/* Date + Filtra: one attached control. */
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center > div:first-child {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) > div:first-child > button {
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center > div:first-child > button {
   min-height: 44px !important;
   margin: 0 !important;
   background: #102d3a !important;
@@ -110,15 +128,14 @@ html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-betw
   box-shadow: none !important;
 }
 
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) > div:nth-child(2) {
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center > div:nth-child(2) {
   margin: 0 24px 0 0 !important;
   padding: 0 !important;
 }
 
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) > div:nth-child(2) > button {
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center > div:nth-child(2) > button {
   min-height: 44px !important;
-  margin: 0 !important;
-  margin-left: -1px !important;
+  margin: 0 0 0 -1px !important;
   background: #16f0c4 !important;
   border: 1px solid #16f0c4 !important;
   border-radius: 0 12px 12px 0 !important;
@@ -126,7 +143,7 @@ html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-betw
   box-shadow: none !important;
 }
 
-html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-between) > div:nth-child(3) button {
+html.admin-dark section.m-6 > .border-t.border-gray-300.my-4 + div.flex.items-center > div:nth-child(3) button {
   min-height: 44px !important;
   background: #17283d !important;
   color: #b8c8ff !important;
@@ -135,7 +152,7 @@ html.admin-dark body #root section.m-6 > div.flex.items-center:not(.justify-betw
   box-shadow: none !important;
 }
 
-/* Turn table */
+/* Turn table. */
 html.admin-dark section.m-6 table.mt-1 {
   background: #0b2230 !important;
   border: 1px solid #294653 !important;
@@ -183,7 +200,7 @@ html.admin-dark section.m-6 table.mt-1 tbody td[colspan] span.text-\[18px\] {
   color: #ffad66 !important;
 }
 
-/* Totals */
+/* Totals. */
 html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end > div {
   background: #0d2c2a !important;
   border: 1px solid #28544d !important;
@@ -199,7 +216,7 @@ html.admin-dark section.m-6 > .w-full.mt-4.flex.justify-end span[style*="25px"] 
   color: #16f0c4 !important;
 }
 
-/* Assign operator dialog */
+/* Assign-operator dialog. */
 html.admin-dark .admin-assign-operator-dialog {
   background: #0c1d2d !important;
   color: #edf7f6 !important;
