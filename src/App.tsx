@@ -10,7 +10,7 @@ import Dashboard from "./pages/admin/dashboard";
 import Operatori from "./pages/admin/operatoriRuntime";
 import Clienti from "./pages/admin/clienti";
 import Eventi from "./pages/admin/eventi";
-import Turni from "./pages/admin/turni";
+import Turni from "./pages/admin/turniRuntime";
 import CreaCliente from "./pages/admin/creaCliente";
 import PresenzeTotali from "./pages/admin/presenze";
 import GetsioneTurni from "./pages/admin/getsioneTurniRuntime";
