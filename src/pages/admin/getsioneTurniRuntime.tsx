@@ -165,7 +165,7 @@ const PlanningDateRangeFilter = () => {
           <Calendar
             mode="range"
             selected={draftRange}
-            onSelect={(value) => setDraftRange(value ?? {})}
+            onSelect={(value) => setDraftRange(value ?? { from: undefined })}
             locale={it}
             numberOfMonths={2}
             className="pointer-events-auto"
