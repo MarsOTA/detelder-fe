@@ -254,6 +254,12 @@ const TurniRuntime = () => {
         filtra.parentElement?.insertBefore(target, filtra);
       }
 
+      filtra.style.setProperty("margin-left", "16px", "important");
+      filtra.style.setProperty("border-radius", "12px", "important");
+      filtra.style.setProperty("height", "40px", "important");
+      filtra.style.setProperty("padding-left", "22px", "important");
+      filtra.style.setProperty("padding-right", "22px", "important");
+
       setPortalTarget(target);
       setFilterButton(filtra);
 
