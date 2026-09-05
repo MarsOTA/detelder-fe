@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { addDays, differenceInCalendarDays, format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -93,7 +93,7 @@ const PlanningRangePicker = ({ onApply }: { onApply: () => void }) => {
   }, []);
 
   const label = (() => {
-    if (!range.from) return "Seleziona data";
+    if (!range.from) return "Seleziona una data";
     const to = range.to ?? range.from;
     if (toYmd(range.from) === toYmd(to)) {
       return format(range.from, "d MMM yyyy", { locale: it });
@@ -116,20 +116,19 @@ const PlanningRangePicker = ({ onApply }: { onApply: () => void }) => {
     const to = range.to ?? range.from;
     const duration = Math.max(0, differenceInCalendarDays(to, range.from));
     const nextFrom = addDays(range.from, direction);
-    const next = {
+    applyRange({
       from: nextFrom,
       to: addDays(nextFrom, duration),
-    };
-    applyRange(next);
+    });
   };
 
   return (
-    <div className="flex items-end gap-1.5">
+    <div className="flex items-end gap-2">
       <Button
         type="button"
         variant="outline"
         size="icon"
-        className="h-10 w-10 rounded-lg border-[#d8dfdc] bg-white text-[#007a55]"
+        className="h-10 w-10 shrink-0 rounded-md"
         onClick={() => shift(-1)}
         aria-label="Periodo precedente"
         title="Periodo precedente"
@@ -137,37 +136,35 @@ const PlanningRangePicker = ({ onApply }: { onApply: () => void }) => {
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      <div className="w-[270px]">
-        <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Data / periodo</label>
+      <div className="w-[280px]">
+        <label className="mb-1.5 block text-[12px] font-bold text-muted-foreground">
+          Data / periodo
+        </label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
               variant="outline"
-              className="h-10 w-full justify-between rounded-lg border-[#d8dfdc] bg-white px-3 text-[14px] font-semibold text-[#4f4f4f]"
+              className="h-10 w-full justify-start rounded-md px-3 text-left font-normal"
             >
-              <span className="capitalize">{label}</span>
-              <CalendarDays className="h-4 w-4 shrink-0 text-[#007a55]" />
+              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+              <span className="truncate capitalize">{label}</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden rounded-2xl p-0 shadow-xl" align="start">
-            <div className="border-b px-4 py-3">
-              <div className="text-sm font-extrabold">Seleziona giorno o periodo</div>
-              <div className="mt-0.5 text-xs text-muted-foreground">
-                Clicca un giorno oppure seleziona inizio e fine intervallo.
-              </div>
-            </div>
 
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="range"
               selected={draft}
-              onSelect={(value) => setDraft(value ?? { from: undefined, to: undefined })}
+              onSelect={(value) =>
+                setDraft(value ?? { from: undefined, to: undefined })
+              }
               locale={it}
               numberOfMonths={2}
               className="pointer-events-auto"
             />
 
-            <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
+            <div className="flex items-center justify-between border-t p-3">
               <Button
                 type="button"
                 variant="ghost"
@@ -176,10 +173,11 @@ const PlanningRangePicker = ({ onApply }: { onApply: () => void }) => {
               >
                 Oggi
               </Button>
-              <div className="flex gap-2">
+
+              <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     setDraft(range);
@@ -206,7 +204,7 @@ const PlanningRangePicker = ({ onApply }: { onApply: () => void }) => {
         type="button"
         variant="outline"
         size="icon"
-        className="h-10 w-10 rounded-lg border-[#d8dfdc] bg-white text-[#007a55]"
+        className="h-10 w-10 shrink-0 rounded-md"
         onClick={() => shift(1)}
         aria-label="Periodo successivo"
         title="Periodo successivo"
@@ -228,15 +226,21 @@ const TurniRuntime = () => {
         (item) => item.textContent?.trim() === "Planning turni"
       );
       const section = heading?.closest("section");
-      const toolbar = section?.querySelector("div.mb-2.flex.flex-wrap.items-end") as HTMLElement | null;
+      const toolbar = section?.querySelector(
+        "div.mb-2.flex.flex-wrap.items-end"
+      ) as HTMLElement | null;
       if (!toolbar) return false;
 
       const children = Array.from(toolbar.children) as HTMLElement[];
       const dalWrapper = children.find((child) =>
-        Array.from(child.querySelectorAll("label")).some((label) => label.textContent?.trim() === "Dal")
+        Array.from(child.querySelectorAll("label")).some(
+          (label) => label.textContent?.trim() === "Dal"
+        )
       );
       const alWrapper = children.find((child) =>
-        Array.from(child.querySelectorAll("label")).some((label) => label.textContent?.trim() === "Al")
+        Array.from(child.querySelectorAll("label")).some(
+          (label) => label.textContent?.trim() === "Al"
+        )
       );
       const filtra = Array.from(toolbar.querySelectorAll("button")).find(
         (button) => button.textContent?.trim() === "Filtra"
@@ -247,26 +251,30 @@ const TurniRuntime = () => {
       dalWrapper.style.display = "none";
       alWrapper.style.display = "none";
 
-      let target = toolbar.querySelector<HTMLElement>("[data-planning-modern-range]");
+      let target = toolbar.querySelector<HTMLElement>(
+        "[data-planning-modern-range]"
+      );
       if (!target) {
         target = document.createElement("div");
         target.dataset.planningModernRange = "true";
         filtra.parentElement?.insertBefore(target, filtra);
       }
 
-      filtra.style.setProperty("margin-left", "16px", "important");
-      filtra.style.setProperty("border-radius", "12px", "important");
+      filtra.style.setProperty("margin-left", "20px", "important");
+      filtra.style.setProperty("border-radius", "6px", "important");
       filtra.style.setProperty("height", "40px", "important");
-      filtra.style.setProperty("padding-left", "22px", "important");
-      filtra.style.setProperty("padding-right", "22px", "important");
+      filtra.style.setProperty("padding-left", "20px", "important");
+      filtra.style.setProperty("padding-right", "20px", "important");
 
       setPortalTarget(target);
       setFilterButton(filtra);
 
-      const quickButtons = Array.from(toolbar.querySelectorAll("button")).filter((button) => {
-        const text = button.textContent?.trim();
-        return text === "Oggi" || text === "Domani";
-      });
+      const quickButtons = Array.from(toolbar.querySelectorAll("button")).filter(
+        (button) => {
+          const text = button.textContent?.trim();
+          return text === "Oggi" || text === "Domani";
+        }
+      );
 
       quickButtons.forEach((button) => {
         if ((button as HTMLElement).dataset.rangeCaptureBound === "true") return;
