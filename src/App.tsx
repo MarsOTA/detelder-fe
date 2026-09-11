@@ -34,6 +34,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
+        {/* Preview isolata: pubblica solo sul branch prototipo, senza auth/backend. */}
+        <Route path="/admin/prototipo-intermittenti" element={<IntermittentiPrototype />} />
+
         <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/presenze" element={<PresenzeTotali />} /> 
@@ -43,7 +46,6 @@ function App() {
           <Route path="/admin/turni" element={<Turni />} />          
           <Route path="/admin/crea-cliente" element={<CreaCliente />} />
           <Route path="/admin/payroll" element={<Payroll />} />  
-          <Route path="/admin/prototipo-intermittenti" element={<IntermittentiPrototype />} />
           <Route path="/admin/gestione-turni/:id" element={<GetsioneTurni />} />
           <Route path="/admin/gestione-turni/:id/:dataTurno" element={<GetsioneTurni />} />
           <Route path="/admin/dettaglio-operatore/:id" element={<DettaglioOperatore />} />
