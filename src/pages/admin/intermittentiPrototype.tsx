@@ -55,18 +55,17 @@ const chiamateDemo: ChiamataIntermittenteDemo[] = [
     id: 1,
     dataInizio: "2026-09-10",
     dataFine: "2026-09-12",
-    stato: "CONSEGNATA",
+    stato: "INVIATA",
+    dataOraInvio: "2026-09-10T09:42:00",
     xmlArchiviato: creaXmlStoricoDemo("2026-09-10", "2026-09-12"),
-    ricevutaAccettazione: "accettazione-pec-chiamata-1.eml",
-    ricevutaConsegna: "consegna-pec-chiamata-1.eml",
   },
   {
     id: 2,
     dataInizio: "2026-09-18",
     dataFine: "2026-09-18",
     stato: "INVIATA",
+    dataOraInvio: "2026-09-18T08:55:00",
     xmlArchiviato: creaXmlStoricoDemo("2026-09-18", "2026-09-18"),
-    ricevutaAccettazione: "accettazione-pec-chiamata-2.eml",
   },
   {
     id: 3,
@@ -117,8 +116,9 @@ const IntermittentiPrototype = () => {
           </span>
         </div>
         <p className="mt-2 max-w-4xl text-sm text-[#5e5d5d]">
-          Gestione del contratto a chiamata (padre) e delle comunicazioni intermittenti
-          collegate. Le azioni restano separate tra nuova chiamata e archivio storico.
+          Gestione del contratto a chiamata e delle comunicazioni intermittenti collegate.
+          Detelder conserva lo storico delle chiamate e l'XML generato; le ricevute PEC
+          restano nella casella PEC utilizzata per l'invio.
         </p>
       </div>
 
