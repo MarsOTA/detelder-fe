@@ -11,6 +11,7 @@ import {
 import {
   CheckCircle2,
   Download,
+  Eye,
   FileCode2,
   MailCheck,
   Plus,
@@ -46,6 +47,8 @@ export interface ChiamataIntermittenteDemo {
   dataInizio: string;
   dataFine?: string;
   stato: StatoChiamata;
+  xmlArchiviato?: string;
+  provaInvio?: string;
   ricevuta?: string;
 }
 
@@ -76,6 +79,25 @@ const statoClass: Record<StatoChiamata, string> = {
   XML_GENERATO: "bg-blue-50 text-blue-700 border-blue-200",
   INVIATA: "bg-violet-50 text-violet-700 border-violet-200",
   CONSEGNATA: "bg-emerald-50 text-emerald-700 border-emerald-200",
+};
+
+const scaricaTesto = (contenuto: string, nomeFile: string, mimeType = "text/plain;charset=utf-8") => {
+  const blob = new Blob([contenuto], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeFile;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const visualizzaTesto = (contenuto: string, mimeType = "text/plain;charset=utf-8") => {
+  const blob = new Blob([contenuto], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 };
 
 export const IntermittentiDialog = ({
@@ -174,6 +196,28 @@ export const IntermittentiDialog = ({
     );
   };
 
+  const contenutoProvaInvio = (chiamata: ChiamataIntermittenteDemo) =>
+    [
+      "DETELDER - PROTOTIPO PROVA INVIO",
+      `Chiamata #${chiamata.id}`,
+      `Lavoratore: ${operatore.nome} ${operatore.cognome}`,
+      `Codice fiscale: ${operatore.codiceFiscale}`,
+      `Periodo: ${formatData(chiamata.dataInizio)} - ${formatData(chiamata.dataFine)}`,
+      "Destinatario: intermittenti@pec.lavoro.gov.it",
+      "",
+      "Nel prodotto finale questo file sarà la copia integrale del messaggio realmente inviato,",
+      "con data/ora, destinatario, oggetto, Message-ID e allegato XML associato.",
+    ].join("\n");
+
+  const contenutoRicevuta = (chiamata: ChiamataIntermittenteDemo) =>
+    [
+      "DETELDER - PROTOTIPO RICEVUTA PEC",
+      `Chiamata #${chiamata.id}`,
+      `Periodo: ${formatData(chiamata.dataInizio)} - ${formatData(chiamata.dataFine)}`,
+      "",
+      "Nel prodotto finale verrà conservata qui la ricevuta PEC originale acquisita dalla casella.",
+    ].join("\n");
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[920px]">
@@ -225,36 +269,157 @@ export const IntermittentiDialog = ({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {chiamateIniziali.map((chiamata) => (
-                    <div
-                      key={chiamata.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-3"
-                    >
-                      <div>
-                        <div className="font-medium text-[#2e2e2e]">
-                          Chiamata #{chiamata.id}
-                        </div>
-                        <div className="text-sm text-[#5e5d5d]">
-                          {formatData(chiamata.dataInizio)} → {formatData(chiamata.dataFine)}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statoClass[chiamata.stato]}`}
-                        >
-                          {statoLabel[chiamata.stato]}
-                        </span>
-                        {chiamata.ricevuta && (
+                  {chiamateIniziali.map((chiamata) => {
+                    const numeroDocumenti =
+                      Number(Boolean(chiamata.xmlArchiviato)) +
+                      Number(Boolean(chiamata.provaInvio)) +
+                      Number(Boolean(chiamata.ricevuta));
+
+                    return (
+                      <div key={chiamata.id} className="rounded-lg border bg-white p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <div className="font-medium text-[#2e2e2e]">
+                              Chiamata #{chiamata.id}
+                            </div>
+                            <div className="text-sm text-[#5e5d5d]">
+                              {formatData(chiamata.dataInizio)} → {formatData(chiamata.dataFine)}
+                            </div>
+                          </div>
                           <span
-                            className="inline-flex items-center gap-1 text-xs font-medium text-[#007a55]"
-                            title="Nel prodotto finale aprirà/scaricherà la ricevuta PEC"
+                            className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statoClass[chiamata.stato]}`}
                           >
-                            <MailCheck className="h-4 w-4" /> Ricevuta PEC
+                            {statoLabel[chiamata.stato]}
                           </span>
+                        </div>
+
+                        {numeroDocumenti > 0 && (
+                          <details className="mt-3 rounded-md border border-[#dce9e5] bg-[#f8fbfa] px-3 py-2">
+                            <summary className="cursor-pointer text-sm font-semibold text-[#007a55]">
+                              Archivio documenti e prove · {numeroDocumenti}
+                            </summary>
+                            <div className="mt-3 space-y-2">
+                              {chiamata.xmlArchiviato && (
+                                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white p-2.5">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <FileCode2 className="h-4 w-4 text-blue-600" />
+                                    <div>
+                                      <div className="font-medium">XML archiviato</div>
+                                      <div className="text-xs text-[#6b6b6b]">
+                                        File esatto associato a questa chiamata
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1.5">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        visualizzaTesto(chiamata.xmlArchiviato!, "application/xml;charset=utf-8")
+                                      }
+                                    >
+                                      <Eye className="mr-1.5 h-4 w-4" /> Visualizza
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        scaricaTesto(
+                                          chiamata.xmlArchiviato!,
+                                          `UNI_Intermittenti_chiamata_${chiamata.id}.xml`,
+                                          "application/xml;charset=utf-8",
+                                        )
+                                      }
+                                    >
+                                      <Download className="mr-1.5 h-4 w-4" /> Scarica
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {chiamata.provaInvio && (
+                                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white p-2.5">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Send className="h-4 w-4 text-violet-600" />
+                                    <div>
+                                      <div className="font-medium">Prova invio</div>
+                                      <div className="text-xs text-[#6b6b6b]">
+                                        Copia del messaggio inviato e relativi metadati
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1.5">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => visualizzaTesto(contenutoProvaInvio(chiamata))}
+                                    >
+                                      <Eye className="mr-1.5 h-4 w-4" /> Visualizza
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        scaricaTesto(
+                                          contenutoProvaInvio(chiamata),
+                                          chiamata.provaInvio!,
+                                          "message/rfc822;charset=utf-8",
+                                        )
+                                      }
+                                    >
+                                      <Download className="mr-1.5 h-4 w-4" /> Scarica
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {chiamata.ricevuta && (
+                                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white p-2.5">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <MailCheck className="h-4 w-4 text-emerald-600" />
+                                    <div>
+                                      <div className="font-medium">Ricevuta PEC di consegna</div>
+                                      <div className="text-xs text-[#6b6b6b]">
+                                        Ricevuta associata a questa specifica chiamata
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1.5">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => visualizzaTesto(contenutoRicevuta(chiamata))}
+                                    >
+                                      <Eye className="mr-1.5 h-4 w-4" /> Visualizza
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        scaricaTesto(
+                                          contenutoRicevuta(chiamata),
+                                          chiamata.ricevuta!,
+                                          "message/rfc822;charset=utf-8",
+                                        )
+                                      }
+                                    >
+                                      <Download className="mr-1.5 h-4 w-4" /> Scarica
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </details>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
