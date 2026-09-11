@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ArrowLeft,
   CheckCircle2,
   Download,
   FileCode2,
@@ -29,7 +28,6 @@ interface NuovaChiamataIntermittenteDialogProps {
   setOpen: (open: boolean) => void;
   contrattoPadre: ContrattoChiamataPadre | null;
   operatore: OperatoreIntermittente;
-  onTornaArchivio: () => void;
 }
 
 const formatData = (value?: string) => {
@@ -44,7 +42,6 @@ export const NuovaChiamataIntermittenteDialog = ({
   setOpen,
   contrattoPadre,
   operatore,
-  onTornaArchivio,
 }: NuovaChiamataIntermittenteDialogProps) => {
   const [cfDatore, setCfDatore] = useState("LNDMCL79D08F205X");
   const [emailDatore, setEmailDatore] = useState("info@detelder.com");
@@ -72,11 +69,6 @@ export const NuovaChiamataIntermittenteDialog = ({
       setErrore("");
     }
   }, [open]);
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen);
-    if (!nextOpen) onTornaArchivio();
-  };
 
   const invalidaXml = () => {
     if (xmlGenerato) setXmlGenerato("");
@@ -143,7 +135,7 @@ export const NuovaChiamataIntermittenteDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[760px]">
         <DialogHeader>
           <DialogTitle className="text-xl text-[#007a55]">
@@ -285,9 +277,8 @@ export const NuovaChiamataIntermittenteDialog = ({
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4">
-              <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Torna all'archivio
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+                Chiudi
               </Button>
 
               <div className="flex flex-wrap gap-2">
