@@ -22,11 +22,7 @@ export interface OperatoreIntermittente {
   codiceFiscale: string;
 }
 
-export type StatoChiamata =
-  | "DA_GENERARE"
-  | "XML_GENERATO"
-  | "INVIATA"
-  | "CONSEGNATA";
+export type StatoChiamata = "DA_GENERARE" | "XML_GENERATO" | "INVIATA";
 
 export interface ChiamataIntermittenteDemo {
   id: number;
@@ -35,8 +31,6 @@ export interface ChiamataIntermittenteDemo {
   stato: StatoChiamata;
   xmlArchiviato?: string;
   dataOraInvio?: string;
-  ricevutaAccettazione?: string;
-  ricevutaConsegna?: string;
 }
 
 interface IntermittentiDialogProps {
@@ -66,14 +60,12 @@ const statoLabel: Record<StatoChiamata, string> = {
   DA_GENERARE: "Da generare",
   XML_GENERATO: "XML generato",
   INVIATA: "Inviata",
-  CONSEGNATA: "Inviata",
 };
 
 const statoClass: Record<StatoChiamata, string> = {
   DA_GENERARE: "bg-amber-50 text-amber-700 border-amber-200",
   XML_GENERATO: "bg-[#f5faf8] text-[#315e51] border-[#b7d7cc]",
   INVIATA: "bg-[#e8f4ef] text-[#007a55] border-[#b7d7cc]",
-  CONSEGNATA: "bg-[#e8f4ef] text-[#007a55] border-[#b7d7cc]",
 };
 
 const scaricaTesto = (
