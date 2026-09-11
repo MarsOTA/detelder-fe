@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FileCheck2, MailCheck, PhoneCall, Trash2, View } from "lucide-react";
+import { generaUniIntermittentiXml } from "@/utils/intermittentiXml";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import type {
   ChiamataIntermittenteDemo,
@@ -22,25 +23,45 @@ const contrattoPadreDemo: ContrattoChiamataPadre = {
   dataFine: "2026-12-31",
 };
 
+const creaXmlStoricoDemo = (dataInizio: string, dataFine?: string) =>
+  generaUniIntermittentiXml({
+    cfDatore: "LNDMCL79D08F205X",
+    emailDatore: "info@detelder.com",
+    annullamento: false,
+    lavoratori: [
+      {
+        cfLavoratore: "LNDMCL79D08F205X",
+        codiceComunicazione: "372920101",
+        dataInizio,
+        dataFine,
+      },
+    ],
+  });
+
 const chiamateDemo: ChiamataIntermittenteDemo[] = [
   {
     id: 1,
     dataInizio: "2026-09-10",
     dataFine: "2026-09-12",
     stato: "CONSEGNATA",
-    ricevuta: "ricevuta-pec-demo.eml",
+    xmlArchiviato: creaXmlStoricoDemo("2026-09-10", "2026-09-12"),
+    provaInvio: "mail-inviata-chiamata-1.eml",
+    ricevuta: "ricevuta-pec-chiamata-1.eml",
   },
   {
     id: 2,
     dataInizio: "2026-09-18",
     dataFine: "2026-09-18",
     stato: "INVIATA",
+    xmlArchiviato: creaXmlStoricoDemo("2026-09-18", "2026-09-18"),
+    provaInvio: "mail-inviata-chiamata-2.eml",
   },
   {
     id: 3,
     dataInizio: "2026-09-23",
     dataFine: "2026-09-25",
     stato: "XML_GENERATO",
+    xmlArchiviato: creaXmlStoricoDemo("2026-09-23", "2026-09-25"),
   },
 ];
 
