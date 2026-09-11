@@ -254,12 +254,6 @@ const IntermittentiPrototype = () => {
         </Table>
       </div>
 
-      <div className="rounded-[10px] border border-dashed border-[#b7d7cc] bg-[#f5faf8] p-4 text-sm text-[#315e51]">
-        <strong>Regola del prototipo:</strong> entrambi i pulsanti esistono solo sul
-        contratto a chiamata padre. "Nuova chiamata" crea una figlia; "Archivio chiamate"
-        consulta esclusivamente le figlie già registrate e le relative prove.
-      </div>
-
       <IntermittentiDialog
         open={archivioOpen}
         setOpen={setArchivioOpen}
