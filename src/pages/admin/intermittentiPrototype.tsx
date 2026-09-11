@@ -8,9 +8,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileCheck2, MailCheck, PhoneCall, Trash2, View } from "lucide-react";
+import {
+  Archive,
+  FileCheck2,
+  MailCheck,
+  Plus,
+  Trash2,
+  View,
+} from "lucide-react";
 import { generaUniIntermittentiXml } from "@/utils/intermittentiXml";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
+import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type {
   ChiamataIntermittenteDemo,
   ContrattoChiamataPadre,
@@ -65,19 +73,31 @@ const chiamateDemo: ChiamataIntermittenteDemo[] = [
   },
 ];
 
+const operatoreDemo = {
+  nome: "Jaime",
+  cognome: "Angulo",
+  codiceFiscale: "LNDMCL79D08F205X",
+};
+
 const formatData = (value: string) => {
   const [year, month, day] = value.split("-");
   return `${day}/${month}/${year}`;
 };
 
 const IntermittentiPrototype = () => {
-  const [open, setOpen] = useState(false);
+  const [archivioOpen, setArchivioOpen] = useState(false);
+  const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
   const [contrattoSelezionato, setContrattoSelezionato] =
     useState<ContrattoChiamataPadre | null>(null);
 
-  const apriGestioneChiamate = () => {
+  const apriArchivio = () => {
     setContrattoSelezionato(contrattoPadreDemo);
-    setOpen(true);
+    setArchivioOpen(true);
+  };
+
+  const apriNuovaChiamata = () => {
+    setContrattoSelezionato(contrattoPadreDemo);
+    setNuovaChiamataOpen(true);
   };
 
   return (
@@ -93,8 +113,8 @@ const IntermittentiPrototype = () => {
         </div>
         <p className="mt-2 max-w-4xl text-sm text-[#5e5d5d]">
           Prova isolata della gerarchia contratto a chiamata (padre) → comunicazioni
-          intermittenti (figlie), con generazione, anteprima e download XML. La funzione
-          di invio al Ministero è mostrata ma volutamente disabilitata in questo step.
+          intermittenti (figlie). Le due azioni sono separate: creazione di una nuova
+          chiamata e consultazione dell'archivio storico.
         </p>
       </div>
 
@@ -174,11 +194,21 @@ const IntermittentiPrototype = () => {
                   <Button
                     type="button"
                     size="sm"
-                    onClick={apriGestioneChiamate}
+                    onClick={apriNuovaChiamata}
                     className="bg-[#007a55] text-white hover:bg-[#006449]"
                   >
-                    <PhoneCall className="mr-2 h-4 w-4" />
-                    Gestisci chiamate
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nuova chiamata
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={apriArchivio}
+                    className="border-[#b7d7cc] text-[#007a55] hover:bg-[#f5faf8]"
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archivio chiamate · {chiamateDemo.length}
                   </Button>
                   <button type="button" className="cursor-pointer" title="Visualizza contratto">
                     <View className="h-4 w-4" />
@@ -194,21 +224,24 @@ const IntermittentiPrototype = () => {
       </div>
 
       <div className="rounded-[10px] border border-dashed border-[#b7d7cc] bg-[#f5faf8] p-4 text-sm text-[#315e51]">
-        <strong>Regola del prototipo:</strong> una nuova chiamata può essere creata solo
-        partendo dalla riga di un contratto a chiamata padre. Le date della figlia sono
-        vincolate all'intervallo del contratto padre.
+        <strong>Regola del prototipo:</strong> entrambi i pulsanti esistono solo sul
+        contratto a chiamata padre. "Nuova chiamata" crea una figlia; "Archivio chiamate"
+        consulta esclusivamente le figlie già registrate e le relative prove.
       </div>
 
       <IntermittentiDialog
-        open={open}
-        setOpen={setOpen}
+        open={archivioOpen}
+        setOpen={setArchivioOpen}
         contrattoPadre={contrattoSelezionato}
-        operatore={{
-          nome: "Jaime",
-          cognome: "Angulo",
-          codiceFiscale: "LNDMCL79D08F205X",
-        }}
+        operatore={operatoreDemo}
         chiamateIniziali={chiamateDemo}
+      />
+
+      <NuovaChiamataIntermittenteDialog
+        open={nuovaChiamataOpen}
+        setOpen={setNuovaChiamataOpen}
+        contrattoPadre={contrattoSelezionato}
+        operatore={operatoreDemo}
       />
     </section>
   );
