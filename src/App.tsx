@@ -19,6 +19,7 @@ import AssegnaOperatore from "./pages/admin/assegnaOperatore";
 import ProgrammazioneEvento from "./pages/admin/programmazioneEvento";
 import Timbrature from "./pages/admin/timbrature";
 import Payroll from "./pages/admin/payroll";
+import IntermittentiPrototype from "./pages/admin/intermittentiPrototype";
 
 import Unauthorized from "./pages/Unauthorized";
 
@@ -32,6 +33,9 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+
+        {/* Preview isolata: pubblica solo sul branch prototipo, senza auth/backend. */}
+        <Route path="/admin/prototipo-intermittenti" element={<IntermittentiPrototype />} />
 
         <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
           <Route path="/admin" element={<Dashboard />} />
