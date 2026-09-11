@@ -9,6 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Archive,
   FileCheck2,
   MailCheck,
@@ -190,32 +195,68 @@ const IntermittentiPrototype = () => {
                 </button>
               </TableCell>
               <TableCell>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={apriNuovaChiamata}
-                    className="bg-[#007a55] text-white hover:bg-[#006449]"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nuova chiamata
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={apriArchivio}
-                    className="border-[#b7d7cc] text-[#007a55] hover:bg-[#f5faf8]"
-                  >
-                    <Archive className="mr-2 h-4 w-4" />
-                    Archivio chiamate · {chiamateDemo.length}
-                  </Button>
-                  <button type="button" className="cursor-pointer" title="Visualizza contratto">
-                    <View className="h-4 w-4" />
-                  </button>
-                  <button type="button" className="cursor-pointer" title="Elimina contratto">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={apriNuovaChiamata}
+                        aria-label="Crea una nuova chiamata intermittente"
+                        className="h-8 w-8 p-0 bg-[#007a55] text-white hover:bg-[#006449]"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      Crea una nuova chiamata intermittente
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={apriArchivio}
+                        aria-label={`Apri archivio chiamate: ${chiamateDemo.length} registrate`}
+                        className="h-8 w-8 p-0 bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      Archivio chiamate · {chiamateDemo.length} registrate
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="sm"
+                        aria-label="Visualizza contratto"
+                        className="h-8 w-8 p-0 bg-slate-500 text-white hover:bg-slate-600"
+                      >
+                        <View className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">Visualizza contratto</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="sm"
+                        aria-label="Elimina contratto"
+                        className="h-8 w-8 p-0 bg-red-600 text-white hover:bg-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">Elimina contratto</TooltipContent>
+                  </Tooltip>
                 </div>
               </TableCell>
             </TableRow>
