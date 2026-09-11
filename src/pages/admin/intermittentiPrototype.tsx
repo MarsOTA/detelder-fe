@@ -9,10 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FileCheck2, MailCheck, PhoneCall, Trash2, View } from "lucide-react";
-import {
+import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
+import type {
   ChiamataIntermittenteDemo,
   ContrattoChiamataPadre,
-  IntermittentiDialog,
 } from "./dialog/IntermittentiDialog";
 
 const contrattoPadreDemo: ContrattoChiamataPadre = {
