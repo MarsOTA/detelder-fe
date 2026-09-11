@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/tooltip";
 import {
   Archive,
+  Eye,
   FileCheck2,
-  MailCheck,
   Plus,
   Trash2,
-  View,
 } from "lucide-react";
 import { generaUniIntermittentiXml } from "@/utils/intermittentiXml";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
@@ -105,6 +104,9 @@ const IntermittentiPrototype = () => {
     setNuovaChiamataOpen(true);
   };
 
+  const secondaryActionClass =
+    "h-8 w-8 p-0 border border-[#b7d7cc] bg-[#f5faf8] text-[#315e51] hover:bg-[#dfece8] hover:text-[#007a55]";
+
   return (
     <section className="m-6 space-y-6">
       <div>
@@ -149,13 +151,10 @@ const IntermittentiPrototype = () => {
           <TableBody>
             <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
               <TableCell>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="font-semibold">Contratto a chiamata</div>
-                  <div className="inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#007a55]">
-                    Padre
-                  </div>
-                  <div className="text-xs text-[#5e5d5d]">
-                    {chiamateDemo.length} comunicazioni figlie
+                  <div className="inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#007a55]">
+                    {chiamateDemo.length} chiamate
                   </div>
                 </div>
               </TableCell>
@@ -163,23 +162,14 @@ const IntermittentiPrototype = () => {
               <TableCell>{formatData(contrattoPadreDemo.dataFine)}</TableCell>
               <TableCell>1.273,50 €</TableCell>
               <TableCell>
-                <div className="space-y-1.5">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 text-[#007a55]"
-                    title="Esempio contratto firmato"
-                  >
-                    <View className="h-4 w-4" />
-                    <span className="text-xs">Contratto</span>
-                  </button>
-                  <div
-                    className="flex items-center gap-1 text-xs font-medium text-[#007a55]"
-                    title="Esempio di ricevuta associata a una chiamata figlia"
-                  >
-                    <MailCheck className="h-4 w-4" />
-                    1 ricevuta PEC
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#315e51] transition-colors hover:bg-[#ecf3f1] hover:text-[#007a55]"
+                  title="Visualizza contratto firmato"
+                  aria-label="Visualizza contratto firmato"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
               </TableCell>
               <TableCell>
                 <button
@@ -215,9 +205,10 @@ const IntermittentiPrototype = () => {
                       <Button
                         type="button"
                         size="sm"
+                        variant="outline"
                         onClick={apriArchivio}
                         aria-label={`Apri archivio chiamate: ${chiamateDemo.length} registrate`}
-                        className="h-8 w-8 p-0 bg-blue-600 text-white hover:bg-blue-700"
+                        className={secondaryActionClass}
                       >
                         <Archive className="h-4 w-4" />
                       </Button>
@@ -232,10 +223,11 @@ const IntermittentiPrototype = () => {
                       <Button
                         type="button"
                         size="sm"
+                        variant="outline"
                         aria-label="Visualizza contratto"
-                        className="h-8 w-8 p-0 bg-slate-500 text-white hover:bg-slate-600"
+                        className={secondaryActionClass}
                       >
-                        <View className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">Visualizza contratto</TooltipContent>
@@ -246,8 +238,9 @@ const IntermittentiPrototype = () => {
                       <Button
                         type="button"
                         size="sm"
+                        variant="outline"
                         aria-label="Elimina contratto"
-                        className="h-8 w-8 p-0 bg-red-600 text-white hover:bg-red-700"
+                        className={secondaryActionClass}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
