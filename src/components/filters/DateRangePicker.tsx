@@ -196,43 +196,28 @@ export const DetelderDateRangePicker = ({
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e1e7e4] px-3 py-2.5 dark:border-[#28434c]">
+              <div className="flex items-center justify-end gap-2 border-t border-[#e1e7e4] px-3 py-2.5 dark:border-[#28434c]">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="text-[#007a55] hover:bg-[#edf6f2] hover:text-[#006548] dark:text-[#24dec0] dark:hover:bg-[#16343d] dark:hover:text-[#58ecd5]"
+                  className="border-[#d8dfdc] bg-white text-[#4f4f4f] hover:bg-[#f3f7f5] dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#dce9eb] dark:hover:bg-[#17343e] dark:hover:text-white"
                   onClick={() => {
-                    const today = new Date();
-                    setDraft({ from: today, to: today });
+                    setDraft({ ...value });
+                    setOpen(false);
                   }}
                 >
-                  Oggi
+                  Annulla
                 </Button>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-[#d8dfdc] bg-white text-[#4f4f4f] hover:bg-[#f3f7f5] dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#dce9eb] dark:hover:bg-[#17343e] dark:hover:text-white"
-                    onClick={() => {
-                      setDraft({ ...value });
-                      setOpen(false);
-                    }}
-                  >
-                    Annulla
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="bg-[#007a55] text-white hover:bg-[#006a4a] dark:bg-[#008a68] dark:text-white dark:hover:bg-[#00a17a]"
-                    disabled={!draft.from || invalidRange}
-                    onClick={() => applyRange(draft)}
-                  >
-                    Applica
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-[#007a55] text-white hover:bg-[#006a4a] dark:bg-[#008a68] dark:text-white dark:hover:bg-[#00a17a]"
+                  disabled={!draft.from || invalidRange}
+                  onClick={() => applyRange(draft)}
+                >
+                  Applica
+                </Button>
               </div>
             </div>
 
