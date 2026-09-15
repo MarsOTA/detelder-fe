@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { Circle, Download } from "lucide-react";
 import { format } from "date-fns";
+import { Circle, Download } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 import * as XLSX from "xlsx";
 
 import DetelderDateRangePicker from "@/components/filters/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 
 type FiltriRicerca = {
@@ -62,7 +69,9 @@ const creaFiltriIniziali = (): FiltriRicerca => {
 const Turni = () => {
   const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>(creaFiltriIniziali);
   const [turni, setTurni] = useState<TurnoCompleto[]>([]);
-  const [statoContrattoByOperatore, setStatoContrattoByOperatore] = useState<Record<string, StatoContratto>>({});
+  const [statoContrattoByOperatore, setStatoContrattoByOperatore] = useState<
+    Record<string, StatoContratto>
+  >({});
 
   useEffect(() => {
     const filtri = creaFiltriIniziali();
@@ -81,20 +90,28 @@ const Turni = () => {
 
       const [operatoriResp, statiResp] = await Promise.all([
         fetch(`${ezystaffBEUrl}operatori`, { headers, credentials: "include" }),
-        fetch(`${ezystaffBEUrl}operatori/statoContratti`, { headers, credentials: "include" }),
+        fetch(`${ezystaffBEUrl}operatori/statoContratti`, {
+          headers,
+          credentials: "include",
+        }),
       ]);
 
       if (!operatoriResp.ok || !statiResp.ok) return;
 
       const operatori: OperatoreLookup[] = await operatoriResp.json();
       const stati: StatoContrattoResponse[] = await statiResp.json();
-      const statoById = new Map(stati.map((item) => [Number(item.idOperatore), item.statoContratto]));
+      const statoById = new Map(
+        stati.map((item) => [Number(item.idOperatore), item.statoContratto])
+      );
       const lookup: Record<string, StatoContratto> = {};
 
       operatori.forEach((operatore) => {
         const stato = statoById.get(Number(operatore.id)) ?? "ASSENTE";
-        const nomeCompleto = `${operatore.nome ?? ""} ${operatore.cognome ?? ""}`.trim().toLowerCase();
+        const nomeCompleto = `${operatore.nome ?? ""} ${operatore.cognome ?? ""}`
+          .trim()
+          .toLowerCase();
         const nickname = operatore.nickname?.trim().toLowerCase();
+
         if (nomeCompleto) lookup[nomeCompleto] = stato;
         if (nickname) lookup[nickname] = stato;
       });
@@ -107,7 +124,9 @@ const Turni = () => {
 
   const formatDateToYYYYMMDD = (date: Date | undefined): string | undefined => {
     if (!date) return undefined;
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate()
+    ).padStart(2, "0")}`;
   };
 
   const caricaTurni = async (filtri: FiltriRicerca) => {
@@ -159,9 +178,6 @@ const Turni = () => {
     caricaTurni(nuoviFiltri);
   };
 
-  const setRicercaKeyword = (value: string) =>
-    setFiltriRicerca((prev) => ({ ...prev, ricercaKeyword: value }));
-
   const applicaRicerca = () => caricaTurni(filtriRicerca);
 
   const getStatoContratto = (operatore: string): StatoContratto | null => {
@@ -175,13 +191,24 @@ const Turni = () => {
     if (!stato) return <span className="text-[#9a9a9a]">—</span>;
 
     const config = {
-      REGOLARE: { label: "In regola", className: "border-[#b9e5d5] bg-[#e9f7f1] text-[#007a55]" },
-      SCADUTO: { label: "Non in regola", className: "border-[#f0c48a] bg-[#fff4e5] text-[#a45b00]" },
-      ASSENTE: { label: "Assente", className: "border-[#efb8b8] bg-[#fff0f0] text-[#b84242]" },
+      REGOLARE: {
+        label: "In regola",
+        className: "border-[#b9e5d5] bg-[#e9f7f1] text-[#007a55]",
+      },
+      SCADUTO: {
+        label: "Non in regola",
+        className: "border-[#f0c48a] bg-[#fff4e5] text-[#a45b00]",
+      },
+      ASSENTE: {
+        label: "Assente",
+        className: "border-[#efb8b8] bg-[#fff0f0] text-[#b84242]",
+      },
     }[stato];
 
     return (
-      <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-extrabold ${config.className}`}>
+      <span
+        className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-extrabold ${config.className}`}
+      >
         {config.label}
       </span>
     );
@@ -221,6 +248,7 @@ const Turni = () => {
 
   const isMancataTimbratura = (dataTurno: Date | undefined, oraInizio: string): boolean => {
     if (!dataTurno || !oraInizio) return false;
+
     const turnoDate = new Date(dataTurno);
     const [oreStr, minutiStr] = oraInizio.split(":");
     turnoDate.setHours(parseInt(oreStr, 10), parseInt(minutiStr, 10), 0, 0);
@@ -252,26 +280,29 @@ const Turni = () => {
       </div>
 
       <div className="mb-2 flex flex-wrap items-end gap-3 rounded-xl border border-[#e4ebe8] bg-[#f7f9f8] p-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-        <div className="w-[230px]">
+        <div className="w-full sm:w-[330px]">
           <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Ricerca</label>
-          <Input
-            type="text"
-            placeholder="Keyword, evento, operatore..."
-            value={filtriRicerca.ricercaKeyword}
-            onChange={(event) => setRicercaKeyword(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") applicaRicerca();
-            }}
-            className="h-10 rounded-lg border-[#d8dfdc] bg-white text-[14px]"
-          />
+          <div className="flex w-full">
+            <Input
+              type="text"
+              placeholder="Keyword, evento, operatore..."
+              value={filtriRicerca.ricercaKeyword}
+              onChange={(event) =>
+                setFiltriRicerca((prev) => ({ ...prev, ricercaKeyword: event.target.value }))
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") applicaRicerca();
+              }}
+              className="h-10 min-w-0 flex-1 rounded-r-none border-[#d8dfdc] bg-white text-[14px]"
+            />
+            <Button
+              onClick={applicaRicerca}
+              className="-ml-px h-10 shrink-0 rounded-l-none bg-[#007a55] px-5 text-[14px] font-extrabold text-white hover:bg-[#006f4d]"
+            >
+              Filtra
+            </Button>
+          </div>
         </div>
-
-        <Button
-          onClick={applicaRicerca}
-          className="h-10 rounded-lg bg-[#007a55] px-5 text-[14px] font-extrabold text-white hover:bg-[#006f4d]"
-        >
-          Filtra
-        </Button>
 
         <div className="mx-1 h-8 w-px self-end bg-[#d8dfdc]" />
 
@@ -342,7 +373,9 @@ const Turni = () => {
                       <TableCell colSpan={7} className="bg-[#007a55] text-white">
                         <div className="flex justify-between gap-4">
                           <span className="w-[10%] font-bold">
-                            {turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}
+                            {turno.dataTurno
+                              ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
+                              : ""}
                           </span>
                           <button
                             type="button"
@@ -363,7 +396,9 @@ const Turni = () => {
                       <TableCell colSpan={7} className="bg-[#8f8f8f] text-white">
                         <div className="flex justify-between gap-4">
                           <span className="w-[10%] font-bold">
-                            {turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : ""}
+                            {turno.dataTurno
+                              ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
+                              : ""}
                           </span>
                           <button
                             type="button"
