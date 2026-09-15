@@ -153,46 +153,87 @@ export const DetelderDateRangePicker = ({
           </PopoverTrigger>
 
           <PopoverContent
-            className="w-auto max-w-[calc(100vw-24px)] overflow-hidden rounded-xl border-[#dde5e1] bg-white p-0 text-[#303532] shadow-xl dark:border-[#35505a] dark:bg-[#0b202a] dark:text-[#eef7f7]"
+            className="max-h-[calc(100vh-24px)] w-auto max-w-[calc(100vw-24px)] overflow-y-auto rounded-xl border-[#dde5e1] bg-white p-0 text-[#303532] shadow-xl dark:border-[#35505a] dark:bg-[#0b202a] dark:text-[#eef7f7]"
             align={isMobile ? "center" : "start"}
             sideOffset={8}
           >
-            <div className="grid gap-3 border-b border-[#e1e7e4] bg-[#fbfcfb] p-3 sm:grid-cols-2 dark:border-[#28434c] dark:bg-[#0d2530]">
-              <label className="grid gap-1 text-[12px] font-bold text-[#66716c] dark:text-[#9db0b5]">
-                Dal
-                <Input
-                  type="date"
-                  value={toInputValue(draft.from)}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      from: fromInputValue(event.target.value),
-                    }))
-                  }
-                  className="h-9 bg-white text-[13px] font-medium dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#eef7f7]"
-                />
-              </label>
+            <div className="sticky top-0 z-20 border-b border-[#e1e7e4] bg-[#fbfcfb] dark:border-[#28434c] dark:bg-[#0d2530]">
+              <div className="grid gap-3 p-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-[12px] font-bold text-[#66716c] dark:text-[#9db0b5]">
+                  Dal
+                  <Input
+                    type="date"
+                    value={toInputValue(draft.from)}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        from: fromInputValue(event.target.value),
+                      }))
+                    }
+                    className="h-9 bg-white text-[13px] font-medium dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#eef7f7]"
+                  />
+                </label>
 
-              <label className="grid gap-1 text-[12px] font-bold text-[#66716c] dark:text-[#9db0b5]">
-                Al
-                <Input
-                  type="date"
-                  value={toInputValue(draft.to)}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      to: fromInputValue(event.target.value),
-                    }))
-                  }
-                  className="h-9 bg-white text-[13px] font-medium dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#eef7f7]"
-                />
-              </label>
+                <label className="grid gap-1 text-[12px] font-bold text-[#66716c] dark:text-[#9db0b5]">
+                  Al
+                  <Input
+                    type="date"
+                    value={toInputValue(draft.to)}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        to: fromInputValue(event.target.value),
+                      }))
+                    }
+                    className="h-9 bg-white text-[13px] font-medium dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#eef7f7]"
+                  />
+                </label>
 
-              {invalidRange ? (
-                <p className="text-[12px] font-semibold text-red-600 sm:col-span-2 dark:text-red-400">
-                  La data finale non può precedere la data iniziale.
-                </p>
-              ) : null}
+                {invalidRange ? (
+                  <p className="text-[12px] font-semibold text-red-600 sm:col-span-2 dark:text-red-400">
+                    La data finale non può precedere la data iniziale.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e1e7e4] px-3 py-2.5 dark:border-[#28434c]">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-[#007a55] hover:bg-[#edf6f2] hover:text-[#006548] dark:text-[#24dec0] dark:hover:bg-[#16343d] dark:hover:text-[#58ecd5]"
+                  onClick={() => {
+                    const today = new Date();
+                    setDraft({ from: today, to: today });
+                  }}
+                >
+                  Oggi
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-[#d8dfdc] bg-white text-[#4f4f4f] hover:bg-[#f3f7f5] dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#dce9eb] dark:hover:bg-[#17343e] dark:hover:text-white"
+                    onClick={() => {
+                      setDraft({ ...value });
+                      setOpen(false);
+                    }}
+                  >
+                    Annulla
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="bg-[#007a55] text-white hover:bg-[#006a4a] dark:bg-[#008a68] dark:text-white dark:hover:bg-[#00a17a]"
+                    disabled={!draft.from || invalidRange}
+                    onClick={() => applyRange(draft)}
+                  >
+                    Applica
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <Calendar
@@ -218,45 +259,6 @@ export const DetelderDateRangePicker = ({
                 range_end: "rounded-r-md !bg-transparent",
               }}
             />
-
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e1e7e4] bg-[#fbfcfb] p-3 dark:border-[#28434c] dark:bg-[#0d2530]">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-[#007a55] hover:bg-[#edf6f2] hover:text-[#006548] dark:text-[#24dec0] dark:hover:bg-[#16343d] dark:hover:text-[#58ecd5]"
-                onClick={() => {
-                  const today = new Date();
-                  setDraft({ from: today, to: today });
-                }}
-              >
-                Oggi
-              </Button>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-[#d8dfdc] bg-white text-[#4f4f4f] hover:bg-[#f3f7f5] dark:border-[#35505a] dark:bg-[#102a34] dark:text-[#dce9eb] dark:hover:bg-[#17343e] dark:hover:text-white"
-                  onClick={() => {
-                    setDraft({ ...value });
-                    setOpen(false);
-                  }}
-                >
-                  Annulla
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="bg-[#007a55] text-white hover:bg-[#006a4a] dark:bg-[#008a68] dark:text-white dark:hover:bg-[#00a17a]"
-                  disabled={!draft.from || invalidRange}
-                  onClick={() => applyRange(draft)}
-                >
-                  Applica
-                </Button>
-              </div>
-            </div>
           </PopoverContent>
         </Popover>
       </div>
