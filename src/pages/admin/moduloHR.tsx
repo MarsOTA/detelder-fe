@@ -39,7 +39,6 @@ export default function ModuloHR() {
   const [espanso,setEspanso] = useState<number|null>(null);
   const [scelte,setScelte] = useState<Record<number,Scelta>>({});
   const [progress,setProgress] = useState("");
-  const [turniSenzaOperatore,setTurniSenzaOperatore] = useState(0);
   const [inlineHR,setInlineHR] = useState<Record<number,{datore:string;tipo:string}>>({});
   const modificaHR = (id:number,chiave:"datore"|"tipo",value:string)=>setInlineHR(v=>({...v,[id]:{...(v[id] ?? {datore:"DETELDER",tipo:""}),[chiave]:value}}));
   const formatData = (date:string|null)=>date ? `${date.slice(8,10)}/${date.slice(5,7)}/${date.slice(2,4)}` : "—";
@@ -54,7 +53,6 @@ export default function ModuloHR() {
         api<Turno[]>(`turni?dataInizio=${inizio}&dataFine=${dataFine}`)
       ]);
       if (!Array.isArray(operatori) || !Array.isArray(turni)) throw new Error("Formato dati inatteso: verifica gli endpoint operatori e turni.");
-      setTurniSenzaOperatore(turni.filter(t => t.idOperatore === null || t.idOperatore === undefined).length);
       const persone = operatori.filter(o => o.ruolo === "OPERATORE" || !o.ruolo);
       // Il caricamento limitato a quattro richieste contemporanee evita un picco di chiamate sul backend.
       const dati: Riga[] = [];
@@ -76,8 +74,17 @@ export default function ModuloHR() {
     <div className="flex flex-wrap justify-between gap-3 items-center"><div><h1 className="text-[30px] font-extrabold text-[#007a55]">HR · Regolarizzazione contratti</h1><p className="text-sm text-gray-500">Prototipo in sola lettura · Nessun contratto o invio viene creato</p></div><button onClick={()=>void carica()} disabled={loading} className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50">{loading?"Analisi in corso…":"Aggiorna dati"}</button></div>
     {errore&&<div role="alert" className="rounded-md border border-red-300 bg-red-50 p-4 text-red-800">{errore}</div>}
     {progress&&<p role="status" className="text-sm text-gray-600">{progress}</p>}
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {[["Operatori analizzati",righe.length],["Turni assegnati (prossimi 90 giorni)",righe.reduce((sum,r)=>sum+r.turni.length,0)],["Turni senza operatore",turniSenzaOperatore],["Da verificare",righe.filter(r=>r.criticita!=="Regolare sui dati disponibili").length]].map(([titolo,valore])=><div key={String(titolo)} className="rounded-lg border bg-white p-4"><div className="text-2xl font-bold">{valore}</div><div className="text-sm text-gray-500">{titolo}</div></div>)}
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="rounded-lg border border-[#cfe2dc] bg-white p-5">
+        <div className="text-sm font-semibold text-gray-700">Operatori da regolarizzare</div>
+        <div className="mt-2 text-3xl font-extrabold text-[#007a55]">{righe.filter(r=>r.criticita!=="Regolare sui dati disponibili").length}</div>
+        <p className="mt-1 text-xs text-gray-500">Operatori distinti con almeno una criticità</p>
+      </div>
+      <div className="rounded-lg border border-red-200 bg-red-50/50 p-5">
+        <div className="text-sm font-semibold text-red-800">Urgenti da regolarizzare</div>
+        <div className="mt-2 text-3xl font-extrabold text-red-700">{righe.filter(r=>r.criticita!=="Regolare sui dati disponibili" && r.prossimoTurno!==null && r.priorita<=3).length}</div>
+        <p className="mt-1 text-xs text-red-700">Operatori distinti con turno entro i prossimi 3 giorni</p>
+      </div>
     </div>
     <div className="rounded-lg border bg-white p-4"><div className="mb-3 flex flex-wrap gap-3 items-center justify-between"><input className="rounded border px-3 py-2" placeholder="Cerca operatore" value={ricerca} onChange={e=>setRicerca(e.target.value)}/><label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={soloAnomalie} onChange={e=>setSoloAnomalie(e.target.checked)}/> Solo posizioni da verificare</label></div>
     <div className="overflow-x-auto"><table className="w-full min-w-[1020px] text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Prossimo turno</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
