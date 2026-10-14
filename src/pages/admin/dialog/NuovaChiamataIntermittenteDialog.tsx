@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { salvaChiamataHR, aggiornaEsitoChiamataHR } from "@/utils/chiamateHR";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +29,8 @@ interface NuovaChiamataIntermittenteDialogProps {
   setOpen: (open: boolean) => void;
   contrattoPadre: ContrattoChiamataPadre | null;
   operatore: OperatoreIntermittente;
+  idOperatore: number;
+  onSaved?: () => void;
 }
 
 const formatData = (value?: string) => {
@@ -42,6 +45,8 @@ export const NuovaChiamataIntermittenteDialog = ({
   setOpen,
   contrattoPadre,
   operatore,
+  idOperatore,
+  onSaved,
 }: NuovaChiamataIntermittenteDialogProps) => {
   const [cfDatore, setCfDatore] = useState("");
   const [emailDatore, setEmailDatore] = useState("");
@@ -51,6 +56,9 @@ export const NuovaChiamataIntermittenteDialog = ({
   const [annullamento, setAnnullamento] = useState(false);
   const [xmlGenerato, setXmlGenerato] = useState("");
   const [errore, setErrore] = useState("");
+  const [salvatoId,setSalvatoId] = useState<number | null>(null);
+  const [salvando,setSalvando] = useState(false);
+  const [destinatarioPEC,setDestinatarioPEC] = useState("");
 
   const periodoPadre = useMemo(() => {
     if (!contrattoPadre) return "";
@@ -67,10 +75,12 @@ export const NuovaChiamataIntermittenteDialog = ({
       setAnnullamento(false);
       setXmlGenerato("");
       setErrore("");
+      setSalvatoId(null);
     }
   }, [open]);
 
   const invalidaXml = () => {
+    setSalvatoId(null);
     if (xmlGenerato) setXmlGenerato("");
     if (errore) setErrore("");
   };
@@ -125,6 +135,29 @@ export const NuovaChiamataIntermittenteDialog = ({
     }
   };
 
+
+  const salva = async () => {
+    if(!contrattoPadre || !xmlGenerato || salvando)return;
+    setSalvando(true);setErrore("");
+    try{
+      const result=await salvaChiamataHR(idOperatore,contrattoPadre.idContratto,dataInizio,dataFine||dataInizio,xmlGenerato);
+      setSalvatoId(result.id);onSaved?.();
+    }catch(e){setErrore(e instanceof Error?e.message:"Salvataggio non riuscito");}
+    finally{setSalvando(false);}
+  };
+  const preparaPEC = async () => {
+    if(!contrattoPadre || !salvatoId || !xmlGenerato)return;
+    if(!destinatarioPEC.includes("@")){setErrore("Inserisci l'indirizzo PEC del destinatario, verificato dall'HR.");return;}
+    try {
+      await aggiornaEsitoChiamataHR(idOperatore,contrattoPadre.idContratto,salvatoId,"PEC_PREPARATA");
+      onSaved?.();
+      scaricaXml();
+      const subject=encodeURIComponent("UNI_Intermittenti - "+operatore.cognome+" "+dataInizio);
+      const body=encodeURIComponent("Allego comunicazione UNI_Intermittenti in formato XML. Verificare allegato e destinatario prima dell'invio tramite casella PEC autorizzata.");
+      window.location.href="mailto:"+encodeURIComponent(destinatarioPEC)+"?subject="+subject+"&body="+body;
+    }catch(e){setErrore(e instanceof Error?e.message:"Preparazione PEC non riuscita");}
+  };
+
   const scaricaXml = () => {
     if (!xmlGenerato) return;
     const safeSurname = operatore.cognome.replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -143,7 +176,7 @@ export const NuovaChiamataIntermittenteDialog = ({
           </DialogTitle>
           <DialogDescription>
             Crea una nuova comunicazione collegata al contratto a chiamata selezionato.
-            Nessuna email viene inviata da questa versione del prototipo.
+            La chiamata viene salvata su Aiven come bozza. La PEC va inviata dal gestore di posta.
           </DialogDescription>
         </DialogHeader>
 
@@ -276,6 +309,11 @@ export const NuovaChiamataIntermittenteDialog = ({
               </section>
             )}
 
+            <div className="rounded-md border bg-[#f5faf8] p-3">
+              <label className="text-sm font-medium">PEC destinataria da verificare</label>
+              <Input className="mt-1" type="email" value={destinatarioPEC} onChange={e=>setDestinatarioPEC(e.target.value)} placeholder="Indirizzo PEC ufficiale" />
+              <p className="mt-1 text-xs text-gray-600">Il pulsante scarica l’XML e apre un’email. Devi allegare il file nella tua PEC: il sistema non segna automaticamente la comunicazione come inviata.</p>
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4">
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                 Chiudi
@@ -299,14 +337,12 @@ export const NuovaChiamataIntermittenteDialog = ({
                   <Download className="mr-2 h-4 w-4" />
                   Scarica XML
                 </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled
-                  title="L'invio reale sarà collegato al backend/PEC nel prossimo step"
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  Invia al Ministero · step 2
+
+                <Button type="button" variant="outline" onClick={()=>void salva()} disabled={!xmlGenerato||salvando||!!salvatoId}>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />{salvatoId?"Salvata #"+salvatoId:(salvando?"Salvataggio…":"Salva chiamata")}
+                </Button>
+                <Button type="button" className="bg-[#007a55] text-white hover:bg-[#006449]" onClick={()=>void preparaPEC()} disabled={!salvatoId}>
+                  <Send className="mr-2 h-4 w-4" />Prepara email PEC
                 </Button>
               </div>
             </div>
