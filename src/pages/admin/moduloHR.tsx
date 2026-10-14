@@ -64,7 +64,7 @@ export default function ModuloHR() {
   useEffect(()=>{void carica();},[]);
   const visibili=useMemo(()=>righe.filter(r=>(!soloAnomalie||r.criticita!=="Copertura verificata sui dati disponibili") && (`${r.operatore.nome} ${r.operatore.cognome}`.toLowerCase().includes(ricerca.toLowerCase()))).sort((a,b)=>a.priorita-b.priorita || a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,soloAnomalie,ricerca]);
   const scelto = selezionato===null?null:scelte[selezionato]||{tipologia:"CHIAMATA",inizio:today(),fine:""};
-  const aggiornaScelta = (patch:Partial<Scelta>) => { if(selezionato===null)return; setScelte(old=>({...old,[selezionato]:{tipologia:"CHIAMATA",inizio:today(),fine:"",...old[selezionato],...patch}})); };
+  const aggiornaScelta = (patch:Partial<Scelta>) => { if(selezionato===null)return; setScelte(old=>({...old,[selezionato]:{...(old[selezionato] ?? {tipologia:"CHIAMATA",inizio:today(),fine:""}),...patch}})); };
   return <main className="m-6 space-y-6">
     <div className="flex flex-wrap justify-between gap-3 items-center"><div><h1 className="text-[30px] font-extrabold text-[#007a55]">HR · Regolarizzazione contratti</h1><p className="text-sm text-gray-500">Prototipo in sola lettura · Nessun contratto o invio viene creato</p></div><button onClick={()=>void carica()} disabled={loading} className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50">{loading?"Analisi in corso…":"Aggiorna dati"}</button></div>
     {errore&&<div role="alert" className="rounded-md border border-red-300 bg-red-50 p-4 text-red-800">{errore}</div>}
