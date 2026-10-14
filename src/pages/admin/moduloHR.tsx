@@ -41,7 +41,7 @@ export default function ModuloHR() {
   const [progress,setProgress] = useState("");
   const [turniSenzaOperatore,setTurniSenzaOperatore] = useState(0);
   const [inlineHR,setInlineHR] = useState<Record<number,{datore:string;tipo:string}>>({});
-  const modificaHR = (id:number,chiave:"datore"|"tipo",value:string)=>setInlineHR(v=>({...v,[id]:{datore:"DETELDER",tipo:"",...v[id],[chiave]:value}}));
+  const modificaHR = (id:number,chiave:"datore"|"tipo",value:string)=>setInlineHR(v=>({...v,[id]:{...(v[id] ?? {datore:"DETELDER",tipo:""}),[chiave]:value}}));
   const formatData = (date:string|null)=>date ? `${date.slice(8,10)}/${date.slice(5,7)}/${date.slice(2,4)}` : "—";
   const carica = async () => {
     setLoading(true); setErrore(""); setProgress("Caricamento operatori e turni…");
