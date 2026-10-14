@@ -54,7 +54,16 @@ export default function Login() {
       });
 
       if (!resp.ok) {
-        throw new Error(resp.status === 401 ? 'Credenziali non valide.' : `Errore del server (HTTP ${resp.status}).`);
+        // Un HTTP 404 sul login può indicare un account assente dal database, non una rotta mancante.
+        if (resp.status === 404) {
+          setLoginError('Utente non trovato nel database di test. Verifica lo username utilizzato.');
+          return;
+        }
+        if (resp.status === 401) {
+          setLoginError('Credenziali non valide.');
+          return;
+        }
+        throw new Error(`Errore del server (HTTP ${resp.status}).`);
       }
 
       const data = await resp.json();
