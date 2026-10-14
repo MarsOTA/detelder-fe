@@ -1,0 +1,18 @@
+import { ezystaffBEUrl } from "@/utils/baseUrl";
+export type ChiamataHR = {
+ id:number; dataInizio:string; dataFine:string; stato:"BOZZA"|"PEC_PREPARATA"|"INVIATA";
+ xmlArchiviato?:string; dataOraInvio?:string; esitoInvio?:string;
+};
+async function request<T>(path:string,init?:RequestInit):Promise<T>{
+ const response=await fetch(ezystaffBEUrl+path,{
+   ...init, credentials:"include",
+   headers:{Authorization:`Bearer ${localStorage.getItem("token")||""}`,Accept:"application/json",...(init?.body?{"Content-Type":"application/json"}:{}),...init?.headers}
+ });
+ const body=await response.json().catch(()=>null);
+ if(!response.ok)throw new Error(body?.message||`Errore archivio chiamate (HTTP ${response.status})`);
+ return body as T;
+}
+const base=(idOperatore:number,idContratto:number)=>`chiamate-hr/${idOperatore}/${idContratto}`;
+export const listaChiamateHR=(op:number,contratto:number)=>request<ChiamataHR[]>(base(op,contratto));
+export const salvaChiamataHR=(op:number,contratto:number,dataInizio:string,dataFine:string,xml:string)=>request<{id:number;message:string}>(base(op,contratto),{method:"POST",body:JSON.stringify({dataInizio,dataFine,xml})});
+export const aggiornaEsitoChiamataHR=(op:number,contratto:number,id:number,stato:"PEC_PREPARATA"|"INVIATA",esitoInvio?:string)=>request<{ok:boolean}>(base(op,contratto)+"/"+id,{method:"PATCH",body:JSON.stringify({stato,esitoInvio})});
