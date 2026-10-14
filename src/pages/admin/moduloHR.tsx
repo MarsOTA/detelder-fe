@@ -4,7 +4,7 @@ import { ezystaffBEUrl } from "@/utils/baseUrl";
 
 type Operatore = { id: number; nome: string; cognome: string; ruolo?: string; stato?: string };
 type Contratto = { idContratto: number; tipologia: string; dataInizio: string | null; dataFine: string | null; pathContrattoFirmato?: string | null; pathContrattoUnilav?: string | null };
-type Turno = { idOperatore?: number; dataTurno?: string; oraInizio?: string; oraFine?: string; statoTurno?: string };
+type Turno = { idTurno?: number; idOperatore?: number | null; dataTurno?: string; oraInizio?: string; oraFine?: string; statoTurno?: string; nomeEvento?: string; operatore?: string };
 type Riga = { operatore: Operatore; contratti: Contratto[]; turni: Turno[]; prossimoTurno: string | null; criticita: string; priorita: number };
 type Scelta = { tipologia: string; inizio: string; fine: string };
 const today = () => { const d = new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"); };
@@ -33,10 +33,11 @@ export default function ModuloHR() {
   const [loading,setLoading] = useState(false);
   const [errore,setErrore] = useState("");
   const [ricerca,setRicerca] = useState("");
-  const [soloAnomalie,setSoloAnomalie] = useState(true);
+  const [soloAnomalie,setSoloAnomalie] = useState(false);
   const [selezionato,setSelezionato] = useState<number|null>(null);
   const [scelte,setScelte] = useState<Record<number,Scelta>>({});
   const [progress,setProgress] = useState("");
+  const [turniSenzaOperatore,setTurniSenzaOperatore] = useState(0);
   const carica = async () => {
     setLoading(true); setErrore(""); setProgress("Caricamento operatori e turni…");
     try {
@@ -48,6 +49,7 @@ export default function ModuloHR() {
         api<Turno[]>(`turni?dataInizio=${inizio}&dataFine=${dataFine}`)
       ]);
       if (!Array.isArray(operatori) || !Array.isArray(turni)) throw new Error("Formato dati inatteso: verifica gli endpoint operatori e turni.");
+      setTurniSenzaOperatore(turni.filter(t => t.idOperatore === null || t.idOperatore === undefined).length);
       const persone = operatori.filter(o => o.ruolo === "OPERATORE" || !o.ruolo);
       // Il caricamento limitato a quattro richieste contemporanee evita un picco di chiamate sul backend.
       const dati: Riga[] = [];
@@ -70,15 +72,16 @@ export default function ModuloHR() {
     {errore&&<div role="alert" className="rounded-md border border-red-300 bg-red-50 p-4 text-red-800">{errore}</div>}
     {progress&&<p role="status" className="text-sm text-gray-600">{progress}</p>}
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {[["Operatori analizzati",righe.length],["Da verificare",righe.filter(r=>r.criticita!=="Copertura verificata sui dati disponibili").length],["Turno scoperto entro 3 giorni",righe.filter(r=>r.priorita<=3).length],["Con copertura verificata",righe.filter(r=>r.criticita==="Copertura verificata sui dati disponibili").length]].map(([titolo,valore])=><div key={String(titolo)} className="rounded-lg border bg-white p-4"><div className="text-2xl font-bold">{valore}</div><div className="text-sm text-gray-500">{titolo}</div></div>)}
+      {[["Operatori analizzati",righe.length],["Turni assegnati (prossimi 90 giorni)",righe.reduce((sum,r)=>sum+r.turni.length,0)],["Turni senza operatore",turniSenzaOperatore],["Da verificare",righe.filter(r=>r.criticita!=="Copertura verificata sui dati disponibili").length]].map(([titolo,valore])=><div key={String(titolo)} className="rounded-lg border bg-white p-4"><div className="text-2xl font-bold">{valore}</div><div className="text-sm text-gray-500">{titolo}</div></div>)}
     </div>
     <div className="rounded-lg border bg-white p-4"><div className="mb-3 flex flex-wrap gap-3 items-center justify-between"><input className="rounded border px-3 py-2" placeholder="Cerca operatore" value={ricerca} onChange={e=>setRicerca(e.target.value)}/><label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={soloAnomalie} onChange={e=>setSoloAnomalie(e.target.checked)}/> Solo posizioni da verificare</label></div>
-    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Prossimo turno</th><th className="p-3">Esito controllo</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
-    {visibili.map(r=><tr key={r.operatore.id} className="border-b"><td className="p-3 font-semibold">{r.operatore.cognome} {r.operatore.nome}</td><td className="p-3">{r.prossimoTurno||"Nessun turno futuro"}</td><td className="p-3">{r.criticita}</td><td className="p-3">{r.priorita===999999?"Da verificare":r.priorita===0?"Oggi":`Tra ${r.priorita} giorni`}</td><td className="p-3"><button onClick={()=>setSelezionato(r.operatore.id)} className="text-[#007a55] underline">Valuta contratto</button></td></tr>)}
-    {!visibili.length&&<tr><td className="p-4 text-gray-500" colSpan={5}>Nessun risultato.</td></tr>}
+    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Turni assegnati</th><th className="p-3">Prossimo turno</th><th className="p-3">Esito controllo</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
+    {visibili.map(r=><tr key={r.operatore.id} className="border-b"><td className="p-3 font-semibold">{r.operatore.cognome} {r.operatore.nome}</td><td className="p-3">{r.turni.length}</td><td className="p-3">{r.prossimoTurno||"Nessun turno futuro"}</td><td className="p-3">{r.criticita}</td><td className="p-3">{r.priorita===999999?"Da verificare":r.priorita===0?"Oggi":`Tra ${r.priorita} giorni`}</td><td className="p-3"><button onClick={()=>setSelezionato(r.operatore.id)} className="text-[#007a55] underline">Valuta contratto</button></td></tr>)}
+    {!visibili.length&&<tr><td className="p-4 text-gray-500" colSpan={6}>Nessun risultato.</td></tr>}
     </tbody></table></div></div>
     {selezionato!==null&&scelto&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Assegna contratto" onClick={e=>e.stopPropagation()} className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl">
       <div className="flex justify-between"><h2 className="text-xl font-bold">Proposta incarico HR</h2><button onClick={()=>setSelezionato(null)} aria-label="Chiudi">✕</button></div><p className="text-sm text-gray-500">Simulazione: questa maschera non scrive dati nel database.</p>
+      <div className="rounded-md border p-3 text-sm"><div className="font-semibold mb-2">Turni assegnati nei prossimi 90 giorni</div>{righe.find(r=>r.operatore.id===selezionato)?.turni.length ? <ul className="max-h-36 overflow-auto space-y-1">{righe.find(r=>r.operatore.id===selezionato)?.turni.map((t,i)=><li key={t.idTurno??i}>{iso(t.dataTurno)} · {t.oraInizio||"—"}–{t.oraFine||"—"} {t.nomeEvento ? `· ${t.nomeEvento}` : ""}</li>)}</ul> : <p>Nessun turno assegnato nel periodo</p>}</div>
       <label className="block text-sm">Tipologia<select className="mt-1 block w-full rounded border p-2" value={scelto.tipologia} onChange={e=>aggiornaScelta({tipologia:e.target.value})}><option value="CHIAMATA">A chiamata</option><option value="TEMPO_DETERMINATO">Tempo determinato</option><option value="TEMPO_INDETERMINATO">Tempo indeterminato</option></select></label>
       <div className="grid grid-cols-2 gap-3"><label className="text-sm">Inizio<input type="date" className="mt-1 block w-full rounded border p-2" value={scelto.inizio} onChange={e=>aggiornaScelta({inizio:e.target.value})}/></label><label className="text-sm">Fine<input type="date" className="mt-1 block w-full rounded border p-2" disabled={scelto.tipologia==="TEMPO_INDETERMINATO"} value={scelto.tipologia==="TEMPO_INDETERMINATO"?"":scelto.fine} onChange={e=>aggiornaScelta({fine:e.target.value})}/></label></div>
       <div className="rounded bg-amber-50 p-3 text-sm">Generazione contratto padre e chiamata figlia disabilitate fino al collaudo del workflow e delle autorizzazioni.</div>
