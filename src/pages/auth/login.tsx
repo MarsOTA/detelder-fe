@@ -11,6 +11,8 @@ export default function Login() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   //const { checkAuth, isAuthenticated, isLoading } = useAuth();
@@ -37,50 +39,51 @@ export default function Login() {
 
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError("");
+    setSubmitting(true);
 
-    const values = { "username": username, "password": password }
-    console.log(JSON.stringify(values));
+    try {
+      const resp = await fetch(ezystaffBEUrl + 'auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        }
+      });
 
-    const resp = await fetch(ezystaffBEUrl + 'auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify(values),
-      headers: {
-        'Content-Type': 'application/json',
-        accept: 'application/json'
+      if (!resp.ok) {
+        throw new Error(resp.status === 401 ? 'Credenziali non valide.' : `Errore del server (HTTP ${resp.status}).`);
       }
-    });
 
-    const data = await resp.json();
+      const data = await resp.json();
+      if (!data.success) {
+        setLoginError(data.message || 'Accesso non riuscito.');
+        return;
+      }
 
-    console.log(data);
-
-    if (data.success) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('ruolo', data.dipendente.ruolo);
-      localStorage.setItem('idOperatore', data.dipendente.id);
-      localStorage.setItem(
-        'operatoreLoggato',
-        `${data.dipendente.nome} ${data.dipendente.cognome}`
-      );
+      localStorage.setItem('idOperatore', String(data.dipendente.id));
+      localStorage.setItem('operatoreLoggato', `${data.dipendente.nome} ${data.dipendente.cognome}`);
 
-      const ruolo = localStorage.getItem('ruolo');
-      console.log("ruolo: " + ruolo);
-      if (ruolo === 'ADMIN') {
+      if (data.dipendente.ruolo === 'ADMIN') {
         navigate('/admin/turni');
-      } else if (ruolo === 'OPERATORE') {
+      } else if (data.dipendente.ruolo === 'OPERATORE') {
         navigate('/operator');
-      }      
-
-      // Aspetta che checkAuth aggiorni il context
-    //  await checkAuth();
-
-    } else {
-      alert(data.message);
+      } else {
+        setLoginError('Ruolo utente non riconosciuto.');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      setLoginError(message === 'Failed to fetch' || message === 'NetworkError when attempting to fetch resource.'
+        ? 'Connessione al server non riuscita. Verifica che questo indirizzo Preview sia autorizzato sul backend (CORS).'
+        : message || 'Errore di connessione al server.');
+    } finally {
+      setSubmitting(false);
     }
-
   };
-
 
   return (
     <>
@@ -94,6 +97,7 @@ export default function Login() {
           <CardContent>
 
             <form onSubmit={submitLogin} className="space-y-4">
+              {loginError && <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">{loginError}</p>}
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -120,10 +124,11 @@ export default function Login() {
               </div>
               <Button
                 type="submit"
+                disabled={submitting}
                 className="w-full"
               //  disabled={isLoading}
               >
-                {"Accedi"}
+                {submitting ? "Accesso in corso…" : "Accedi"}
               </Button>
             </form>
 
