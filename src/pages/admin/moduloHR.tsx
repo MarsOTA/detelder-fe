@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, CircleAlert } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 
-type Operatore = { id: number; nome: string; cognome: string; ruolo?: string; stato?: string };
+type Operatore = { id: number; nome: string; cognome: string; ruolo?: string; stato?: string; codiceFiscale?: string };
 type Contratto = { idContratto: number; tipologia: string; dataInizio: string | null; dataFine: string | null; pathContrattoFirmato?: string | null; pathContrattoUnilav?: string | null };
 type Turno = { idTurno?: number; idOperatore?: number | null; dataTurno?: string; oraInizio?: string; oraFine?: string; statoTurno?: string; nomeEvento?: string; operatore?: string };
 type Riga = { operatore: Operatore; contratti: Contratto[]; turni: Turno[]; prossimoTurno: string | null; criticita: string; priorita: number };
@@ -23,10 +23,10 @@ function valuta(o: Operatore, contratti: Contratto[], turni: Turno[]): Riga {
   const scoperti = futuri.filter(t => !contratti.some(c => copre(c,iso(t.dataTurno))));
   const validiOggi = contratti.some(c => copre(c,today()));
   const mancante = !contratti.some(c => isLavoro(c.tipologia));
-  const criticita = mancante ? "Contratto assente" : scoperti.length ? "Turno senza copertura" : !validiOggi ? "Nessun contratto attivo oggi" : "Copertura verificata sui dati disponibili";
+  const attivo=contratti.find(c=>copre(c,today()));
+  const criticita = !o.codiceFiscale?.trim() ? "CF mancante" : mancante ? "Contratto assente" : scoperti.length ? "Turno senza copertura" : !validiOggi ? "Contratto scaduto o futuro" : attivo&&!attivo.pathContrattoUnilav ? "UNILAV mancante" : "Regolare sui dati disponibili";
   const prossimoTurno = futuri[0]?.dataTurno ? iso(futuri[0].dataTurno) : null;
-  const primaScopertura = scoperti[0]?.dataTurno ? iso(scoperti[0].dataTurno) : null;
-  const priorita = primaScopertura ? Math.max(0, Math.floor((Date.parse(primaScopertura+"T12:00:00")-Date.parse(today()+"T12:00:00"))/86400000)) : 999999;
+  const priorita = prossimoTurno ? Math.max(0, Math.floor((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(today()+"T12:00:00"))/86400000)) : 999999;
   return { operatore:o,contratti,turni,prossimoTurno,criticita,priorita };
 }
 export default function ModuloHR() {
@@ -69,7 +69,7 @@ export default function ModuloHR() {
     finally { setLoading(false); setProgress(""); }
   };
   useEffect(()=>{void carica();},[]);
-  const visibili=useMemo(()=>righe.filter(r=>(!soloAnomalie||r.criticita!=="Copertura verificata sui dati disponibili") && (`${r.operatore.nome} ${r.operatore.cognome}`.toLowerCase().includes(ricerca.toLowerCase()))).sort((a,b)=>a.priorita-b.priorita || a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,soloAnomalie,ricerca]);
+  const visibili=useMemo(()=>righe.filter(r=>(!soloAnomalie||r.criticita!=="Regolare sui dati disponibili") && (`${r.operatore.nome} ${r.operatore.cognome}`.toLowerCase().includes(ricerca.toLowerCase()))).sort((a,b)=>a.priorita-b.priorita || a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,soloAnomalie,ricerca]);
   const scelto = selezionato===null?null:scelte[selezionato]||{tipologia:"CHIAMATA",inizio:today(),fine:""};
   const aggiornaScelta = (patch:Partial<Scelta>) => { if(selezionato===null)return; setScelte(old=>({...old,[selezionato]:{...(old[selezionato] ?? {tipologia:"CHIAMATA",inizio:today(),fine:""}),...patch}})); };
   return <main className="m-6 space-y-6">
@@ -77,23 +77,23 @@ export default function ModuloHR() {
     {errore&&<div role="alert" className="rounded-md border border-red-300 bg-red-50 p-4 text-red-800">{errore}</div>}
     {progress&&<p role="status" className="text-sm text-gray-600">{progress}</p>}
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {[["Operatori analizzati",righe.length],["Turni assegnati (prossimi 90 giorni)",righe.reduce((sum,r)=>sum+r.turni.length,0)],["Turni senza operatore",turniSenzaOperatore],["Da verificare",righe.filter(r=>r.criticita!=="Copertura verificata sui dati disponibili").length]].map(([titolo,valore])=><div key={String(titolo)} className="rounded-lg border bg-white p-4"><div className="text-2xl font-bold">{valore}</div><div className="text-sm text-gray-500">{titolo}</div></div>)}
+      {[["Operatori analizzati",righe.length],["Turni assegnati (prossimi 90 giorni)",righe.reduce((sum,r)=>sum+r.turni.length,0)],["Turni senza operatore",turniSenzaOperatore],["Da verificare",righe.filter(r=>r.criticita!=="Regolare sui dati disponibili").length]].map(([titolo,valore])=><div key={String(titolo)} className="rounded-lg border bg-white p-4"><div className="text-2xl font-bold">{valore}</div><div className="text-sm text-gray-500">{titolo}</div></div>)}
     </div>
     <div className="rounded-lg border bg-white p-4"><div className="mb-3 flex flex-wrap gap-3 items-center justify-between"><input className="rounded border px-3 py-2" placeholder="Cerca operatore" value={ricerca} onChange={e=>setRicerca(e.target.value)}/><label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={soloAnomalie} onChange={e=>setSoloAnomalie(e.target.checked)}/> Solo posizioni da verificare</label></div>
-    <div className="overflow-x-auto"><table className="w-full min-w-[1020px] text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Prossimo turno</th><th className="p-3">Esito controllo</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
+    <div className="overflow-x-auto"><table className="w-full min-w-[1020px] text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Prossimo turno</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
     {visibili.map(r=><Fragment key={r.operatore.id}>
       <tr className="border-b">
         <td className="p-3 font-semibold"><button className="mr-2 text-[#007a55]" aria-label={espanso===r.operatore.id?"Chiudi dettagli operatore":"Apri dettagli operatore"} aria-expanded={espanso===r.operatore.id} onClick={()=>setEspanso(v=>v===r.operatore.id?null:r.operatore.id)}>{espanso===r.operatore.id?"▾":"▸"}</button>{r.operatore.cognome} {r.operatore.nome}</td>
         <td className="p-3"><select aria-label={`Inquadramento ${r.operatore.nome} ${r.operatore.cognome}`} value={inlineHR[r.operatore.id]?.tipo ?? r.contratti.find(c=>copre(c,today()))?.tipologia ?? ""} onChange={e=>modificaHR(r.operatore.id,"tipo",e.target.value)} className="w-full min-w-[125px] rounded border bg-white p-2 text-sm"><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="FATTURA">Fattura</option></select></td>
         <td className="p-3"><select aria-label={`Datore ${r.operatore.nome} ${r.operatore.cognome}`} value={inlineHR[r.operatore.id]?.datore ?? "DETELDER"} onChange={e=>modificaHR(r.operatore.id,"datore",e.target.value)} className="w-full min-w-[125px] rounded border bg-white p-2 text-sm"><option value="DETELDER">DETELDER</option><option value="SOCIETA_APPALTO">Società in appalto</option><option value="AUTONOMO_PIVA">Autonomo - P.IVA</option></select></td>
         <td className="p-3">{formatData(r.prossimoTurno)}</td>
-        <td className="p-3">{r.criticita}</td>
-        <td className="p-3">{r.priorita===999999?"Da verificare":r.priorita===0?"Oggi":`Tra ${r.priorita} giorni`}</td>
+        <td className="p-3">{r.criticita==="Regolare sui dati disponibili"?<span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Regolare</span>:<span title={r.criticita} className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800"><CircleAlert className="h-4 w-4"/>{r.criticita==="CF mancante"?"C.F.":r.criticita==="UNILAV mancante"?"UNILAV":r.criticita==="Contratto assente"?"Contratto":r.criticita==="Turno senza copertura"?"Turno scoperto":"Scadenza"}</span>}</td>
+        <td className="p-3">{r.prossimoTurno&&r.priorita<=3?<span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">Alta</span>:r.prossimoTurno&&r.priorita<=14?<span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Media</span>:<span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Bassa</span>}</td>
         <td className="p-3"><div className="flex flex-wrap gap-3"><Link to={`/admin/dettaglio-operatore/${r.operatore.id}?tab=contratti`} className="rounded-md bg-[#007a55] px-3 py-2 text-sm text-white hover:bg-[#006449]">Vai ai contratti</Link><button onClick={()=>setSelezionato(r.operatore.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#b7d7cc] bg-[#f5faf8] text-[#007a55]" aria-label="Proponi contratto con AI" title="Proponi contratto (simulazione)"><Sparkles className="h-5 w-5"/></button></div></td>
       </tr>
       {espanso===r.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati nei prossimi 90 giorni</h3>{r.turni.length?<div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th></tr></thead><tbody>{[...r.turni].sort((a,b)=>iso(a.dataTurno).localeCompare(iso(b.dataTurno))).map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(iso(t.dataTurno))}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td></tr>)}</tbody></table></div>:<p className="text-sm text-gray-500">Nessun turno assegnato nel periodo.</p>}</div></td></tr>}
     </Fragment>)}
-    {!visibili.length&&<tr><td className="p-4 text-gray-500" colSpan={6}>Nessun risultato.</td></tr>}
+    {!visibili.length&&<tr><td className="p-4 text-gray-500" colSpan={7}>Nessun risultato.</td></tr>}
     </tbody></table></div></div>
     {selezionato!==null&&scelto&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Assegna contratto" onClick={e=>e.stopPropagation()} className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl">
       <div className="flex justify-between"><h2 className="text-xl font-bold">Proposta incarico HR</h2><button onClick={()=>setSelezionato(null)} aria-label="Chiudi">✕</button></div><p className="text-sm text-gray-500">Simulazione: questa maschera non scrive dati nel database.</p>
