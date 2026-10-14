@@ -3,18 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { CircleSmall } from "lucide-react";
+import { CircleSmall  } from "lucide-react"
 
 type Operatori = {
-  idOperatore: number;
-  nomeOperatore: string;
-  cognomeOperatore: string;
-  nicknameOperatore: string;
-  disponibilita: string;
-  turno: string;
-  nomeEvento: string;
-  indirizzoEvento: string;
-};
+  idOperatore: number
+  nomeOperatore: string
+  cognomeOperatore: string
+  nicknameOperatore: string
+  disponibilita: string
+  turno: string
+  nomeEvento: string
+  indirizzoEvento: string
+}
 
 interface assegnaOperatoreDialogProps {
   open: boolean;
@@ -42,10 +42,10 @@ export const AssegnaOperatoreDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="admin-assign-operator-dialog w-full md:max-w-[1000px]">
+      <DialogContent className="w-full md:max-w-[1000px]">
         <DialogHeader>
-          <DialogTitle className="text-[#edf7f6]">Assegna operatori</DialogTitle>
-          <p className="mt-2 text-sm text-[#a9bbc2]">
+          <DialogTitle>Assegna operatori</DialogTitle>
+          <p className="text-sm text-muted-foreground mt-2">
             Seleziona uno o più operatori da assegnare al turno. Puoi selezionare fino al numero di operatori richiesti.
           </p>
         </DialogHeader>
@@ -54,10 +54,9 @@ export const AssegnaOperatoreDialog = ({
           placeholder="Cerca nome operatore"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="admin-assign-operator-search"
         />
 
-        <div className="admin-assign-operator-table rounded-lg border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <div className="max-h-80 overflow-y-auto">
             <Table>
               <TableHeader>
@@ -66,10 +65,20 @@ export const AssegnaOperatoreDialog = ({
                   <TableHead>Nome Operatore</TableHead>
                   <TableHead>Evento</TableHead>
                   <TableHead>H. Turno</TableHead>
-                  <TableHead>Ruolo</TableHead>
+                  <TableHead>Ruolo</TableHead>                                    
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {/*
+                <TableRow
+                  onClick={() => handleOperatoreClick(idTurno, undefined, "", "", "")}
+                  className="cursor-pointer hover:bg-muted transition-colors font-semibold"
+                >
+                  <TableCell></TableCell>
+                  <TableCell colSpan={4}>Deseleziona operatore</TableCell>
+                </TableRow>
+                */}
+
                 {filtered.length > 0 ? (
                   filtered.map((operatore) => {
                     const isDisponibile = operatore.disponibilita === "DISPONIBILE";
@@ -87,28 +96,28 @@ export const AssegnaOperatoreDialog = ({
                         }}
                         className={
                           isDisponibile
-                            ? "cursor-pointer transition-colors"
+                            ? "cursor-pointer hover:bg-muted transition-colors"
                             : "cursor-default opacity-50"
                         }
                       >
                         <TableCell>
                           {isDisponibile ? <CircleSmall className="mr-2 h-4 w-4 fill-green-500 text-green-500" /> : <CircleSmall className="mr-2 h-4 w-4 fill-red-500 text-red-500" />}
                         </TableCell>
-                        <TableCell className="text-[#edf7f6]">
+                        <TableCell>
                           {operatore.nomeOperatore} {operatore.cognomeOperatore}
                         </TableCell>
-                        <TableCell className="text-[#edf7f6]">
+                        <TableCell>
                           <div>{operatore.nomeEvento}</div>
-                          <div className="text-[#a9bbc2]">{operatore.indirizzoEvento}</div>
+                          <div>{operatore.indirizzoEvento}</div>
                         </TableCell>
-                        <TableCell className="text-[#edf7f6]">{operatore.turno}</TableCell>
-                        <TableCell className="text-[#edf7f6]">OPERATORE</TableCell>
+                        <TableCell>{operatore.turno}</TableCell>                        
+                        <TableCell>OPERATORE</TableCell>                        
                       </TableRow>
                     );
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-[#a9bbc2]">
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
                       Nessun operatore disponibile
                     </TableCell>
                   </TableRow>
@@ -119,7 +128,7 @@ export const AssegnaOperatoreDialog = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} className="admin-assign-operator-cancel">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
             Annulla
           </Button>
         </div>

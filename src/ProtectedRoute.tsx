@@ -22,14 +22,12 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     const checkAuth = async () => {
       console.log('[checkAuth] called on', location.pathname)
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(ezystaffBEUrl + 'auth/checkAuth', {
-          credentials: 'include',
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
+        
+       // const res = await fetch('http://localhost:4000/api/auth/validate', { credentials: 'include' });
+        const res = await fetch(ezystaffBEUrl + 'auth/checkAuth', { credentials: 'include' });
         const data = await res.json()
         console.log(data)
-        setIsAuthenticated(res.ok && data.ok)
+        setIsAuthenticated(data.ok)
        // setUserRole(data.role)
 
 
@@ -99,16 +97,10 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     HeaderComponent = Header;
   }
 
-  const contentClassName = ruolo === 'OPERATORE'
-    ? "min-h-screen bg-[#031821] [&_h1_+_p]:!mt-[10px]"
-    : "admin-shell min-h-screen pt-5 [&_h1_+_p]:!mt-[10px]";
-
   return (
     <>
       {HeaderComponent && <HeaderComponent />}
-      <div className={contentClassName}>
-        <Outlet />
-      </div>
+      <Outlet />
     </>
   );
 };

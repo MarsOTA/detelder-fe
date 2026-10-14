@@ -2,11 +2,6 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
-import { ContrattiOperatoreComponent } from "@/pages/components/ContrattiOperatoreComponent"
-
-const isDettaglioOperatorePage = () =>
-  typeof window !== "undefined" &&
-  window.location.pathname.startsWith("/admin/dettaglio-operatore/")
 
 function Tabs({
   className,
@@ -25,16 +20,12 @@ function TabsList({
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List>) {
-  const isDettaglioOperatore = isDettaglioOperatorePage()
-
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
         "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
-        className,
-        isDettaglioOperatore &&
-          "operator-detail-tabs-list !mx-auto !h-auto !w-fit !rounded-full !border !p-1 !shadow-none"
+        className
       )}
       {...props}
     />
@@ -43,25 +34,15 @@ function TabsList({
 
 function TabsTrigger({
   className,
-  style,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
-  const isDettaglioOperatore = isDettaglioOperatorePage()
-
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
         "data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className,
-        isDettaglioOperatore &&
-          "operator-detail-tab !h-auto !flex-none !rounded-full !px-6 !py-2.5 !text-[18px] !font-bold !tracking-[-0.01em] !no-underline !shadow-none transition-colors duration-200 ease-out active:!scale-[0.98] data-[state=active]:!font-extrabold data-[state=active]:!no-underline data-[state=active]:!shadow-none"
+        className
       )}
-      style={
-        isDettaglioOperatore
-          ? { ...style, fontFamily: "'Mulish', sans-serif" }
-          : style
-      }
       {...props}
     />
   )
@@ -69,22 +50,14 @@ function TabsTrigger({
 
 function TabsContent({
   className,
-  children,
-  value,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Content>) {
-  const isDettaglioOperatore = isDettaglioOperatorePage()
-  const usaPannelloContratti = isDettaglioOperatore && value === "contratti"
-
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      value={value}
       className={cn("flex-1 outline-none", className)}
       {...props}
-    >
-      {usaPannelloContratti ? <ContrattiOperatoreComponent /> : children}
-    </TabsPrimitive.Content>
+    />
   )
 }
 

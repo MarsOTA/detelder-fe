@@ -117,6 +117,23 @@ const Timbrature = () => {
         window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
     };
 
+    /*
+    const openGoogleMaps2  = async (lat: number, lng: number) => {
+
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
+        const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_API_KEY}`
+          );
+          
+          const data = await response.json();
+          console.log(data);
+          
+        //  console.log(data.results[0].formatted_address);
+
+    }
+        */
+
     const getHMSDifference = (start: Date, end: Date): string => {
         const totalSeconds = Math.abs(differenceInSeconds(end, start));
         const hours = Math.floor(totalSeconds / 3600);
@@ -127,6 +144,7 @@ const Timbrature = () => {
         return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
     };
 
+    // Funzione per calcolare il totale delle ore lavorate
     const getTotalHours = (records: typeof checkInCheckOut): string => {
         let totalSeconds = 0;
 
@@ -150,7 +168,7 @@ const Timbrature = () => {
         if (!date) return undefined;
 
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // mesi 0-based
         const day = String(date.getDate()).padStart(2, '0');
 
         return `${year}-${month}-${day}`;
@@ -171,6 +189,7 @@ const Timbrature = () => {
     const inserisciTimbratura = async (e: React.FormEvent) => {
         e.preventDefault();
 
+
         if (!formDatiTimbratura.dataCheckIn) {
             alert("Data check-in obbligatoria");
             return;
@@ -183,16 +202,19 @@ const Timbrature = () => {
 
         const now = new Date();
 
+        // controllo data/ora futura
         const dataOraCheckIn = creaDataOra(
             formDatiTimbratura.dataCheckIn,
             formDatiTimbratura.oraCheckIn
         );
+
 
         if (dataOraCheckIn > now) {
             alert("Il check-in non può essere nel futuro");
             return;
         }
 
+        // Check-out: entrambi o nessuno
         const soloUnoDeiDueCheckOutCompilato =
             (formDatiTimbratura.dataCheckOut && !formDatiTimbratura.oraCheckOut.trim()) ||
             (!formDatiTimbratura.dataCheckOut && formDatiTimbratura.oraCheckOut.trim());
@@ -202,6 +224,7 @@ const Timbrature = () => {
             return;
         }
 
+        // nuovo controllo: check-out non nel futuro
         if (formDatiTimbratura.dataCheckOut && formDatiTimbratura.oraCheckOut.trim()) {
             const dataOraCheckOut = creaDataOra(
                 formDatiTimbratura.dataCheckOut,
@@ -213,6 +236,7 @@ const Timbrature = () => {
                 return;
             }
         }
+
 
         const creazioneTimbratura = {
             ...formDatiTimbratura,
@@ -236,6 +260,10 @@ const Timbrature = () => {
             });
             const data = await resp.json();
             console.log(data);
+            if (!resp.ok) {
+                alert(data.message);
+                return;
+            }            
         } else {
             const resp = await fetch(ezystaffBEUrl + 'operatori/recuperoTimbratura', {
                 headers: {
@@ -250,12 +278,12 @@ const Timbrature = () => {
             const data = await resp.json();
             console.log(data);
         }
-
         caricaCheckInCheckOut(filtriRicerca?.dataInizio, filtriRicerca?.dataFine);
         setTimbraturaDialogOpen(false);
     }
 
     const creaTimbratura = () => {
+
         setFormDatiTimbratura({
             dataCheckIn: undefined,
             oraCheckIn: "",
@@ -266,16 +294,19 @@ const Timbrature = () => {
             idCheckOut: undefined,
         });
 
+
         setTimbraturaDialogOpen(true);
     };
 
     const modificaTimbratura = (idCheckIn: number) => {
+
         const checkInCheckOutSelected = checkInCheckOut.find((check) => check.idCheckIn === idCheckIn);
 
         console.log("checkInCheckOutSelected " + JSON.stringify(checkInCheckOutSelected));
         console.log("checkInCheckOutSelected?.dataInserimentoCheckIn: " + checkInCheckOutSelected?.dataInserimentoCheckIn)
 
         if (checkInCheckOutSelected?.dataInserimentoCheckIn) {
+
             const dataCheckIn = checkInCheckOutSelected?.dataInserimentoCheckIn
                 ? new Date(checkInCheckOutSelected.dataInserimentoCheckIn)
                 : undefined;
@@ -301,6 +332,10 @@ const Timbrature = () => {
                 });
             }
 
+            console.log("checkInCheckOutSelected?.dataInserimentoCheckOut: ", checkInCheckOutSelected?.dataInserimentoCheckOut);
+            console.log("Ora:", oraCheckOut);   // ➜ 13:45
+
+
             setFormDatiTimbratura({
                 dataCheckIn: dataCheckIn,
                 oraCheckIn: oraCheckIn,
@@ -310,6 +345,7 @@ const Timbrature = () => {
                 idCheckIn: checkInCheckOutSelected.idCheckIn,
                 idCheckOut: checkInCheckOutSelected.idCheckOut
             });
+
         }
 
         setTimbraturaDialogOpen(true);
@@ -324,6 +360,7 @@ const Timbrature = () => {
     };
 
     const eliminaTimbratura = async (idCheckIn: number) => {
+
         const resp = await fetch(ezystaffBEUrl + `operatori/eliminaTimbratura/${idCheckIn}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -337,6 +374,7 @@ const Timbrature = () => {
         console.log(data);
 
         caricaCheckInCheckOut(filtriRicerca?.dataInizio, filtriRicerca?.dataFine);
+
     }
 
     const setDataInizio = (date: Date | undefined) => {
@@ -382,48 +420,42 @@ const Timbrature = () => {
     };
 
     return (
-        <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-            <div className="space-y-5">
-                <div className="flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
+        <section className="m-6">
+            <div className="space-y-6">
+                <div className="text-[#5e5d5d] text-[32px] font-extrabold mb-2">
+                    RIEPILOGO PRESENZE
+                </div>
+                <div className="text-[#007a55] text-[32px] font-extrabold mb-4">
+                    {dipendente?.nome} {dipendente?.cognome}
+                </div>
+                <div className="flex items-center gap-4">
                     <div>
-                        <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">
-                            Riepilogo presenze
-                        </h1>
-                        <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">
-                            Consulta e gestisci le timbrature di {dipendente?.nome} {dipendente?.cognome}, filtra il periodo ed esporta il riepilogo.
-                        </p>
+                        <Button onClick={handleExportToExcel}
+                            className="rounded-[18px] bg-[#007a55] text-white text-[18px] !font-bold hover:bg-[#009e6d] transition-colors cursor-pointer">
+                            SCARICA CSV
+                        </Button>
                     </div>
+                    <div>
+                        <Button onClick={() => creaTimbratura()}
+                            className="rounded-[18px] bg-[#007a55] text-white text-[18px] !font-bold hover:bg-[#009e6d] transition-colors cursor-pointer"
+                        >
+                            INSERISCI TIMBRATURA
+                        </Button>
 
-                    <div className="flex shrink-0 items-center gap-3">
-                        <Button
-                            onClick={handleExportToExcel}
-                            variant="outline"
-                            className="h-10 rounded-xl border border-[#b9d0c7] bg-white px-5 text-[14px] font-bold text-[#007a55] transition-colors duration-200 hover:border-[#007a55] hover:bg-[#007a55] hover:text-white"
-                        >
-                            Scarica CSV
-                        </Button>
-                        <Button
-                            onClick={() => creaTimbratura()}
-                            className="h-10 rounded-xl bg-[#007a55] px-5 text-[14px] font-bold text-white shadow-[0_5px_14px_rgba(0,122,85,0.15)] transition-colors duration-200 hover:bg-[#006f4d]"
-                        >
-                            Inserisci timbratura
-                        </Button>
+                        <CreaTimbraturaDialog
+                            open={timbraturaDialogOpen}
+                            setOpen={setTimbraturaDialogOpen}
+                            formDatiTimbratura={formDatiTimbratura}
+                            setFormDatiTimbratura={setFormDatiTimbratura}
+                            onSubmit={inserisciTimbratura}
+                        />
                     </div>
                 </div>
-
-                <CreaTimbraturaDialog
-                    open={timbraturaDialogOpen}
-                    setOpen={setTimbraturaDialogOpen}
-                    formDatiTimbratura={formDatiTimbratura}
-                    setFormDatiTimbratura={setFormDatiTimbratura}
-                    onSubmit={inserisciTimbratura}
-                />
-
-                <div className="flex items-center gap-4 rounded-xl border border-[#e4ebe8] bg-[#f7f9f8] p-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+                <div className="flex items-center gap-4 bg-[#f0f0f0] p-4 mb-1">
                     <div>
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="h-10 w-full rounded-lg bg-white">
+                                <Button variant="outline" className="w-full">
                                     {filtriRicerca?.dataInizio
                                         ? filtriRicerca?.dataInizio.toLocaleDateString()
                                         : "Seleziona data"}
@@ -444,7 +476,7 @@ const Timbrature = () => {
                     <div>
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="h-10 w-full rounded-lg bg-white">
+                                <Button variant="outline" className="w-full">
                                     {filtriRicerca?.dataFine
                                         ? filtriRicerca?.dataFine.toLocaleDateString()
                                         : "Seleziona data"}
@@ -463,16 +495,17 @@ const Timbrature = () => {
                         </Popover>
                     </div>
 
-                    <Button
-                        onClick={() =>
-                            caricaCheckInCheckOut(filtriRicerca?.dataInizio, filtriRicerca?.dataFine)
-                        }
-                        className="h-10 rounded-lg bg-[#007a55] px-5 text-[14px] font-bold text-white hover:bg-[#006f4d]"
-                    >
-                        Cerca
-                    </Button>
+                    <div>
+                        <Button
+                            onClick={() =>
+                                caricaCheckInCheckOut(filtriRicerca?.dataInizio, filtriRicerca?.dataFine)
+                            }
+                        >
+                            Cerca
+                        </Button>
+                    </div>
 
-                    <div className="ml-auto whitespace-nowrap rounded-lg bg-white px-4 py-2 text-[16px] font-extrabold text-[#4f796a] shadow-[inset_0_0_0_1px_#e2ebe7]">
+                    <div className="ml-auto text-[#5e8a7a] text-[24px] font-extrabold">
                         Totale ore lavorate: {getTotalHours(checkInCheckOut)}
                     </div>
                 </div>

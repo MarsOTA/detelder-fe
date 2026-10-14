@@ -10,7 +10,6 @@ interface TypeCardCComponentProps {
 
   dataConseguimento?: Date | null
   imgFronte?: any
-  // imgRetro?: any
 
   dataConseguimentoKey?: string
   dataConseguimentoValue?: Date | null
@@ -22,7 +21,6 @@ interface TypeCardCComponentProps {
   dowloadAllegato: (tipo: string) => void
 
   tipoFronte: string
-  //tipoRetro: string
 
   // Nuovo titolo
   titoloDocumento: string
@@ -90,12 +88,6 @@ export function TypeCardCComponent({
             <span className="text-[16px] font-normal text-[#007a55]">
               Doc. Fronte
             </span>
-
-            {/*
-            <span className="text-[16px] font-normal text-[#007a55] col-start-4 justify-self-end">
-              Doc. Retro
-            </span>
-        */}
             {/* FRONTE */}
             <div className="mt-3">
               <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
@@ -125,28 +117,6 @@ export function TypeCardCComponent({
                 </>
               )}
             </div>
-
-            {/* RETRO 
-            <div className="col-start-4 justify-self-end">
-              <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
-                Carica
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => caricaDocumento(e, tipoRetro)}
-                />
-              </label>
-
-              {imgRetro && (
-                <button
-                  onClick={() => dowloadAllegato(tipoRetro)}
-                  className="cursor-pointer text-[#007a55] ml-2"
-                >
-                  <FileCheck className="h-8 w-8" />
-                </button>
-              )}
-            </div>
-            */}
           </div>
         </div>
       ) : (
@@ -168,11 +138,6 @@ export function TypeCardCComponent({
             <span className="text-[16px] font-normal text-[#007a55]">
               Doc. Fronte
             </span>
-            {/*
-            <span className="text-[16px] font-normal text-[#007a55] col-start-4 justify-self-center">
-              Doc. Retro
-            </span>
-            */}
             <div className="mt-3">
               {imgFronte ? (
                 <button
@@ -186,21 +151,6 @@ export function TypeCardCComponent({
                 </div>
               )}
             </div>
-            {/*
-            <div className="col-start-4 justify-self-center">
-              {imgRetro ? (
-                <button
-                  onClick={() => dowloadAllegato(tipoRetro)}
-                  className="cursor-pointer text-[#007a55]">
-                  <FileCheck className="h-8 w-8" />
-                </button>
-              ) : (
-                <div className="rounded-[14px] bg-[#ffe5d1] text-[14px] text-[#a45418] py-1 px-4">
-                  Da caricare
-                </div>
-              )}
-            </div>
-            */}
           </div>
         </div>
       )}

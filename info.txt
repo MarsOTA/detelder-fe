@@ -1,0 +1,94 @@
+-- creazione progetto
+npm create vite@latest ezystaff -- --template react-ts
+
+-- avvio progetto locale
+cd ezystaff
+npm install
+npm run dev
+
+--navigazione
+npm i react-router
+
+-- template mantine
+https://mantine.dev/getting-started/
+npm install @mantine/core @mantine/hooks @mantine/form 
+npm install --save-dev postcss postcss-preset-mantine postcss-simple-vars
+
+--form mentine
+https://mantine.dev/form/use-form/
+
+
+-- per fare la build
+npm run build  --> verrà creta la cartella dist da portare sul BE
+npm run build:staging  --> verrà creta la cartella dist  da portare sul BE di stage
+
+
+-- framwork front end
+aggiungere tailwindcss  per vite
+1) npm install tailwindcss @tailwindcss/vite
+
+https://ui.shadcn.com/docs/components/
+2) npx shadcn@latest add card
+3) npx shadcn@latest add table
+4) npx shadcn@latest add button
+5) npx shadcn@latest add tabs
+6) npx shadcn@latest add dialog
+7) npx shadcn@latest add input
+8) npx shadcn@latest add label
+9) npx shadcn@latest add select
+10) npx shadcn@latest add calendar
+11) npx shadcn@latest add checkbox
+12) npx shadcn@latest add alert
+13) npx shadcn@latest add popover
+14) npx shadcn@latest add switch
+15) npx shadcn@latest add command
+16) npx shadcn@latest add combobox
+17) npx shadcn@latest add tooltip
+18) npx shadcn@latest add accordion
+19) npx shadcn@latest add textarea
+20) npm i sonner
+
+//per creare file.xlsx
+21) npm install xlsx
+
+
+
+//installare node su vite (su vite non funziona node in quanto è client side)
+npm install --save-dev @types/node
+
+
+//installazione di  react-router-dom per la navigazione
+npm i react-router-dom
+
+//Utility
+npm i date-fns
+
+//Per copiare assets su dist
+npm install vite-plugin-static-copy --save-dev
++ sul file vite.config.js
+viteStaticCopy({
+      targets: [
+        {
+          src: 'src/assets', // sorgente da copiare
+          dest: ''            // destinazione dentro /dist
+        }
+      ]
+})
+
+Per la PWA (installazione minimal senza icone)
+npm install vite-plugin-pwa --save-dev
++ sul file vite.config.js
+VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'La mia app React',
+        short_name: 'ReactApp',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        // 🔹 Niente "icons": il sistema userà un’icona di default
+      },
+      }),
+
+

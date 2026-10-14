@@ -1,18 +1,5 @@
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-{/*
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
- */}
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -26,10 +13,7 @@ interface FormContrattoOccasionale {
 
 interface ContrattoChiamataProps {
   formContrattoOccasionale: FormContrattoOccasionale;
-//  listaMansioni: string[];
-  handleChangeContrattoChiamata: <
-    K extends keyof FormContrattoOccasionale
-  >(
+  handleChangeContrattoChiamata: <K extends keyof FormContrattoOccasionale>(
     field: K,
     value: FormContrattoOccasionale[K]
   ) => void;
@@ -37,7 +21,6 @@ interface ContrattoChiamataProps {
 
 export const ContrattoOccasionaleComponent = ({
   formContrattoOccasionale,
- // listaMansioni,
   handleChangeContrattoChiamata,
 }: ContrattoChiamataProps) => {
   return (
@@ -51,64 +34,7 @@ export const ContrattoOccasionaleComponent = ({
         fontSize: 16,
       }}
     >
-      {/* LISTA MANSIONI */}
-       {/*
-      <div className="grid grid-cols-1">
-        <span>Lista Mansioni</span>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-between bg-white">
-              {formContrattoChiamata.listaMansioni.length > 0
-                ? formContrattoChiamata.listaMansioni.join(", ")
-                : "Seleziona mansioni"}
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-full p-0">
-            <Command>
-              <CommandEmpty>Nessuna mansione</CommandEmpty>
-
-              <CommandGroup>
-                {listaMansioni.map((mansione) => {
-                  const selected =
-                    formContrattoChiamata.listaMansioni.includes(mansione);
-
-                  return (
-                    <CommandItem
-                      key={mansione}
-                      onSelect={() => {
-                        const newValue = selected
-                          ? formContrattoChiamata.listaMansioni.filter(
-                            (m) => m !== mansione
-                          )
-                          : [
-                            ...formContrattoChiamata.listaMansioni,
-                            mansione,
-                          ];
-
-                        handleChangeContrattoChiamata(
-                          "listaMansioni",
-                          newValue
-                        );
-                      }}
-                    >
-                      <Check
-                        className={`mr-2 h-4 w-4 ${selected ? "opacity-100" : "opacity-0"
-                          }`}
-                      />
-                      {mansione}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-      */}
-
-      {/* DATE CONTRATTO */}
       <div className="grid grid-cols-2">
         <span>Data Inizio Contratto</span>
         <span>Data Fine Contratto</span>
@@ -158,10 +84,9 @@ export const ContrattoOccasionaleComponent = ({
         </Popover>
       </div>
 
-      {/* DATE FIRMA CONTRATTO */}
       <div className="grid grid-cols-2">
         <span>Data Firma Contratto</span>
-        <span/>
+        <span />
 
         <Popover>
           <PopoverTrigger asChild>
@@ -184,31 +109,8 @@ export const ContrattoOccasionaleComponent = ({
             />
           </PopoverContent>
         </Popover>
-        <span/>
-
-      </div>      
-
-      {/* QUALIFICA E COMPENSO */}
-      {/*
-      <div className="grid grid-cols-1">
-        <span>Compenso Totale Lordo (€)</span>
-
-        <Input
-          type="number"
-          min={0}
-          step="0.01"
-          value={formContrattoChiamata.compensoTotaleLordo}
-          onChange={(e) =>
-            handleChangeContrattoChiamata(
-              "compensoTotaleLordo",
-              Number(e.target.value)
-            )
-          }
-          className="bg-white"
-        />
+        <span />
       </div>
-      */}
-
     </div>
   );
 };

@@ -1,0 +1,1007 @@
+/*HEADER OPERATORE INIZIO*/
+
+/* MARCELLO - font Mulish per interfaccia operatore */
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap');
+
+.operatore-header {
+    border-bottom: 1px solid #024842;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: #030F1D;
+}
+
+/*HEADER OPERATORE INIZIO*/
+
+.main-section {
+    padding: 0.75rem;
+    background-color: #051424;
+    min-height: 100vh;
+
+    /* MARCELLO - uniformato font interfaccia operatore */
+    font-family: "Mulish", sans-serif;
+}
+
+.titolo {
+    padding-bottom: 0.5rem;
+    color: #00ffb8;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.dataOggi {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e5e7eb;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.box-checkin-checkout {
+    width: 100%;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    padding: 18px 24px 24px;
+    border-radius: 12px;
+    border: solid 1px rgba(0, 255, 184, 0.35);
+    background-color: #11413f;
+}
+
+.box-timer {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.timer-value {
+    font-size: 40px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.timer-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.check-button {
+    width: 85%;
+    height: 54px;
+    border-radius: 25.5px;
+    cursor: pointer;
+    background-color: #00ffb8;
+}
+
+.check-button-content {
+    color: #191c19;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.check-button-in {
+    background-color: #00ffb8;
+}
+
+.check-button-in:hover {
+    background-color: #00ffb8;
+}
+
+.check-button-in-label {
+    color: #000000;
+}
+
+.check-button-out {
+    background-color: #ff373d;
+}
+
+.check-button-out:hover {
+    background-color: #b63d2b;
+}
+
+.check-button-out-label {
+    color: #ffffff;
+}
+
+.card-turni {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    padding-bottom: 0;
+
+    border-color: #72ad97;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    border-radius: 16px;
+    background-image: linear-gradient(to bottom, #1c2b3c, #1c2b3c), linear-gradient(to bottom, #00ffb8, #00996e);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+}
+
+.card-turni.IN_CORSO {
+    background-image:
+        linear-gradient(to bottom, #173d38, #173d38),
+        linear-gradient(to bottom, #00ffb8, #00996e);
+}
+
+.card-turni.FUTURO {
+    background-image:
+        linear-gradient(to bottom, #1c2f46, #1c2f46),
+        linear-gradient(to bottom, #5aa9e6, #406295);
+}
+
+.card-turni.PASSATO {
+    background-image:
+        linear-gradient(to bottom, #252b31, #252b31),
+        linear-gradient(to bottom, #6b7280, #40464d);
+}
+
+.card-turni.IN_CORSO .info-orario-turno {
+    background-color: #145247;
+}
+
+.card-turni.FUTURO .info-orario-turno {
+    background-color: #203b5c;
+}
+
+.card-turni.PASSATO .info-orario-turno {
+    background-color: #343a40;
+}
+
+.turno-content {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.titolo-evento {
+    color: #00ffb8;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.luogo-evento-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.luogo-evento-text {
+    font-size: 14px;
+    font-weight: normal;
+    color: #a5e8cf;
+    text-decoration: underline;
+}
+
+.tipo-evento,
+.tipo-mansione {
+    font-size: 14px;
+    font-weight: normal;
+    color: #e5e7eb;
+}
+
+.info-turno {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 4%;
+}
+
+.info-orario-turno {
+    /*background-color: rgba(0, 100, 69, 0.38);*/
+    background-color: #11413F;
+    display: flex;
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    transform: translateY(-10px);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.info-ora {
+    width: 75%;
+    padding-left: 4%;
+    border-right: 1px solid #335064
+}
+
+.info-pausa {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.orario-turno {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ccffec;
+}
+
+.stato-turno {
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: solid 1px #00d96f;
+    display: inline-block;
+    padding: 3px 6px;
+}
+
+.stato-turno.IN_CORSO {
+    color: #00ffb8;
+}
+
+.stato-turno.FUTURO {
+    color: #ABD1EB;
+}
+
+.stato-turno.PASSATO {
+    color: #888888;
+}
+
+.pausa-label {
+    font-size: 11px;
+    font-weight: normal;
+    color: #ccffec;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.pausa-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #ccffec;
+}
+
+/* MARCELLO - note operative più larghe e testo lungo gestito senza scroll -- questo stile da rivedere*/
+.note-operative-content {
+    width: 90%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    margin-top: 2px;
+    border-radius: 10px;
+    border: solid 1px #906121;
+    background-color: #382c1f;
+    padding: 10px;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.note-operative-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffc04a;
+    margin-bottom: 4px;
+}
+
+/* questo stile da rivedere */
+.note-operative-value {
+    width: 100%;
+
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.4;
+    color: #f5f7fb;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.info-personale-content {
+    border-top: 1px solid #335064;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+
+.referente-evento-label,
+.colleghi-evento-label {
+    font-size: 15px;
+    font-weight: normal;
+    color: #00ffb8;
+}
+
+.referente-evento,
+.colleghi-evento {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+}
+
+/* MARCELLO - separatore verticale tra Colleghi e Referente evento */
+.colleghi-evento {
+    border-right: 1px solid #335064;
+}
+
+
+
+/********INIZIO DIALOG************/
+
+.sheet-dialog-core {
+    /* Posizionamento */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+
+    /* Dimensioni */
+    width: 100%;
+    max-width: none;
+
+    /* Bordi */
+    border: solid 1.2px #214d6b;
+    border-bottom: 0;
+    border-radius: 28px 28px 0 0;
+    /* Sfondo */
+    background-color: #091925;
+
+}
+
+.dialog-evento-title {
+    font-size: 25px;
+    font-weight: 800;
+    color: #00f0b8;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+}
+
+.dialog-evento-title span {
+    text-align: left;
+}
+
+.dialog-btn-chiudi {
+    border: solid 1px #214d6b;
+    background-color: #0d2838;
+    border-radius: 50%;
+    outline: none;
+    box-shadow: none;
+    margin-left: auto;
+}
+
+.dialog-evento-content {
+    border-top: 1px solid #1f3b52;
+    max-height: 80dvh;
+    overflow: auto;    
+}
+
+.dialog-collega-content {
+    padding: 10px;
+    border-bottom: 1px solid #1f3b52;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.dialog-collega-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: #f7fcff;
+    display: flex;
+    align-items: center;
+}
+
+.dialog-orario-collega {
+    font-size: 13px;
+    font-weight: normal;
+    color: #abd1eb;
+}
+
+.dialog-telefono-collega {
+    font-size: 14px;
+    font-weight: normal;
+    color: #abd1eb;
+    text-decoration: underline;
+}
+
+/* MARCELLO - qualifica Team Leader con icona Crown */
+.dialog-team-leader {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffc04a;
+}
+
+/********FINE DIALOG************/
+
+/**********RENDICONTAZIONE**********/
+
+.tabs-list {
+    width: 100%;
+    border-radius: 12px;
+    background-color: #11413f;
+    gap: 4px;
+}
+
+.tab-button[data-state="active"] {
+    border-radius: 8px;
+    background-color: #00ffb8;
+    font-size: 14px;
+    font-weight: bold;
+    color: #191c1d;
+}
+
+.tab-button {
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background-color: #406295;
+    font-size: 14px;
+    font-weight: bold;
+    color: #c9daff;
+}
+
+.sintesi-rendicontazione-content {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+    border: 1px solid #00ffb8;
+    background-color: #11413f;
+    padding: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.totale-ore-label,
+.totale-giorni-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #fffffc;
+}
+
+.totale-ore-value,
+.totale-giorni-value {
+    font-size: 30px;
+    font-weight: 900;
+    color: #00ffb8;
+}
+
+.totale-ore-unita,
+.totale-giorni-unita {
+    font-size: 16px;
+    font-weight: 500;
+    color: #00ffb8;
+}
+
+.rendicontazione-info {
+    border-radius: 12px;
+    border: solid 1px rgba(24, 255, 191, 0.26);
+    background-color: rgba(0, 107, 68, 0.05);
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #444746;
+    padding: 20px;
+}
+
+.rendicontazione-info-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #00ffb8;
+}
+
+.rendicontazione-info-testo {
+    font-size: 14px;
+    font-weight: normal;
+    color: #fff;
+}
+
+.rendicontazione-turno-content {
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    border: solid 1px #4e8979;
+    background-color: #11413f;
+}
+
+.rendicontazione-data-turno {
+    margin-left: 8px;
+    border-radius: 8px;
+    border: solid 1px #00ffb8;
+    background-color: rgba(0, 107, 68, 0.1);
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #00ffb8;
+}
+
+.rendicontazione-orario-turno {
+    margin-right: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #00ffb8;
+}
+
+.rendicontazione-pausa-turno {
+    margin-right: 8px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fffffc;
+}
+
+.rendicontazione-titolo-turno {
+    margin-left: 8px;
+    font-size: 18px;
+    font-weight: normal;
+    color: #fff;
+}
+
+.rendicontazione-indirizzo-turno {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: normal;
+    color: #fff;
+}
+
+.rendicontazione-bottone-modifica {
+    width: 45%;
+    border-radius: 8px;
+    border: solid 1px #ffc04a;
+    background-color: #382c1f;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffc04a;
+}
+
+.archivio-mensile-trigger {
+    margin-top: 8px;
+    border-radius: 12px;
+    border: solid 1px #0d5c54;
+    background-color: #051722;
+    padding: 8px 12px;
+}
+
+.archivio-mese-anno {
+    font-size: 22px;
+    font-weight: bold;
+    color: #f2f7f7;
+}
+
+.archivio-giorni-mensili {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: normal;
+    color: #00edb8;
+}
+
+.turno-archiviato-content {
+    margin-top: 8px;
+    border-radius: 10px;
+    border: solid 1px #306961;
+    background-color: #052525;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 12px;
+}
+
+.data-turno-archiviato {
+    font-size: 12px;
+    font-weight: 600;
+    color: #00edb8;
+}
+
+.ora-turno-archiviato {
+    font-size: 15px;
+    font-weight: bold;
+    color: #00edb8;
+}
+
+.pausa-turno-archiviato {
+    margin-right: 8px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.nome-turno-archiviato {
+    margin-left: 8px;
+    font-size: 15px;
+    font-weight: normal;
+    color: #f2f7f7;
+}
+
+.indirizzo-turno-archiviato {
+    margin-left: 8px;
+    font-size: 11px;
+    font-weight: normal;
+    color: #bfcfd1;
+}
+
+/* =========================================================
+   MARCELLO - DASHBOARD SINTESI OPERATORE
+   Versione più compatta e bilanciata
+   ========================================================= */
+
+.sintesi-container {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+}
+
+/* MARCELLO - struttura comune delle due dashboard */
+.ore-mese-sintesi,
+.prossimi-turni-sintesi {
+    flex: 1;
+    min-width: 0;
+
+    /* MARCELLO - ridotta altezza complessiva */
+    min-height: 160px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 14px 14px 12px;
+    box-sizing: border-box;
+
+    border-radius: 16px;
+    cursor: pointer;
+}
+
+.ore-mese-sintesi {
+    border: solid 1px #00b95b;
+    background-color: rgba(7, 51, 33, 0.71);
+}
+
+.prossimi-turni-sintesi {
+    border: solid 1px #c26cff;
+    background-color: rgba(194, 108, 255, 0.13);
+}
+
+
+/* MARCELLO - titoli */
+.ore-mese-label,
+.prossimi-turni-label {
+    padding-top: 0;
+    margin-bottom: 6px;
+
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.ore-mese-label {
+    color: #00d96f;
+}
+
+.prossimi-turni-label {
+    color: #c26cff;
+}
+
+
+/* MARCELLO - area centrale ORE DEL MESE */
+.ore-mese-value-content {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    /* MARCELLO - ridotta altezza area centrale */
+    min-height: 48px;
+}
+
+/* MARCELLO - valore ore/minuti */
+.ore-mese-value {
+    display: flex;
+    align-items: baseline;
+
+    font-weight: bold;
+    color: #00d96f;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.ore-mese-ore {
+    font-size: 28px;
+}
+
+.ore-mese-minuti {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+/* MARCELLO - h allineata in basso e non come esponente */
+.ore-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #00d96f;
+
+    align-self: center;
+    transform: translateY(5px);
+}
+
+
+/* MARCELLO - area centrale PROSSIMI TURNI */
+.prossimi-turni-row {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    /* MARCELLO - ridotta altezza area centrale */
+    min-height: 48px;
+}
+
+.prossimi-turni-next-content {
+    width: 64px;
+    min-width: 64px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 8px;
+
+    border-radius: 8px;
+    border: solid 1px #c26cff;
+    background-color: #17172c;
+
+    line-height: 1;
+}
+
+.prossimi-turni-value-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.15;
+    color: #b9c4d0;
+}
+
+.prossimi-turni-nessuno {
+    font-size: 14px;
+    font-weight: normal;
+    color: #b9c4d0;
+    text-align: center;
+}
+
+
+/* MARCELLO - CTA uniformi e allineate */
+.dettaglio-mese-sintesi,
+.dettaglio-turni-sintesi {
+    width: 100%;
+
+    margin-top: 8px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.dettaglio-mese-sintesi {
+    border: solid 1px #00b95b;
+    background-color: #051424;
+    color: #00d96f;
+}
+
+.dettaglio-turni-sintesi {
+    border: solid 1px #c26cff;
+    background-color: #17172c;
+    color: #c26cff;
+}
+
+.prossimi-turni-mese-value {
+    font-size: 12px;
+    font-weight: normal;
+    color: #f5f7fb;
+}
+
+.prossimi-turni-giorno-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #f5f7fb;
+}
+
+/* TURNI FUTURI */
+.turni-futuri-card {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    padding-top: 0;
+
+    border-radius: 14.5px;
+}
+
+.turni-futuri-card-confermata{
+    border: solid 0.9px #1fde5e;
+    background-color: rgba(28, 43, 60, 0.42);
+}
+
+.turni-futuri-card-da-confermare{
+    border: solid 0.9px rgba(255, 148, 13, 0.47);
+    background-color: rgba(255, 148, 13, 0.08)
+}
+
+.turni-futuri-operativita {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.turni-futuri-card-confermata .turni-futuri-data-content {
+    border-radius: 10.9px;
+    background-color: #083b29;
+    width: 90px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+
+.turni-futuri-card-da-confermare .turni-futuri-data-content {
+    border-radius: 10.9px;
+    background-color: #3c1a04;
+    width: 90px;
+    padding-top: 5px;
+    padding-bottom: 10px;        
+}
+
+.turni-futuri-card-confermata .turni-futuri-giorno {
+    font-size: 39px;
+    font-weight: 800;
+    color: #1fde5e;
+    line-height: 1;
+    text-align: center;
+}
+
+.turni-futuri-card-confermata .turni-futuri-mese {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1fde5e;
+    line-height: 1;
+    text-align: center;
+}
+
+.turni-futuri-card-da-confermare .turni-futuri-giorno {
+    font-size: 39px;
+    font-weight: 800;
+    color: #ff940d;
+    line-height: 1;
+    text-align: center;
+}
+
+.turni-futuri-card-da-confermare .turni-futuri-mese {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff940d;
+    line-height: 1;
+    text-align: center;
+}
+
+.turni-futuri-card-da-confermare .turni-futuri-stato-lbl {
+    font-size: 13.6px;
+    font-weight: bold;
+    color: #ff940d;
+}
+
+.turni-futuri-card-confermata .turni-futuri-stato-lbl {
+    font-size: 13.6px;
+    font-weight: bold;
+    color: #1fde5e;
+}
+
+.turni-futuri-titolo-evento {
+    font-size: 20px;
+    font-weight: bold;
+    color: #f2f7fc;
+}
+
+.turni-futuri-localita-evento {
+    font-size: 13px;
+    font-weight: normal;
+    color: #f2f7fc;
+}
+
+.turni-futuri-Orario {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f2f7fc;
+}
+
+.turni-futuri-tipologia-content {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.turni-futuri-tipologiaTurno {
+    border-radius: 14.1px;
+    background-color: #4c608b;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f2f7fc;
+    margin-right: 2px;
+}
+
+.turni-futuri-tipoMansione {
+    border-radius: 14.1px;
+    background-color: rgba(194, 108, 255, 0.39);
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f2f7fc;
+    margin-left: 2px;
+}
+
+/* MARCELLO - note operative turni futuri uniformate ai turni di oggi */
+.turni-futuri-note-operative-content {
+    width: 90%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    margin-top: 10px;
+    border-radius: 10px;
+    border: solid 1px #906121;
+    background-color: #382c1f;
+    padding: 10px;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.turni-conferma-turno-btn {
+    margin-top: 16px;
+    width: 90%;
+    border-radius: 9.1px;
+    background-color: #1fde5e;
+    font-size: 14px;
+    font-weight: bold;
+    color: #191c1d;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}

@@ -21,8 +21,12 @@ const LocalitaEvento: React.FC<ChildProps> = ({
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
+    // 🔍 carica suggestion SOLO mentre scrivi
     useEffect(() => {
-        if (!showSuggestions || localitaEventoValue.length < 3) {
+        if (
+            !showSuggestions ||
+            localitaEventoValue.length < 3
+        ) {
             setSuggestions([]);
             return;
         }
@@ -40,19 +44,20 @@ const LocalitaEvento: React.FC<ChildProps> = ({
         return () => clearTimeout(timer);
     }, [localitaEventoValue, showSuggestions]);
 
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         onValueChange(e.target.value);
-        setShowSuggestions(true);
+        setShowSuggestions(true); // ✍️ l’utente sta scrivendo
     };
 
     const handleSelect = (suggestion: Suggestion) => {
         onValueChange(suggestion.text);
-        setShowSuggestions(false);
+        setShowSuggestions(false); // 🧹 chiudi definitivamente
         setSuggestions([]);
     };
 
     return (
-        <div className="space-y-2 admin-event-location">
+        <div className="space-y-2">
             <Label htmlFor="eventLocation" className="text-[#007a55]">
                 Località evento (indirizzo completo) *
             </Label>
@@ -74,12 +79,12 @@ const LocalitaEvento: React.FC<ChildProps> = ({
                 />
 
                 {showSuggestions && suggestions.length > 0 && (
-                    <div className="admin-address-suggestions absolute z-10 w-full mt-2 rounded-xl shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
                         <ul className="py-1">
                             {suggestions.map((s) => (
                                 <li
                                     key={s.placeId}
-                                    className="admin-address-suggestion px-4 py-3 text-sm cursor-pointer"
+                                    className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                                     onClick={() => handleSelect(s)}
                                 >
                                     {s.text}

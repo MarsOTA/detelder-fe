@@ -21,7 +21,9 @@ export const NoteDialog = ({
   setOpen,
   formDatiNoteTurno,
   setFormDatiNoteTurno,
-  onSubmit
+  onSubmit,
+  onClickNuovo,
+  idTurno
 }: noteDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>

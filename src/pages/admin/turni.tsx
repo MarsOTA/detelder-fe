@@ -1,462 +1,479 @@
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { Circle, Download } from "lucide-react";
-import type { DateRange } from "react-day-picker";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Circle } from "lucide-react";
+import { ezystaffBEUrl } from "@/utils/baseUrl";
 import * as XLSX from "xlsx";
+import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import DetelderDateRangePicker from "@/components/filters/DateRangePicker";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ezystaffBEUrl } from "@/utils/baseUrl";
+import type { DateRange } from "react-day-picker";
 
 type FiltriRicerca = {
-  ricercaKeyword: string;
-  dataInizio: Date | undefined;
-  dataFine: Date | undefined;
-};
+    ricercaKeyword: string;
+    dataInizio: Date | undefined;
+    dataFine: Date | undefined;
+}
 
 type TurnoCompleto = {
-  idTurno: number;
-  idEvento: number;
-  idCheckInCheckOut: number | null;
-  dataTurno: Date | undefined;
-  oraInizio: string;
-  oraFine: string;
-  nomeEvento: string;
-  nomeBrand: string;
-  ragioneSociale: string;
-  tipologiaTurno: string;
-  tipoMansione: string;
-  operatore: string;
-  orePausa: string;
-  via: string;
-};
+    idTurno: number
+    idEvento: number
+    idCheckInCheckOut: number
+    dataTurno: Date | undefined
+    oraInizio: string
+    oraFine: string
+    nomeEvento: string
+    nomeBrand: string
+    ragioneSociale: string
+    tipologiaTurno: string
+    tipoMansione: string
+    operatore: string
+    orePausa: string
+    via: string
+    confermato: boolean
+}
 
-type StatoContratto = "REGOLARE" | "SCADUTO" | "ASSENTE";
+const turni = () => {
 
-type OperatoreLookup = {
-  id: number;
-  nome: string;
-  cognome: string;
-  nickname?: string | null;
-};
+    const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>();
+    const [turni, setTurni] = useState<TurnoCompleto[]>([]);
 
-type StatoContrattoResponse = {
-  idOperatore: number;
-  statoContratto: StatoContratto;
-};
+    useEffect(() => {
+        const now = new Date();
+        const filtriRicerca: FiltriRicerca = {
+            ricercaKeyword: "",
+            /*
+            dataInizio: new Date(),
+            dataFine: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            */
+            dataInizio: new Date(now),
+            dataFine: new Date(now),           
+        }
+        setFiltriRicerca(filtriRicerca);
+        caricaTurni(filtriRicerca);
 
-const creaFiltriIniziali = (): FiltriRicerca => {
-  const dataInizio = new Date();
-  const dataFine = new Date();
-  dataFine.setMonth(dataFine.getMonth() + 1);
+    }, []);
 
-  return {
-    ricercaKeyword: "",
-    dataInizio,
-    dataFine,
-  };
-};
+    const handleGiornoClick = (offsetGiorni: number) => {
 
-const Turni = () => {
-  const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>(creaFiltriIniziali);
-  const [turni, setTurni] = useState<TurnoCompleto[]>([]);
-  const [statoContrattoByOperatore, setStatoContrattoByOperatore] = useState<
-    Record<string, StatoContratto>
-  >({});
+        const now = new Date();
+        now.setDate(now.getDate() + offsetGiorni);
 
-  useEffect(() => {
-    const filtri = creaFiltriIniziali();
-    setFiltriRicerca(filtri);
-    caricaTurni(filtri);
-    caricaStatiContratto();
-  }, []);
+        const filtriRicerca: FiltriRicerca = {
+            ricercaKeyword: "",
+            dataInizio: new Date(now),
+            dataFine: new Date(now),
+        }
+        setFiltriRicerca(filtriRicerca);
+        caricaTurni(filtriRicerca);
 
-  const caricaStatiContratto = async () => {
-    try {
-      const headers = {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      };
+    };
 
-      const [operatoriResp, statiResp] = await Promise.all([
-        fetch(`${ezystaffBEUrl}operatori`, { headers, credentials: "include" }),
-        fetch(`${ezystaffBEUrl}operatori/statoContratti`, {
-          headers,
-          credentials: "include",
-        }),
-      ]);
+    const setRicercaKeyword = (value: string) => {
+        setFiltriRicerca((prev) => {
+            if (!prev) return undefined;
+            return {
+                ...prev,
+                ricercaKeyword: value,
+            };
+        });
+    };
 
-      if (!operatoriResp.ok || !statiResp.ok) return;
+    /*
+    const setDataInizio = (date: Date | undefined) => {
+        setFiltriRicerca((prev) => {
+            if (!prev) return undefined;
+            return {
+                ...prev,
+                dataInizio: date,
+            };
+        });
+    };
 
-      const operatori: OperatoreLookup[] = await operatoriResp.json();
-      const stati: StatoContrattoResponse[] = await statiResp.json();
-      const statoById = new Map(
-        stati.map((item) => [Number(item.idOperatore), item.statoContratto])
-      );
-      const lookup: Record<string, StatoContratto> = {};
+    const setDataFine = (date: Date | undefined) => {
+        setFiltriRicerca((prev) => {
+            if (!prev) return undefined;
+            return {
+                ...prev,
+                dataFine: date,
+            };
+        });
+    };
+    */
 
-      operatori.forEach((operatore) => {
-        const stato = statoById.get(Number(operatore.id)) ?? "ASSENTE";
-        const nomeCompleto = `${operatore.nome ?? ""} ${operatore.cognome ?? ""}`
-          .trim()
-          .toLowerCase();
-        const nickname = operatore.nickname?.trim().toLowerCase();
+    const formatDateToYYYYMMDD = (date: Date | undefined): string | undefined => {
+        if (!date) return undefined;
 
-        if (nomeCompleto) lookup[nomeCompleto] = stato;
-        if (nickname) lookup[nickname] = stato;
-      });
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // mesi 0-based
+        const day = String(date.getDate()).padStart(2, '0');
 
-      setStatoContrattoByOperatore(lookup);
-    } catch (error) {
-      console.error("Errore caricamento stato contratti nel planning:", error);
+        return `${year}-${month}-${day}`;
+    };
+
+    const caricaTurni = async (filtri: FiltriRicerca) => {
+        const dataInizioStr = formatDateToYYYYMMDD(filtri.dataInizio);
+        const dataFineStr = formatDateToYYYYMMDD(filtri.dataFine);
+        const ricercaKeyword = filtri.ricercaKeyword?.trim();
+
+        const queryParams = new URLSearchParams();
+
+        if (dataInizioStr) queryParams.append("dataInizio", dataInizioStr);
+        if (dataFineStr) queryParams.append("dataFine", dataFineStr);
+        if (ricercaKeyword) queryParams.append("keyword", ricercaKeyword);
+
+        const url = `${ezystaffBEUrl}turni?${queryParams.toString()}`;
+
+        const resp = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+                accept: 'application/json'
+            },
+            credentials: 'include',
+        })
+        const data = await resp.json();
+        console.log(data);
+        setTurni(data);
+
     }
-  };
 
-  const formatDateToYYYYMMDD = (date: Date | undefined): string | undefined => {
-    if (!date) return undefined;
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-      date.getDate()
-    ).padStart(2, "0")}`;
-  };
+    const handleExportToExcel = () => {
+        let dataToExport: any[] = [];
 
-  const caricaTurni = async (filtri: FiltriRicerca) => {
-    const queryParams = new URLSearchParams();
-    const dataInizioStr = formatDateToYYYYMMDD(filtri.dataInizio);
-    const dataFineStr = formatDateToYYYYMMDD(filtri.dataFine);
-    const ricercaKeyword = filtri.ricercaKeyword?.trim();
 
-    if (dataInizioStr) queryParams.append("dataInizio", dataInizioStr);
-    if (dataFineStr) queryParams.append("dataFine", dataFineStr);
-    if (ricercaKeyword) queryParams.append("keyword", ricercaKeyword);
+        // ✅ Se enabled è true, esporta i turni
+        dataToExport = turni.map(turno => ({
+            DataTurno: turno.dataTurno ? format(turno.dataTurno, "dd/MM/yyyy") : "",
+            NomeEvento: turno.nomeEvento,
+            OraInizio: turno.oraInizio,
+            OraFine: turno.oraFine,
+            TipologiaAttività: turno.tipologiaTurno,
+            Mansione: turno.tipoMansione,
+            Operatore: turno.operatore,
+            OrePausa: turno.orePausa,
+        }));
 
-    const resp = await fetch(`${ezystaffBEUrl}turni?${queryParams.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "application/json",
-        accept: "application/json",
-      },
-      credentials: "include",
-    });
 
-    if (resp.ok) setTurni(await resp.json());
-  };
+        //Creazione del file Excel
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "TurniCompleti"
+        );
 
-  const applicaRange = (range: DateRange) => {
-    if (!range.from) return;
-
-    const nuoviFiltri: FiltriRicerca = {
-      ...filtriRicerca,
-      dataInizio: range.from,
-      dataFine: range.to ?? range.from,
+        XLSX.writeFile(
+            workbook,
+            "tutti_i_turni.xlsx"
+        );
     };
 
-    setFiltriRicerca(nuoviFiltri);
-    caricaTurni(nuoviFiltri);
-  };
+    const navigaSuSingoloEvento = (idEvento: number, dataTurno?: Date) => {
+        if (!dataTurno) return;
 
-  const handleGiornoClick = (offsetGiorni: number) => {
-    const giorno = new Date();
-    giorno.setDate(giorno.getDate() + offsetGiorni);
+        const url = `/admin/gestione-turni/${idEvento}/${format(
+            new Date(dataTurno),
+            "yyyy-MM-dd"
+        )}`;
 
-    const nuoviFiltri: FiltriRicerca = {
-      ...filtriRicerca,
-      dataInizio: new Date(giorno),
-      dataFine: new Date(giorno),
+        window.open(url, "_blank", "noopener,noreferrer");
     };
 
-    setFiltriRicerca(nuoviFiltri);
-    caricaTurni(nuoviFiltri);
-  };
+    const isMancataTimbratura = (
+        dataTurno: Date | undefined,
+        oraInizio: string
+    ): boolean => {
+        if (!dataTurno || !oraInizio) return false;
 
-  const applicaRicerca = () => caricaTurni(filtriRicerca);
+        // Copia la dataTurno per non modificarla
+        const turnoDate = new Date(dataTurno);
 
-  const getStatoContratto = (operatore: string): StatoContratto | null => {
-    const key = operatore?.trim().toLowerCase();
-    if (!key) return null;
-    return statoContrattoByOperatore[key] ?? "ASSENTE";
-  };
+        // Split oraInizio "HH:mm"
+        const [oreStr, minutiStr] = oraInizio.split(":");
+        const ore = parseInt(oreStr, 10);
+        const minuti = parseInt(minutiStr, 10);
 
-  const renderBadgeContratto = (operatore: string) => {
-    const stato = getStatoContratto(operatore);
-    if (!stato) return <span className="text-[#9a9a9a]">—</span>;
+        // Imposta ore e minuti
+        turnoDate.setHours(ore, minuti, 0, 0);
 
-    const config = {
-      REGOLARE: {
-        label: "In regola",
-        className: "border-[#b9e5d5] bg-[#e9f7f1] text-[#007a55]",
-      },
-      SCADUTO: {
-        label: "Non in regola",
-        className: "border-[#f0c48a] bg-[#fff4e5] text-[#a45b00]",
-      },
-      ASSENTE: {
-        label: "Assente",
-        className: "border-[#efb8b8] bg-[#fff0f0] text-[#b84242]",
-      },
-    }[stato];
+        // Confronto con ora attuale
+        return turnoDate < new Date();
+    };
+
+    const applicaRange = (range: DateRange) => {
+        if (!range.from) return;
+
+        const nuoviFiltri: FiltriRicerca = {
+            ricercaKeyword: filtriRicerca?.ricercaKeyword ?? "",
+            dataInizio: range.from,
+            dataFine: range.to ?? range.from,
+        };
+
+        setFiltriRicerca(nuoviFiltri);
+        caricaTurni(nuoviFiltri);
+    };
+
+    const rangeCorrente: DateRange = {
+        from: filtriRicerca?.dataInizio,
+        to: filtriRicerca?.dataFine,
+    };
 
     return (
-      <span
-        className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-[12px] font-extrabold ${config.className}`}
-      >
-        {config.label}
-      </span>
-    );
-  };
+        <section className="m-6">
+            <div className="mb-8">
+                <div className="text-3xl font-extrabold text-[#007a55] mb-4">
+                    PLANNING TURNI
+                </div>
+            </div>
 
-  const handleExportToExcel = () => {
-    const dataToExport = turni.map((turno) => ({
-      DataTurno: turno.dataTurno ? format(new Date(turno.dataTurno), "dd/MM/yyyy") : "",
-      NomeEvento: turno.nomeEvento,
-      OraInizio: turno.oraInizio,
-      OraFine: turno.oraFine,
-      Operatore: turno.operatore,
-      Contratto: getStatoContratto(turno.operatore) ?? "",
-      Mansione: turno.tipoMansione,
-      TipologiaAttività: turno.tipologiaTurno,
-      OrePausa: turno.orePausa,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "TurniCompleti");
-    XLSX.writeFile(workbook, "tutti_i_turni.xlsx");
-  };
-
-  const navigaSuSingoloEvento = (idEvento: number, dataTurno?: Date) => {
-    if (!dataTurno) return;
-    window.open(
-      `/admin/gestione-turni/${idEvento}/${format(new Date(dataTurno), "yyyy-MM-dd")}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
-  const navigaAlDettaglioEvento = (idEvento: number) => {
-    window.location.href = `/admin/gestione-turni/${idEvento}`;
-  };
-
-  const isMancataTimbratura = (dataTurno: Date | undefined, oraInizio: string): boolean => {
-    if (!dataTurno || !oraInizio) return false;
-
-    const turnoDate = new Date(dataTurno);
-    const [oreStr, minutiStr] = oraInizio.split(":");
-    turnoDate.setHours(parseInt(oreStr, 10), parseInt(minutiStr, 10), 0, 0);
-    return turnoDate < new Date();
-  };
-
-  const titoloEvento = (turno: TurnoCompleto) =>
-    (turno.nomeEvento?.trim()
-      ? turno.nomeEvento
-      : `${turno.nomeBrand ?? ""} - ${turno.ragioneSociale ?? ""}`
-    ).toUpperCase();
-
-  const rangeCorrente: DateRange = {
-    from: filtriRicerca.dataInizio,
-    to: filtriRicerca.dataFine,
-  };
-
-  return (
-    <section className="m-6" style={{ fontFamily: "'Mulish', sans-serif" }}>
-      <div className="mb-5 flex items-center justify-between gap-6 border-b border-[#e4ebe8] pb-5">
-        <div>
-          <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#007a55]">
-            Planning turni
-          </h1>
-          <p className="mt-1 text-[14px] font-medium text-[#7a7a7a]">
-            Consulta la pianificazione dei turni, filtra per periodo e apri rapidamente il dettaglio dell’evento.
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-2 flex flex-wrap items-end gap-3 rounded-xl border border-[#e4ebe8] bg-[#f7f9f8] p-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-        <div className="w-full sm:w-[330px]">
-          <label className="mb-1.5 block text-[12px] font-bold text-[#6d6d6d]">Ricerca</label>
-          <div className="flex w-full">
-            <Input
-              type="text"
-              placeholder="Keyword, evento, operatore..."
-              value={filtriRicerca.ricercaKeyword}
-              onChange={(event) =>
-                setFiltriRicerca((prev) => ({ ...prev, ricercaKeyword: event.target.value }))
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") applicaRicerca();
-              }}
-              className="h-10 min-w-0 flex-1 rounded-r-none border-[#d8dfdc] bg-white text-[14px]"
-            />
-            <Button
-              onClick={applicaRicerca}
-              className="-ml-px h-10 shrink-0 rounded-l-none bg-[#007a55] px-5 text-[14px] font-extrabold text-white hover:bg-[#006f4d]"
-            >
-              Filtra
-            </Button>
-          </div>
-        </div>
-
-        <div className="mx-1 h-8 w-px self-end bg-[#d8dfdc]" />
-
-        <DetelderDateRangePicker
-          value={rangeCorrente}
-          onApply={applicaRange}
-          label="Data / periodo"
-        />
-
-        <Button
-          variant="outline"
-          onClick={() => handleGiornoClick(0)}
-          className="h-10 rounded-full border-[#007a55] bg-white px-5 text-[14px] font-bold text-[#007a55] hover:bg-white hover:text-[#005f43]"
-        >
-          Oggi
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => handleGiornoClick(1)}
-          className="h-10 rounded-full border-[#007a55] bg-white px-5 text-[14px] font-bold text-[#007a55] hover:bg-white hover:text-[#005f43]"
-        >
-          Domani
-        </Button>
-        <Button
-          onClick={handleExportToExcel}
-          className="ml-auto h-10 rounded-xl border border-[#c8d8d2] bg-white px-5 text-[14px] font-bold text-[#007a55] shadow-none transition-colors duration-200 hover:border-[#007a55] hover:bg-[#007a55] hover:text-white"
-        >
-          <Download className="h-4 w-4" />
-          Scarica CSV
-        </Button>
-      </div>
-
-      <div className="overflow-x-auto rounded-md border bg-gray-50 p-4">
-        <Table className="table-fixed min-w-[1180px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[11%]">Ora inizio</TableHead>
-              <TableHead className="w-[11%]">Ora fine</TableHead>
-              <TableHead className="w-[22%]">Operatore</TableHead>
-              <TableHead className="w-[15%]">Contratto</TableHead>
-              <TableHead className="w-[20%]">Mansione</TableHead>
-              <TableHead className="w-[14%]">Tipo turno</TableHead>
-              <TableHead className="w-[7%] whitespace-nowrap">Pausa h.</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {turni.map((turno, index) => {
-              const prevTurno = turni[index - 1];
-              const isNewDate =
-                index === 0 ||
-                (prevTurno?.dataTurno &&
-                  turno.dataTurno &&
-                  format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") !==
-                    format(new Date(turno.dataTurno), "yyyy-MM-dd"));
-
-              const isNewEvento =
-                prevTurno &&
-                turno.dataTurno &&
-                prevTurno.dataTurno &&
-                format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") ===
-                  format(new Date(turno.dataTurno), "yyyy-MM-dd") &&
-                prevTurno.nomeEvento !== turno.nomeEvento;
-
-              return (
-                <React.Fragment key={`${turno.idTurno}-${index}`}>
-                  {isNewDate && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="bg-[#007a55] text-white">
-                        <div className="flex justify-between gap-4">
-                          <span className="w-[10%] font-bold">
-                            {turno.dataTurno
-                              ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
-                              : ""}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => navigaAlDettaglioEvento(turno.idEvento)}
-                            className="w-[45%] rounded-sm text-left font-bold uppercase underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                            title="Apri dettaglio evento"
-                          >
-                            {titoloEvento(turno)}
-                          </button>
-                          <span className="w-[45%] text-right">{turno.via}</span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {!isNewDate && isNewEvento && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="bg-[#8f8f8f] text-white">
-                        <div className="flex justify-between gap-4">
-                          <span className="w-[10%] font-bold">
-                            {turno.dataTurno
-                              ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
-                              : ""}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => navigaAlDettaglioEvento(turno.idEvento)}
-                            className="w-[45%] rounded-sm text-left font-bold uppercase underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                            title="Apri dettaglio evento"
-                          >
-                            {titoloEvento(turno)}
-                          </button>
-                          <span className="w-[45%] text-right">{turno.via}</span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  <TableRow
-                    onClick={() => navigaSuSingoloEvento(turno.idEvento, turno.dataTurno)}
-                    className="cursor-pointer"
-                  >
-                    <TableCell>{turno.oraInizio}</TableCell>
-                    <TableCell>{turno.oraFine}</TableCell>
-                    <TableCell>
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Circle
-                          className="shrink-0"
-                          size={10}
-                          strokeWidth={0}
-                          fill={
-                            turno.idCheckInCheckOut !== null
-                              ? "#00D68E"
-                              : isMancataTimbratura(turno.dataTurno, turno.oraInizio)
-                                ? "red"
-                                : "#B8B8B8"
-                          }
-                          color={
-                            turno.idCheckInCheckOut !== null
-                              ? "#00D68E"
-                              : isMancataTimbratura(turno.dataTurno, turno.oraInizio)
-                                ? "#EA6B62"
-                                : "#B8B8B8"
-                          }
+            <div className="flex items-center bg-[#ecf3f1] mb-1">
+                <div className="flex items-center bg-[#ecf3f1] p-4 mb-1 gap-2">
+                    <div>
+                        <Input
+                            type="text"
+                            placeholder="Ricerca per keyword"
+                            value={filtriRicerca?.ricercaKeyword}
+                            onChange={(e) => setRicercaKeyword(e.target.value)}
+                            className="border border-gray-300 rounded-l-md px-2 py-1 w-48 bg-white rounded-r-none"
                         />
-                        <span className="truncate">{turno.operatore || "—"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{renderBadgeContratto(turno.operatore)}</TableCell>
-                    <TableCell className="truncate">{turno.tipoMansione}</TableCell>
-                    <TableCell className="truncate">{turno.tipologiaTurno}</TableCell>
-                    <TableCell>{turno.orePausa}</TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    </section>
-  );
-};
+                    </div>
 
-export default Turni;
+                    <div>
+                        <Button
+                            className="bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer rounded-r-full rounded-l-none -ml-px"
+                            onClick={() => {
+                                if (filtriRicerca) {
+                                    caricaTurni(filtriRicerca)
+                                }
+                            }}
+                        >
+                            Filtra
+                        </Button>
+                    </div>                    
+
+
+                    <DetelderDateRangePicker
+                        value={rangeCorrente}
+                        onApply={applicaRange}
+                        label=""
+                    />
+                    
+                    {/*
+                    <div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full rounded-none">
+                                    {filtriRicerca?.dataInizio
+                                        ? filtriRicerca?.dataInizio.toLocaleDateString()
+                                        : "Seleziona data"}
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={filtriRicerca?.dataInizio}
+                                    onSelect={setDataInizio}
+                                    locale={it}
+                                    className="pointer-events-auto"
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full rounded-none">
+                                    {filtriRicerca?.dataFine
+                                        ? filtriRicerca?.dataFine.toLocaleDateString()
+                                        : "Seleziona data"}
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={filtriRicerca?.dataFine}
+                                    onSelect={setDataFine}
+                                    locale={it}
+                                    className="pointer-events-auto"
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    */}
+                </div>
+                <div className="flex gap-3">
+                    <div>
+                        <Button
+                            onClick={() => handleGiornoClick(0)}
+                            className="w-[70px] rounded-[18px] border border-[#007a55] bg-[#f3fffa] text-[#007a55] text-[16px] font-bold hover:bg-[#e6fff5] cursor-pointer">
+                            Oggi
+                        </Button>
+                    </div>
+
+                    <div>
+                        <Button onClick={() => handleGiornoClick(+1)}
+                            className="w-[70px] rounded-[18px] border border-[#007a55] bg-white text-[#007a55] text-[16px] font-bold hover:bg-[#f3fffa] cursor-pointer">
+                            Domani
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 ml-auto">
+
+                    <Button className="rounded-[18px] bg-[#5e8a7a] hover:bg-[#5e8a7a] cursor-pointer  pl-8 pr-8"
+                        onClick={handleExportToExcel}>
+                        Scarica .csv
+                    </Button>
+
+                </div>
+            </div>
+            <div className="border rounded-md p-4 bg-gray-50">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>
+                                Ora inizio
+                            </TableHead>
+                            <TableHead>
+                                Ora fine
+                            </TableHead>
+                            <TableHead>
+                                Operatore
+                            </TableHead>
+                            <TableHead>
+                                Mansione
+                            </TableHead>
+                            <TableHead>
+                                Tipo Turno
+                            </TableHead>
+                            <TableHead>
+                                Pausa h.
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {turni.map((turno, index) => {
+                            const prevTurno = turni[index - 1];
+
+                            const isNewDate =
+                                index === 0 ||
+                                (prevTurno?.dataTurno &&
+                                    turno.dataTurno &&
+                                    format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") !==
+                                    format(new Date(turno.dataTurno), "yyyy-MM-dd"));
+
+                            const isNewEvento =
+                                prevTurno &&
+                                turno.dataTurno &&
+                                prevTurno.dataTurno &&
+                                format(new Date(prevTurno.dataTurno), "yyyy-MM-dd") ===
+                                format(new Date(turno.dataTurno), "yyyy-MM-dd") &&
+                                prevTurno.nomeEvento !== turno.nomeEvento;
+
+                            return (
+                                <React.Fragment key={index}>
+
+                                    {/* separatore cambio data */}
+                                    {isNewDate && (
+                                        <TableRow >
+
+                                            <TableCell colSpan={6} className="bg-[#007a55] text-white">
+                                                <div className="flex justify-between">
+                                                    <span className="w-[10%] font-bold">
+                                                        {turno.dataTurno
+                                                            ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
+                                                            : ""}
+                                                    </span>
+
+                                                    <span className=" w-[45%] uppercase font-bold">
+                                                        {(turno.nomeEvento && turno.nomeEvento.trim() !== ''
+                                                            ? turno.nomeEvento
+                                                            : `${turno.nomeBrand ?? ''} - ${turno.ragioneSociale ?? ''}`
+                                                        ).toUpperCase()}
+                                                    </span>
+
+                                                    <span className="w-[45%] text-right">{turno.via}</span>
+                                                </div>
+                                            </TableCell>
+
+                                        </TableRow>
+                                    )}
+
+                                    {/* separatore cambio evento stessa data */}
+                                    {!isNewDate && isNewEvento && (
+                                        <TableRow >
+                                            <TableCell colSpan={6} className="bg-[#8f8f8f] text-white">
+                                                <div className="flex justify-between">
+                                                    <span className="w-[10%] font-bold">
+                                                        {turno.dataTurno
+                                                            ? format(new Date(turno.dataTurno), "dd/MM/yyyy")
+                                                            : ""}
+                                                    </span>
+                                                    <span className="w-[45%] uppercase font-bold">
+                                                        {(turno.nomeEvento && turno.nomeEvento.trim() !== ''
+                                                            ? turno.nomeEvento
+                                                            : `${turno.nomeBrand ?? ''} - ${turno.ragioneSociale ?? ''}`
+                                                        ).toUpperCase()}
+                                                    </span>
+                                                    <span className="w-[45%] text-right">{turno.via}</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+
+                                    <TableRow onClick={() => navigaSuSingoloEvento(turno.idEvento, turno.dataTurno)}
+                                        style={{ cursor: "pointer" }}>
+
+                                        <TableCell>{turno.oraInizio}</TableCell>
+
+                                        <TableCell>{turno.oraFine}</TableCell>
+
+                                        <TableCell style={{ display: "flex", alignItems: "center" }}>
+                                            <Circle
+                                                size={10}
+                                                strokeWidth={0}
+                                                fill={
+                                                    turno.idCheckInCheckOut !== null
+                                                        ? "#00D68E"
+                                                        : isMancataTimbratura(turno.dataTurno, turno.oraInizio)
+                                                            ? "red"
+                                                            : "#B8B8B8"
+                                                }
+                                                color={
+                                                    turno.idCheckInCheckOut !== null
+                                                        ? "#00D68E"
+                                                        : isMancataTimbratura(turno.dataTurno, turno.oraInizio)
+                                                            ? "#EA6B62"
+                                                            : "#B8B8B8"
+                                                }
+                                                style={{ marginRight: 8 }}
+                                            />
+
+                                            <span className={turno.confermato ? "text-[#007a55]" : "text-[#d97d08]"}>
+                                                {turno.operatore}
+                                            </span>
+
+                                        </TableCell>
+
+                                        <TableCell>{turno.tipoMansione}</TableCell>
+
+                                        <TableCell>{turno.tipologiaTurno}</TableCell>
+
+                                        <TableCell>{turno.orePausa}</TableCell>
+                                    </TableRow>
+                                </React.Fragment>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+        </section>
+    )
+}
+
+export default turni

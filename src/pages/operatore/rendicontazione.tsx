@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import { ContestazioneTimbraturaDialog } from "./dialog/contestazioneTimbraturaDialog";
-import { CalendarDays, Check, Clock3, Info, MapPin, Pencil, TimerReset } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type TurnoOperatore = {
     idPayroll: number
@@ -12,39 +12,78 @@ type TurnoOperatore = {
     dataTurno: string
     oraInizioDefinitivo: string
     oraFineDefinitivo: string
-    orePausaDefinitivo: string
+    orePausaDefinitivo: number | undefined
     ragioneSociale: string
     nomeBrand: string
     indirizzoEvento: string
+    approvato: boolean
 }
+
+type RendicontzioneMensile = {
+    meseAnno: string
+    numeroTurni: number
+    totaleMinuti: number
+    mese: number
+    anno: number
+}
+
 
 const Rendicontazione = () => {
     const idOperatore = localStorage.getItem('idOperatore');
+
     const [listaTurniMensili, setListaTurniMensili] = useState<TurnoOperatore[]>([]);
     const [contestazioneDialogOpen, setContestazioneDialogOpen] = useState(false);
-    const [approvazioneInCorso, setApprovazioneInCorso] = useState<number | null>(null);
+    const [rendicontzioneMensile, setRendicontzioneMensile] = useState<RendicontzioneMensile[]>([]);
+    const [tabAttivo, setTabAttivo] = useState("approvare");
+
     const [turnoSelezionato, setTurnoSelezionato] = useState<{
         idPayroll: number;
         idTurno: number;
     } | null>(null);
 
     useEffect(() => {
-        caricaRendicontazione();
-    }, [])
+        if (tabAttivo === "approvare") {
+            caricaRendicontazione();
+        } else if (tabAttivo === "archivio") {
+            caricaStoricoRendicontazione();
+        }
+    }, [tabAttivo]);
 
     const oggi = new Date();
 
-    const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+    const capitalize = (text: string) =>
+        text.charAt(0).toUpperCase() + text.slice(1);
 
-    const meseCorrente = capitalize(
-        new Intl.DateTimeFormat("it-IT", { month: "long" }).format(oggi)
-    );
+    const getDataMeseCorrente = (): Date => {
+        const oggi = new Date();
 
-    const mesePrecedente = capitalize(
-        new Intl.DateTimeFormat("it-IT", { month: "long" }).format(
-            new Date(oggi.getFullYear(), oggi.getMonth() - 1, 1)
-        )
-    );
+        return oggi.getDate() >= 6
+            ? new Date(oggi.getFullYear(), oggi.getMonth() + 1, 1)
+            : new Date(oggi.getFullYear(), oggi.getMonth(), 1);
+    };
+
+    const getDataMesePrecedente = (): Date => {
+        const data = getDataMeseCorrente();
+
+        return new Date(data.getFullYear(), data.getMonth() - 1, 1);
+    };
+
+    const meseCorrente = (): string => {
+        return capitalize(
+            new Intl.DateTimeFormat("it-IT", {
+                month: "long",
+            }).format(getDataMeseCorrente())
+        );
+    };
+
+    const mesePrecedente = (): string => {
+        return capitalize(
+            new Intl.DateTimeFormat("it-IT", {
+                month: "long",
+            }).format(getDataMesePrecedente())
+        );
+    };
+
 
     const caricaRendicontazione = async () => {
         const resp = await fetch(ezystaffBEUrl + `payroll/rendicontazione/${idOperatore}`, {
@@ -56,235 +95,416 @@ const Rendicontazione = () => {
             credentials: 'include',
         })
         const data = await resp.json();
+        console.log("Turni giornalieri inizio******");
+        console.log(data);
+        console.log("Turni giornalieri fine******");
         setListaTurniMensili(data);
+
     }
 
-    const approvaTurno = async (turno: TurnoOperatore) => {
-        try {
-            setApprovazioneInCorso(turno.idPayroll);
-            const resp = await fetch(ezystaffBEUrl + `payroll/approvaRendicontazione/${turno.idPayroll}`, {
+    const caricaRendicontazionePerMese = async (
+        mese: number,
+        anno: number
+    ) => {
+        const resp = await fetch(
+            ezystaffBEUrl + `payroll/rendicontazionePerMese/${idOperatore}?mese=${mese}&anno=${anno}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                    accept: 'application/json'
+                },
+                credentials: 'include',
+            }
+        );
+
+        const data = await resp.json();
+
+        console.log("Turni giornalieri inizio******");
+        console.log(data);
+        console.log("Turni giornalieri fine******");
+
+        setListaTurniMensili(data);
+    };
+
+
+    const caricaStoricoRendicontazione = async () => {
+        const resp = await fetch(ezystaffBEUrl + `payroll/storicoRendicontazione/${idOperatore}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+                accept: 'application/json'
+            },
+            credentials: 'include',
+        })
+        const data = await resp.json();
+        console.log("Rendicontazione mensile inizio******");
+        console.log(data);
+        console.log("Rendicontazione mensile fine******");
+        setRendicontzioneMensile(data);
+
+    }
+
+    const approvaTurno = async (
+        idPayroll: number
+    ) => {
+        const resp = await fetch(
+            ezystaffBEUrl + `payroll/approvaTurnoPayroll/${idPayroll}`,
+            {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
                     accept: 'application/json'
                 },
                 method: "PATCH",
-                credentials: 'include'
-            });
-
-            if (!resp.ok) {
-                throw new Error('Impossibile approvare il turno');
+                credentials: 'include',
             }
+        );
 
-            await caricaRendicontazione();
-        } catch (error) {
-            console.error(error);
-            alert('Non è stato possibile approvare il turno. Riprova.');
-        } finally {
-            setApprovazioneInCorso(null);
-        }
-    }
+        await resp.json();
 
-    const handleSubmitContestazione = async (
+        caricaRendicontazione();
+    };
+
+    const handleAggiornaRendicontazione = async (
         e: React.FormEvent,
         motivazione: string,
         idPayroll?: number,
-        idTurno?: number
+        idTurno?: number,
+        stato?: string
     ) => {
         e.preventDefault();
 
-        const body = { motivazione, idTurno };
+        console.log("motivazione: " + motivazione);
+        console.log("idPayroll: " + idPayroll);
+        console.log("idTurno: " + idTurno);
+        console.log("stato: " + stato);
 
-        const resp = await fetch(ezystaffBEUrl + `payroll/aggiornaRendicontazione/${idPayroll}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json',
-                accept: 'application/json'
-            },
-            method: "PATCH",
-            credentials: 'include',
-            body: JSON.stringify(body)
-        });
+        const body = {
+            motivazione,
+            idTurno,
+            stato
+        };
 
-        if (!resp.ok) {
-            alert('Non è stato possibile inviare la modifica. Riprova.');
-            return;
-        }
+        const resp = await fetch(
+            ezystaffBEUrl + `payroll/aggiornaRendicontazione/${idPayroll}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                    accept: 'application/json'
+                },
+                method: "PATCH",
+                credentials: 'include',
+                body: JSON.stringify(body)
+            }
+        );
+
+        await resp.json();
 
         setContestazioneDialogOpen(false);
         caricaRendicontazione();
     };
 
+
+
     const richiestaModificaTimbratura = (turno: TurnoOperatore) => {
+
         setTurnoSelezionato({
             idPayroll: turno.idPayroll,
             idTurno: turno.idTurno,
         });
+
         setContestazioneDialogOpen(true);
     }
 
-    const totaleOre = useMemo(() => {
-        const totalMinutes = listaTurniMensili.reduce((totale, turno) => {
-            if (!turno.oraInizioDefinitivo || !turno.oraFineDefinitivo) return totale;
-            const [h1, m1] = turno.oraInizioDefinitivo.split(':').map(Number);
-            const [h2, m2] = turno.oraFineDefinitivo.split(':').map(Number);
-            let start = h1 * 60 + m1;
-            let end = h2 * 60 + m2;
-            if (end < start) end += 24 * 60;
-            const pausa = Number(turno.orePausaDefinitivo || 0) * 60;
-            return totale + Math.max(0, end - start - pausa);
-        }, 0);
-        return (totalMinutes / 60).toLocaleString('it-IT', { maximumFractionDigits: 1 });
-    }, [listaTurniMensili]);
+    const calcolaTotaleOreTurni = (turni: TurnoOperatore[]): string => {
+        let totaleMinuti = 0;
+
+        turni.forEach((turno) => {
+            const { oraInizioDefinitivo, oraFineDefinitivo, orePausaDefinitivo } = turno;
+
+            if (!oraInizioDefinitivo || !oraFineDefinitivo) {
+                return;
+            }
+
+            const [h1, m1] = oraInizioDefinitivo.split(":").map(Number);
+            const [h2, m2] = oraFineDefinitivo.split(":").map(Number);
+
+            const inizio = h1 * 60 + m1;
+            let fine = h2 * 60 + m2;
+
+            // Turno che termina il giorno successivo
+            if (fine < inizio) {
+                fine += 24 * 60;
+            }
+
+            // Sottraggo la pausa
+            const minutiLavorati = fine - inizio - ((orePausaDefinitivo ?? 0) * 60);
+
+            totaleMinuti += minutiLavorati;
+        });
+
+        const ore = Math.floor(totaleMinuti / 60);
+        const minuti = totaleMinuti % 60;
+
+        return [
+            String(ore).padStart(2, "0"),
+            String(minuti).padStart(2, "0")
+        ].join(":");
+    };
+
+    const mostraMessaggioRendicontazione = (): boolean => {
+        const oggi = new Date();
+
+        const giorno = oggi.getDate();
+        const ultimoGiornoMese = new Date(
+            oggi.getFullYear(),
+            oggi.getMonth() + 1,
+            0
+        ).getDate();
+
+        // Ultimo giorno del mese
+        if (giorno === ultimoGiornoMese) {
+            return true;
+        }
+
+        // Dal 1 al 5 del mese
+        if (giorno >= 1 && giorno <= 5) {
+            return true;
+        }
+
+        return false;
+    };
+
 
     return (
-        <section className="min-h-screen bg-[#031522] px-4 pb-12 pt-2 text-white sm:px-5">
-            <div className="mx-auto w-full max-w-[430px]">
-                <h1 className="pb-4 text-[26px] font-black tracking-[-0.02em] text-[#08f0bd]">
-                    Rendicontazione
-                </h1>
+        <section className="main-section">
+            <div className="titolo">
+                Rendicontazione
+            </div>
 
-                <Tabs defaultValue="approvare" className="w-full">
-                    <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl border border-[#214253] bg-[#0b2634] p-1">
-                        <TabsTrigger
-                            value="approvare"
-                            className="rounded-lg text-[#90a9b7] data-[state=active]:bg-[#08e8b6] data-[state=active]:font-bold data-[state=active]:text-[#022016]"
-                        >
-                            Da approvare
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="archivio"
-                            className="rounded-lg text-[#90a9b7] data-[state=active]:bg-[#44629b] data-[state=active]:font-bold data-[state=active]:text-white"
-                        >
-                            Archivio
-                        </TabsTrigger>
-                    </TabsList>
+            <Tabs
+                value={tabAttivo}
+                onValueChange={setTabAttivo}
+                className="w-full"
+            >
+                <TabsList className="tabs-list">
+                    <TabsTrigger
+                        value="approvare"
+                        className="flex-1 tab-button"
+                    >
+                        Da approvare
+                    </TabsTrigger>
 
-                    <TabsContent value="approvare" className="mt-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-3 rounded-2xl border border-[#08dba8]/60 bg-[#0c3a37] p-4">
-                            <div>
-                                <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#a4c7c2]">Totale ore</div>
-                                <div className="mt-1 flex items-end gap-1 text-[#08efbd]">
-                                    <span className="text-[32px] font-black leading-none">{totaleOre}</span>
-                                    <span className="pb-1 text-sm font-bold">h</span>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#a4c7c2]">Giorni lavorati</div>
-                                <div className="mt-1 flex items-end justify-end gap-1 text-[#08efbd]">
-                                    <span className="text-[32px] font-black leading-none">{listaTurniMensili.length}</span>
-                                    <span className="pb-1 text-sm font-bold">giorni</span>
-                                </div>
-                            </div>
-                        </div>
+                    <TabsTrigger
+                        value="archivio"
+                        className="flex-1 tab-button"
+                    >
+                        Archivio
+                    </TabsTrigger>
+                </TabsList>
 
-                        <div className="flex gap-3 rounded-2xl border border-[#214253] bg-[#071f2c] p-4 text-[13px] leading-5 text-[#c9d7de]">
-                            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#315d95] text-white">
-                                <Info className="h-4 w-4" />
-                            </div>
-                            <div>
-                                <div className="font-bold text-[#08efbd]">Periodo di approvazione</div>
-                                Hai tempo fino al 5 {meseCorrente} {oggi.getFullYear()} per approvare o modificare i turni di {mesePrecedente}. Dopo tale data verranno approvati automaticamente.
+                <TabsContent value="approvare">
+                    <div className="sintesi-rendicontazione-content">
+                        {/* Sinistra */}
+                        <div className="flex flex-col">
+                            <span className="totale-ore-label">
+                                Totale ore
+                            </span>
+
+                            <div className="flex items-baseline gap-1">
+                                <span className="totale-ore-value">
+                                    {calcolaTotaleOreTurni(listaTurniMensili)}
+                                </span>
+
+                                <span className="totale-ore-unita">
+                                    h
+                                </span>
                             </div>
                         </div>
 
-                        {listaTurniMensili.map((turno) => {
-                            const approvato = turno.stato === 'APPROVATO';
-                            const modificato = turno.stato === 'CONTESTATO';
+                        {/* Destra */}
+                        <div className="flex flex-col items-end">
+                            <span className="totale-giorni-label">
+                                Giorni lavorati
+                            </span>
 
-                            return (
-                                <article
-                                    key={turno.idPayroll}
-                                    className={`rounded-2xl border p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)] ${
-                                        approvato
-                                            ? 'border-[#08dba8]/70 bg-[#0a3834]'
-                                            : modificato
-                                                ? 'border-[#f2a317]/60 bg-[#172728]'
-                                                : 'border-[#315467] bg-[#102637]'
-                                    }`}
-                                >
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-[#08dba8]/60 bg-[#08352f] px-2.5 py-1 text-[11px] font-semibold text-[#08efbd]">
-                                            <CalendarDays className="h-3.5 w-3.5" />
+                            <div className="flex items-baseline gap-1">
+                                <span className="totale-giorni-value">
+                                    {listaTurniMensili.length}
+                                </span>
+
+                                <span className="totale-giorni-unita">
+                                    Giorni
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {mostraMessaggioRendicontazione() && (
+                        <div className="rendicontazione-info">
+                            <div className="rendicontazione-info-title">
+                                Periodo di Approvazione
+                            </div>
+                            <div className="rendicontazione-info-testo">
+                                Hai tempo fino al 5 {meseCorrente()} {oggi.getFullYear()} per
+                                approvare o contestare i turni di {mesePrecedente()}.
+                                Dopo tale data, i turni verranno approvati automaticamente.
+                            </div>
+                        </div>
+                    )}
+                    {listaTurniMensili.map((turno, index) => {
+
+                        return (
+                            <React.Fragment key={index}>
+                                <div className="rendicontazione-turno-content">
+                                    <div className="flex justify-between items-center">
+                                        <span className="rendicontazione-data-turno">
                                             {turno.dataTurno}
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-[18px] font-black text-[#08efbd]">
-                                                {turno.oraInizioDefinitivo} - {turno.oraFineDefinitivo}
-                                            </div>
-                                            <div className="mt-0.5 flex items-center justify-end gap-1 text-[12px] text-[#a9bdc8]">
-                                                <TimerReset className="h-3.5 w-3.5" />
-                                                Pausa {turno.orePausaDefinitivo} h
-                                            </div>
-                                        </div>
+                                        </span>
+                                        <span className="rendicontazione-orario-turno">
+                                            {turno.oraInizioDefinitivo} - {turno.oraFineDefinitivo}
+                                        </span>
                                     </div>
-
-                                    <div className="mt-3 text-[19px] font-bold leading-tight text-[#f1f5f7]">
-                                        {turno.ragioneSociale} — {turno.nomeBrand}
+                                    <div className="rendicontazione-pausa-turno">
+                                        Pausa {turno.orePausaDefinitivo} h
                                     </div>
-                                    <div className="mt-2 flex items-start gap-2 text-[13px] text-[#c0d0d8]">
-                                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#9bc6d3]" />
-                                        <span>{turno.indirizzoEvento}</span>
+                                    <div className="rendicontazione-titolo-turno">
+                                        {turno.ragioneSociale} - {turno.nomeBrand}
                                     </div>
-                                    <div className="mt-1 flex items-center gap-2 text-[12px] text-[#829ba8]">
-                                        <Clock3 className="h-3.5 w-3.5" />
-                                        Orario registrato per la rendicontazione
+                                    <div className="rendicontazione-indirizzo-turno">
+                                        {turno.indirizzoEvento}
                                     </div>
-
-                                    <div className="mt-4 grid grid-cols-2 gap-2.5">
-                                        {approvato ? (
-                                            <div className="col-span-2 flex h-10 items-center justify-center gap-2 rounded-xl border border-[#08dba8]/60 bg-[#073b31] text-[13px] font-bold text-[#08efbd]">
-                                                <Check className="h-4 w-4" /> Approvato
-                                            </div>
+                                    <div className="mt-2 flex w-full items-center justify-end">
+                                        {turno.approvato ? (
+                                            <span className="flex w-full justify-center rounded-[8px] border border-[#00ffb8] bg-[#11413f] py-2 text-[12px] font-medium text-[#00ffb8]">
+                                                APPROVATO
+                                            </span>
+                                        ) : turno.stato === "CONTESTATO" ? (
+                                            <span className="flex w-full justify-center rounded-[8px] border border-[#c4c7c5] py-2 text-[12px] font-medium text-[#444746]">
+                                                MODIFICATO
+                                            </span>
                                         ) : (
-                                            <>
+                                            <div className="flex w-full items-center justify-between">
+                                                {/* APPROVA */}
                                                 <Button
-                                                    type="button"
-                                                    disabled={approvazioneInCorso === turno.idPayroll || modificato}
-                                                    onClick={() => approvaTurno(turno)}
-                                                    className="h-10 rounded-xl bg-[#12df63] text-[13px] font-black text-[#02170b] hover:bg-[#20ee72] disabled:opacity-50"
+                                                    onClick={() => approvaTurno(turno.idPayroll)}
+                                                    className="w-[45%] rounded-[8px] border border-[#00ffb8] bg-[#00ffb8] text-[12px] font-medium text-[#11413f]"
                                                 >
-                                                    <Check className="mr-1.5 h-4 w-4" />
-                                                    {approvazioneInCorso === turno.idPayroll ? 'Attendi…' : 'Approva'}
+                                                    <span>APPROVA</span>
                                                 </Button>
+
+                                                {/* MODIFICA */}
                                                 <Button
-                                                    type="button"
                                                     onClick={() => richiestaModificaTimbratura(turno)}
-                                                    className="h-10 rounded-xl border border-[#e69b18] bg-[#3d2b1d] text-[13px] font-black text-[#ffb529] hover:bg-[#493421]"
+                                                    className="rendicontazione-bottone-modifica"
                                                 >
-                                                    <Pencil className="mr-1.5 h-4 w-4" />
-                                                    {modificato ? 'Modificato' : 'Modifica'}
+                                                    <span>MODIFICA</span>
                                                 </Button>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
-                                </article>
+
+
+                                </div>
+                            </React.Fragment>
+                        );
+                    })}
+                </TabsContent>
+
+                <TabsContent value="archivio">
+                    <Accordion
+                        type="single"
+                        collapsible
+                        className="w-full"
+                    >
+                        {rendicontzioneMensile.map((rendicontazione) => {
+                            const ore = Math.floor(rendicontazione.totaleMinuti / 60);
+                            const minuti = rendicontazione.totaleMinuti % 60;
+
+                            return (
+                                <AccordionItem
+                                    key={rendicontazione.meseAnno}
+                                    value={rendicontazione.meseAnno}
+                                    className="archivio-mensile-trigger"
+                                    onClick={() => {
+                                        caricaRendicontazionePerMese(
+                                            rendicontazione.mese,
+                                            rendicontazione.anno
+                                        );
+                                    }}
+                                >
+                                    <AccordionTrigger className="[&>svg]:text-white">
+                                        <div className="flex w-full items-center justify-between">
+
+                                            {/* Mese */}
+                                            <span className="archivio-mese-anno">
+                                                {rendicontazione.meseAnno}
+                                            </span>
+                                            <div className="archivio-giorni-mensili">
+                                                {/* Totale ore */}
+                                                <span>
+                                                    {String(ore).padStart(2, "0")}:
+                                                    {String(minuti).padStart(2, "0")} h
+                                                </span>
+
+                                                <span className="mx-2">•</span>
+
+                                                {/* Numero turni */}
+                                                <span>
+                                                    {rendicontazione.numeroTurni}
+                                                    {rendicontazione.numeroTurni === 1 ? " turno" : " turni"}
+                                                </span>
+                                            </div>
+
+                                        </div>
+                                    </AccordionTrigger>
+
+                                    <AccordionContent>
+                                        {listaTurniMensili.map((turno, index) => {
+
+                                            return (
+                                                <React.Fragment key={index}>
+                                                    <div className="turno-archiviato-content">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="data-turno-archiviato">
+                                                                {turno.dataTurno}
+                                                            </span>
+                                                            <span className="ora-turno-archiviato">
+                                                                {turno.oraInizioDefinitivo} - {turno.oraFineDefinitivo}
+                                                            </span>
+                                                        </div>
+                                                        <div className="pausa-turno-archiviato">
+                                                            Pausa {turno.orePausaDefinitivo} h
+                                                        </div>
+                                                        <div className="nome-turno-archiviato">
+                                                            {turno.ragioneSociale} - {turno.nomeBrand}
+                                                        </div>
+                                                        <div className="indirizzo-turno-archiviato">
+                                                            {turno.indirizzoEvento}
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </AccordionContent>
+                                </AccordionItem>
                             );
                         })}
+                    </Accordion>
 
-                        {listaTurniMensili.length === 0 && (
-                            <div className="rounded-2xl border border-[#214253] bg-[#071f2c] px-4 py-8 text-center text-sm text-[#8fa8b5]">
-                                Nessun turno da approvare nel periodo corrente.
-                            </div>
-                        )}
-                    </TabsContent>
-
-                    <TabsContent value="archivio" className="mt-4">
-                        <div className="rounded-2xl border border-[#31506b] bg-[#102238] p-5 text-sm text-[#b8c8d2]">
-                            <div className="mb-2 font-bold text-[#c56cff]">Archivio rendicontazioni</div>
-                            Qui verranno visualizzati i mesi già chiusi con il dettaglio dei giorni approvati.
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </div>
+                </TabsContent>
+            </Tabs>
 
             <ContestazioneTimbraturaDialog
                 open={contestazioneDialogOpen}
                 setOpen={setContestazioneDialogOpen}
-                onSubmit={handleSubmitContestazione}
+                onSubmit={handleAggiornaRendicontazione}
                 idPayroll={turnoSelezionato?.idPayroll}
                 idTurno={turnoSelezionato?.idTurno}
             />
+
         </section>
     );
 };

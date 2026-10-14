@@ -18,6 +18,9 @@ import { HeaderDipendenteComponent } from "../components/HeaderDipendenteCompone
 import { TypeCardAComponent } from "../components/TypeCardAComponent";
 import { TypeCardBComponent } from "../components/TypeCardBComponent";
 import { TypeCardCComponent } from "../components/TypeCardCComponent";
+import { TypeCardDComponent } from "../components/TypeCardDComponent";
+import { ContrattoTempoIndeterminatoComponent } from "../components/ContrattoTempoIndeterminatoComponent";
+import { ContrattoTempoDeterminatoComponent } from "../components/ContrattoTempoDeterminatoComponent";
 
 interface FormDatiAnagrafici {
     nickname: string;
@@ -79,6 +82,16 @@ interface FormContrattoOccasionale {
     dataFirmaContratto: Date | null;
 }
 
+interface FormContrattoTempoIndeterminato {
+    dataInizio: Date | null;
+    dataFine: Date | null;
+}
+
+interface FormContrattoTempoDeterminato {
+    dataInizio: Date | null;
+    dataFine: Date | null;
+}
+
 interface FormHeader {
     listaMansioni: string[];
 }
@@ -103,6 +116,8 @@ interface FormAllegati {
     attestatoPrepostoLivello: string;
     attestatoPrepostoDataConseguimento: Date | null;
     attestatoSecurityManagerDataConseguimento: Date | null;
+    attestatoIdoneitaVisitaMedicaDataConseguimento: Date | null;
+    attestatoAddettoServiziControlloDataConseguimento: Date | null;
 }
 
 interface FormConsegnaBeniFormazione {
@@ -110,7 +125,7 @@ interface FormConsegnaBeniFormazione {
     elencoBeniStrumentali: string;
 }
 
-export type TipoContratto = "CHIAMATA" | "OCCASIONALE" | "CONSGNA_BENI_FORMAZIONE";
+export type TipoContratto = "CHIAMATA" | "OCCASIONALE" | "CONSGNA_BENI_FORMAZIONE" | "CONTRATTO_TEMPO_INDETERMINATO" | "CONTRATTO_TEMPO_DETERMINATO";
 
 interface ContrattoBase {
     idContratto: number;
@@ -171,6 +186,11 @@ interface Allegati {
     attestatoPrepostoRetro: string;
     attestatoSecurityManagerDataConseguimento: string;
     attestatoSecurityManagerFronte: string;
+    attestatoIdoneitaVisitaMedicaDataConseguimento: string;
+    attestatoIdoneitaVisitaMedicaFronte: string
+    attestatoAddettoServiziControlloDataConseguimento: string
+    attestatoAddettoServiziControlloFronte: string
+    attestatoIndoneitaTecnicaAntincendioFronte: string
 }
 
 
@@ -293,7 +313,17 @@ const DettaglioOperatore = () => {
     const [formContrattoOccasionale, setFormContrattoOccasionale] = useState<FormContrattoOccasionale>({
         dataInizio: null,
         dataFine: null,
-        dataFirmaContratto: null,
+        dataFirmaContratto: null
+    });
+
+    const [formContrattoTempoIndeterminato, setFormContrattoTempoIndeterminato] = useState<FormContrattoTempoIndeterminato>({
+        dataInizio: null,
+        dataFine: null
+    });
+
+    const [formContrattoTempoDeterminato, setFormContrattoTempoDeterminato] = useState<FormContrattoTempoDeterminato>({
+        dataInizio: null,
+        dataFine: null
     });
 
     const [formHeader, setFormHeader] = useState<FormHeader>({
@@ -320,6 +350,8 @@ const DettaglioOperatore = () => {
         attestatoPrepostoLivello: "",
         attestatoPrepostoDataConseguimento: null,
         attestatoSecurityManagerDataConseguimento: null,
+        attestatoIdoneitaVisitaMedicaDataConseguimento: null,
+        attestatoAddettoServiziControlloDataConseguimento: null
     });
 
     const [formConsegnaBeniFormazione, setFormConsegnaBeniFormazione] = useState<FormConsegnaBeniFormazione>({
@@ -471,6 +503,12 @@ const DettaglioOperatore = () => {
                 : null,
             attestatoSecurityManagerDataConseguimento: allegati?.attestatoSecurityManagerDataConseguimento
                 ? new Date(allegati.attestatoSecurityManagerDataConseguimento)
+                : null,
+            attestatoIdoneitaVisitaMedicaDataConseguimento: allegati?.attestatoIdoneitaVisitaMedicaDataConseguimento
+                ? new Date(allegati.attestatoIdoneitaVisitaMedicaDataConseguimento)
+                : null,
+            attestatoAddettoServiziControlloDataConseguimento: allegati?.attestatoAddettoServiziControlloDataConseguimento
+                ? new Date(allegati.attestatoAddettoServiziControlloDataConseguimento)
                 : null,
 
         });
@@ -637,7 +675,12 @@ const DettaglioOperatore = () => {
             attestatoSecurityManagerDataConseguimento: formAllegati.attestatoSecurityManagerDataConseguimento
                 ? format(formAllegati.attestatoSecurityManagerDataConseguimento, "yyyy-MM-dd")
                 : null,
-
+            attestatoIdoneitaVisitaMedicaDataConseguimento: formAllegati.attestatoIdoneitaVisitaMedicaDataConseguimento
+                ? format(formAllegati.attestatoIdoneitaVisitaMedicaDataConseguimento, "yyyy-MM-dd")
+                : null,
+            attestatoAddettoServiziControlloDataConseguimento: formAllegati.attestatoAddettoServiziControlloDataConseguimento
+                ? format(formAllegati.attestatoAddettoServiziControlloDataConseguimento, "yyyy-MM-dd")
+                : null,
         }
 
         console.log("datiAllegati: ", datiAllegati);
@@ -788,6 +831,26 @@ const DettaglioOperatore = () => {
         }))
     }
 
+    const handleChangeContrattoTempoIndeterminato = (
+        key: string,
+        value: Date | null
+    ) => {
+        setFormContrattoTempoIndeterminato((prev) => ({
+            ...prev,
+            [key]: value,
+        }))
+    }
+
+    const handleChangeContrattoTempoDeterminato = (
+        key: string,
+        value: Date | null
+    ) => {
+        setFormContrattoTempoDeterminato((prev) => ({
+            ...prev,
+            [key]: value,
+        }))
+    }
+
     const handleChangeFormHeader = (
         key: string,
         value: string[] | null
@@ -817,6 +880,7 @@ const DettaglioOperatore = () => {
         }))
     }
 
+    /*
     const generaContratto = async () => {
 
         setLoading(true);
@@ -880,7 +944,6 @@ const DettaglioOperatore = () => {
             };
         }
 
-
         console.log("***contrattoFinale*****: ", contrattoFinale);
 
         const url = new URL(ezystaffBEUrl + "operatori/creaContratto");
@@ -903,6 +966,189 @@ const DettaglioOperatore = () => {
         setLoading(false);
 
     };
+    */
+
+    const inviaContratto = async (contrattoFinale: ContrattoPayload, generazionePdf: boolean) => {
+        try {
+            const endpoint = generazionePdf ? "operatori/creaContratto" : "operatori/creaContrattoSenzaGenerazionePdf";
+
+            const url = new URL(ezystaffBEUrl + endpoint);
+
+            const resp = await fetch(url.toString(), {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                    accept: "application/json",
+                },
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify(contrattoFinale),
+            });
+
+            if (!resp.ok) {
+                throw new Error(
+                    `Errore nella generazione del contratto: ${resp.status}`
+                );
+            }
+
+            const data = await resp.json();
+
+            console.log("*** contratto generato ***", data);
+
+            await caricaListaContratti();
+        } catch (error) {
+            console.error("Errore generazione contratto:", error);
+            alert("Errore durante la generazione del contratto");
+        }
+    };
+
+    const generaContrattoChiamata = async () => {
+        setLoading(true);
+
+        try {
+            const contrattoBase: ContrattoBase = {
+                idContratto: 0,
+                idOperatore: Number(id),
+                tipologia: "CHIAMATA",
+            };
+
+            if (!isValidSedeAlternativa()) {
+                alert(
+                    "Città alternativa e indirizzo alternativo devono essere entrambi compilati oppure entrambi vuoti."
+                );
+                return;
+            }
+
+            const contrattoFinale: ContrattoPayload = {
+                ...contrattoBase,
+                ...formContrattoChiamata,
+
+                dataInizio: formContrattoChiamata.dataInizio
+                    ? format(formContrattoChiamata.dataInizio, "yyyy-MM-dd")
+                    : null,
+
+                dataFine: formContrattoChiamata.dataFine
+                    ? format(formContrattoChiamata.dataFine, "yyyy-MM-dd")
+                    : null,
+
+                dataFirmaContratto: formContrattoChiamata.dataFirmaContratto
+                    ? format(
+                        formContrattoChiamata.dataFirmaContratto,
+                        "yyyy-MM-dd"
+                    )
+                    : null,
+
+                cittaAlternativa:
+                    formContrattoChiamata.cittaAlternativa,
+
+                indirizzoAlternativo:
+                    formContrattoChiamata.indirizzoAlternativo,
+
+                cittaPredefinita:
+                    formContrattoChiamata.cittaPredefinita,
+
+                indirizzoPredefinito:
+                    formContrattoChiamata.indirizzoPredefinito,
+            };
+
+            console.log("*** contratto CHIAMATA ***", contrattoFinale);
+
+            await inviaContratto(contrattoFinale, true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const generaContrattoOccasionale = async () => {
+        setLoading(true);
+
+        try {
+            const contrattoBase: ContrattoBase = {
+                idContratto: 0,
+                idOperatore: Number(id),
+                tipologia: "OCCASIONALE",
+            };
+
+            const contrattoFinale: ContrattoPayload = {
+                ...contrattoBase,
+                dataInizio: formContrattoOccasionale.dataInizio ? format(formContrattoOccasionale.dataInizio, "yyyy-MM-dd") : null,
+                dataFine: formContrattoOccasionale.dataFine ? format(formContrattoOccasionale.dataFine, "yyyy-MM-dd") : null,
+                dataFirmaContratto: formContrattoOccasionale.dataFirmaContratto ? format(formContrattoOccasionale.dataFirmaContratto, "yyyy-MM-dd") : null,
+            };
+            console.log("*** contratto OCCASIONALE ***", contrattoFinale);
+            await inviaContratto(contrattoFinale, true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const generaContrattoConsegnaBeniFormazione = async () => {
+        setLoading(true);
+
+        try {
+            const contrattoBase: ContrattoBase = {
+                idContratto: 0,
+                idOperatore: Number(id),
+                tipologia: "CONSGNA_BENI_FORMAZIONE",
+            };
+
+            const contrattoFinale: ContrattoPayload = {
+                ...contrattoBase,
+                ...formConsegnaBeniFormazione,
+            };
+
+            console.log(
+                "*** contratto CONSEGNA BENI FORMAZIONE ***",
+                contrattoFinale
+            );
+
+            await inviaContratto(contrattoFinale, true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const generaContrattoTempoIndeterminato = async () => {
+        setLoading(true);
+        try {
+            const contrattoBase: ContrattoBase = {
+                idContratto: 0,
+                idOperatore: Number(id),
+                tipologia: "CONTRATTO_TEMPO_INDETERMINATO",
+            };
+            const contrattoFinale: ContrattoPayload = {
+                ...contrattoBase,
+                dataInizio: formContrattoTempoIndeterminato.dataInizio ? format(formContrattoTempoIndeterminato.dataInizio, "yyyy-MM-dd") : null,
+                dataFine: formContrattoTempoIndeterminato.dataFine ? format(formContrattoTempoIndeterminato.dataFine, "yyyy-MM-dd") : null,
+            };
+            console.log("*** contratto tempo indeterminato ***", contrattoFinale);
+            await inviaContratto(contrattoFinale, false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const generaContrattoTempoDeterminato = async () => {
+        setLoading(true);
+        try {
+            const contrattoBase: ContrattoBase = {
+                idContratto: 0,
+                idOperatore: Number(id),
+                tipologia: "CONTRATTO_TEMPO_DETERMINATO",
+            };
+            const contrattoFinale: ContrattoPayload = {
+                ...contrattoBase,
+                dataInizio: formContrattoTempoDeterminato.dataInizio ? format(formContrattoTempoDeterminato.dataInizio, "yyyy-MM-dd") : null,
+                dataFine: formContrattoTempoDeterminato.dataFine ? format(formContrattoTempoDeterminato.dataFine, "yyyy-MM-dd") : null,
+            };
+            console.log("*** contratto tempo determinato ***", contrattoFinale);
+            await inviaContratto(contrattoFinale, false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const isValidSedeAlternativa = () => {
         if (tipoContratto !== "CHIAMATA") {
@@ -1275,7 +1521,7 @@ const DettaglioOperatore = () => {
 
         caricaAllegati();
 
-    }    
+    }
 
     const caricaImmagine = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -1466,8 +1712,8 @@ const DettaglioOperatore = () => {
                             <TableBody>
                                 {contratti.map((contratto) => (
                                     <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
-                                        <TableCell>{contratto.tipologia}</TableCell>                                        
-                                        <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>                                        
+                                        <TableCell>{contratto.tipologia}</TableCell>
+                                        <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.compensoTotaleLordo}</TableCell>
                                         <TableCell>
@@ -1529,9 +1775,13 @@ const DettaglioOperatore = () => {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <button onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="cursor-pointer">
-                                                <View className="mr-2 h-4 w-4" />
-                                            </button>
+                                            {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
+                                                contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
+                                                    <button
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="cursor-pointer">
+                                                        <View className="mr-2 h-4 w-4" />
+                                                    </button>
+                                                )}
                                             <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="cursor-pointer">
                                                 <Trash2 className="mr-2 h-4 w-4" />
                                             </button>
@@ -1562,15 +1812,120 @@ const DettaglioOperatore = () => {
                                     <SelectItem value="CHIAMATA">Contratto a chiamata</SelectItem>
                                     <SelectItem value="OCCASIONALE">Contratto occasionale</SelectItem>
                                     <SelectItem value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</SelectItem>
+                                    <SelectItem value="CONTRATTO_TEMPO_INDETERMINATO">Contratto a tempo indeterminato</SelectItem>
+                                    <SelectItem value="CONTRATTO_TEMPO_DETERMINATO">Contratto a tempo determinato</SelectItem>
                                 </SelectContent>
                             </Select>
 
                             {tipoContratto === "CHIAMATA" && (
+                                <>
+                                    <ContrattoChiamataComponent
+                                        formContrattoChiamata={formContrattoChiamata}
+                                        handleChangeContrattoChiamata={handleChangeContrattoChiamata}
+                                    />
+
+                                    <div className="w-full mt-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={generaContrattoChiamata}
+                                            disabled={loading}
+                                            className="w-full bg-[#007a55] text-white hover:bg-[#007a55] cursor-pointer"
+                                        >
+                                            {loading ? "Generazione in corso..." : "GENERA CONTRATTO CHIAMATA"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+
+                            {tipoContratto === "OCCASIONALE" && (
+                                <>
+                                    <ContrattoOccasionaleComponent
+                                        formContrattoOccasionale={formContrattoOccasionale}
+                                        handleChangeContrattoChiamata={handleChangeContrattoOccasionale}
+                                    />
+
+                                    <div className="w-full mt-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={generaContrattoOccasionale}
+                                            disabled={loading}
+                                            className="w-full bg-[#007a55] text-white hover:bg-[#007a55] cursor-pointer"
+                                        >
+                                            {loading ? "Generazione in corso..." : "GENERA CONTRATTO OCCASIONALE"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+
+                            {tipoContratto === "CONSGNA_BENI_FORMAZIONE" && (
+                                <>
+                                    <ConsegnaBeniFormazioneComponent
+                                        formConsegnaBeniFormazione={formConsegnaBeniFormazione}
+                                        handleChangeConsegnaBeniFormazione={handleChangeConsegnaBeniFormazione}
+                                    />
+
+                                    <div className="w-full mt-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={generaContrattoConsegnaBeniFormazione}
+                                            disabled={loading}
+                                            className="w-full bg-[#007a55] text-white hover:bg-[#007a55] cursor-pointer"
+                                        >
+                                            {loading
+                                                ? "Generazione in corso..."
+                                                : "GENERA CONTRATTO CONSEGNA BENI"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+
+                            {tipoContratto === "CONTRATTO_TEMPO_INDETERMINATO" && (
+                                <>
+                                    <ContrattoTempoIndeterminatoComponent
+                                        formContrattoTempoIndeterminato={formContrattoTempoIndeterminato}
+                                        handleChangeContrattoTempoIndeterminato={handleChangeContrattoTempoIndeterminato}
+                                    />
+
+                                    <div className="w-full mt-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={generaContrattoTempoIndeterminato}
+                                            disabled={loading}
+                                            className="w-full bg-[#007a55] text-white hover:bg-[#007a55] cursor-pointer"
+                                        >
+                                            {loading ? "Generazione in corso..." : "GENERA CONTRATTO TEMPO INDETERMINATO"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                            {tipoContratto === "CONTRATTO_TEMPO_DETERMINATO" && (
+                                <>
+                                    <ContrattoTempoDeterminatoComponent
+                                        formContrattoTempoDeterminato={formContrattoTempoDeterminato}
+                                        handleChangeContrattoTempoDeterminato={handleChangeContrattoTempoDeterminato}
+                                    />
+
+                                    <div className="w-full mt-6">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={generaContrattoTempoDeterminato}
+                                            disabled={loading}
+                                            className="w-full bg-[#007a55] text-white hover:bg-[#007a55] cursor-pointer"
+                                        >
+                                            {loading ? "Generazione in corso..." : "GENERA CONTRATTO TEMPO DETERMINATO"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                            {/*
+                            {tipoContratto === "CHIAMATA" && (
                                 <ContrattoChiamataComponent
                                     formContrattoChiamata={formContrattoChiamata}
-                                    //  listaMansioni={listaMansioni}
-                                    //  tipoQualifica={tipoQualifica}
-                                    //   livelloInquadramento={livelloInquadramento}
                                     handleChangeContrattoChiamata={handleChangeContrattoChiamata}
                                 />
                             )}
@@ -1597,6 +1952,7 @@ const DettaglioOperatore = () => {
                                     {loading ? "Generazione in corso..." : "GENERA CONTRATTO"}
                                 </Button>
                             </div>
+                            */}
                         </div>
                     </div>
                 </TabsContent>
@@ -1790,6 +2146,17 @@ const DettaglioOperatore = () => {
                                 titoloDocumento="Attestato Antincendio"
                             />
 
+                            <TypeCardDComponent
+                                editAllegati={editAllegati}
+                                handleChangeFormAllegati={handleChangeFormAllegati}
+                                caricaDocumento={caricaDocumento}
+                                dowloadAllegato={dowloadAllegato}
+                                eliminaDocumento={eliminaDocumento}
+                                tipoFronte="attestato_indoneita_tecnica_antincendio_fronte"
+                                imgFronte={allegati?.attestatoIndoneitaTecnicaAntincendioFronte ?? null}
+
+                                titoloDocumento="Attestato  indoneità tecnica antincendio"
+                            />
 
                             <TypeCardBComponent
                                 editAllegati={editAllegati}
@@ -1957,6 +2324,54 @@ const DettaglioOperatore = () => {
                                 imgFronte={allegati?.attestatoSecurityManagerFronte ?? null}
 
                                 titoloDocumento="Security Manager"
+                            />
+
+                            <TypeCardCComponent
+                                editAllegati={editAllegati}
+                                handleChangeFormAllegati={handleChangeFormAllegati}
+                                caricaDocumento={caricaDocumento}
+                                dowloadAllegato={dowloadAllegato}
+                                eliminaDocumento={eliminaDocumento}
+
+                                dataConseguimentoKey="attestatoIdoneitaVisitaMedicaDataConseguimento"
+                                dataConseguimentoValue={
+                                    formAllegati?.attestatoIdoneitaVisitaMedicaDataConseguimento
+                                        ? new Date(formAllegati.attestatoIdoneitaVisitaMedicaDataConseguimento)
+                                        : null
+                                }
+                                dataConseguimento={
+                                    allegati?.attestatoIdoneitaVisitaMedicaDataConseguimento
+                                        ? new Date(allegati.attestatoIdoneitaVisitaMedicaDataConseguimento)
+                                        : null
+                                }
+                                tipoFronte="attestato_idoneita_visita_medica_fronte"
+                                imgFronte={allegati?.attestatoIdoneitaVisitaMedicaFronte ?? null}
+
+                                titoloDocumento="Avvenuta Idoneità alla mansione/visita medica"
+                            />
+
+                            <TypeCardCComponent
+                                editAllegati={editAllegati}
+                                handleChangeFormAllegati={handleChangeFormAllegati}
+                                caricaDocumento={caricaDocumento}
+                                dowloadAllegato={dowloadAllegato}
+                                eliminaDocumento={eliminaDocumento}
+
+                                dataConseguimentoKey="attestatoAddettoServiziControlloDataConseguimento"
+                                dataConseguimentoValue={
+                                    formAllegati?.attestatoAddettoServiziControlloDataConseguimento
+                                        ? new Date(formAllegati.attestatoAddettoServiziControlloDataConseguimento)
+                                        : null
+                                }
+                                dataConseguimento={
+                                    allegati?.attestatoAddettoServiziControlloDataConseguimento
+                                        ? new Date(allegati.attestatoAddettoServiziControlloDataConseguimento)
+                                        : null
+                                }
+                                tipoFronte="attestato_addetto_servizi_controllo_fronte"
+                                imgFronte={allegati?.attestatoAddettoServiziControlloFronte ?? null}
+
+                                titoloDocumento="Attestato addetto servizi controllo"
                             />
 
                         </div>
