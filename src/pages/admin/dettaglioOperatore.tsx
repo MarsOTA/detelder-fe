@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, View, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
+import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
+import { listaChiamateHR } from "@/utils/chiamateHR";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -236,6 +237,16 @@ const DettaglioOperatore = () => {
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
+    const [chiamateCounts,setChiamateCounts] = useState<Record<number,number>>({});
+    const aggiornaChiamate = async () => {
+      if(!id)return;
+      const padri=contratti.filter(c=>c.tipologia==="CHIAMATA");
+      const results=await Promise.allSettled(padri.map(c=>listaChiamateHR(Number(id),c.idContratto)));
+      const counts:Record<number,number>={};
+      results.forEach((res,i)=>{if(res.status==="fulfilled")counts[padri[i].idContratto]=res.value.length;});
+      setChiamateCounts(counts);
+    };
+    useEffect(()=>{void aggiornaChiamate();},[id,contratti]);
     // Non mostrare conteggi fittizi: manca ancora la persistenza delle chiamate su Aiven.
     const [allegati, setAllegati] = useState<Allegati>();
     const [formDatiAnagrafici, setFormDatiAnagrafici] = useState<FormDatiAnagrafici>({
@@ -1721,7 +1732,7 @@ const DettaglioOperatore = () => {
                             <TableBody>
                                 {contratti.map((contratto) => (
                                     <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
-                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: n.d.</span>}</TableCell>
+                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: {chiamateCounts[contratto.idContratto] ?? "—"}</span>}</TableCell>
                                         <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.compensoTotaleLordo}</TableCell>
@@ -1733,7 +1744,7 @@ const DettaglioOperatore = () => {
                                                         className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]"
                                                         title="Scarica contratto firmato"
                                                     >
-                                                        <View className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4" />
                                                     </button>
                                                     <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
                                                         <Trash2 className="h-4 w-4" />
@@ -1762,7 +1773,7 @@ const DettaglioOperatore = () => {
                                                         className="cursor-pointer text-[#007a55]"
                                                         title="Scarica unilav"
                                                     >
-                                                        <View className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4" />
                                                     </button>
                                                     <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
                                                         <Trash2 className="h-4 w-4" />
@@ -1784,12 +1795,12 @@ const DettaglioOperatore = () => {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {contratto.tipologia === "CHIAMATA" && <span className="mr-2 inline-flex gap-2 align-middle"><button type="button" className="rounded border border-[#b7d7cc] p-1 text-[#007a55]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="rounded border border-[#b7d7cc] p-1 text-[#007a55]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
+                                            {contratto.tipologia === "CHIAMATA" && <span className="mr-2 inline-flex items-center gap-2 align-middle"><button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
                                             {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
                                                 contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
                                                     <button
                                                         onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <View className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4" />
                                                     </button>
                                                 )}
                                             <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
@@ -2391,8 +2402,8 @@ const DettaglioOperatore = () => {
 
                 </TabsContent>
             </Tabs>
-            <IntermittentiDialog open={archivioChiamateOpen} setOpen={setArchivioChiamateOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} chiamateIniziali={[]} />
-            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} />
+            <IntermittentiDialog open={archivioChiamateOpen} setOpen={setArchivioChiamateOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onUpdated={()=>void aggiornaChiamate()} />
+            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onSaved={()=>void aggiornaChiamate()} />
         </section>
     )
 }
