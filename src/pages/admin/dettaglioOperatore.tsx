@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, View, LockKeyhole, LockKeyholeOpen } from "lucide-react";
+import { Trash2, View, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
+import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
+import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
+import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -228,6 +231,11 @@ const DettaglioOperatore = () => {
 
     const [dipendente, setDipendente] = useState<Dipendente>();
     const [contratti, setContratti] = useState<Contratto[]>([]);
+    const [searchParams] = useSearchParams();
+    const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
+    const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
+    const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
+    // Non mostrare conteggi fittizi: manca ancora la persistenza delle chiamate su Aiven.
     const [allegati, setAllegati] = useState<Allegati>();
     const [formDatiAnagrafici, setFormDatiAnagrafici] = useState<FormDatiAnagrafici>({
         nickname: "",
@@ -1636,7 +1644,7 @@ const DettaglioOperatore = () => {
                 caricaImmagine={caricaImmagine}
             />
 
-            <Tabs defaultValue="anagrafica">
+            <Tabs key={searchParams.get("tab") === "contratti" ? "contratti" : "default"} defaultValue={searchParams.get("tab") === "contratti" ? "contratti" : "anagrafica"}>
                 <TabsList className="w-[38%]  bg-transparent border-0">
                     <TabsTrigger value="anagrafica" className={tabTriggerClass}>
                         Anagrafica
@@ -1695,7 +1703,11 @@ const DettaglioOperatore = () => {
                 </TabsContent>
 
                 <TabsContent value="contratti">
-
+                    <section className="mb-5 rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-5">
+                      <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-xl font-bold text-[#007a55]">Contratto attivo</h2>{(() => { const c=contratti.find(c=>c.dataInizio && c.dataInizio.slice(0,10)<=new Date().toISOString().slice(0,10) && (!c.dataFine || c.dataFine.slice(0,10)>=new Date().toISOString().slice(0,10)));return <span className="rounded-full bg-white px-3 py-1 text-sm font-medium">{c?"In corso":"Nessun contratto attivo"}</span>; })()}</div>
+                      {(() => { const c=contratti.find(c=>c.dataInizio && c.dataInizio.slice(0,10)<=new Date().toISOString().slice(0,10) && (!c.dataFine || c.dataFine.slice(0,10)>=new Date().toISOString().slice(0,10)));if(!c) return <p className="text-sm text-gray-600">Non risultano contratti attivi nel periodo corrente.</p>;return <div className="grid gap-3 rounded-lg bg-white p-4 md:grid-cols-3">{[["Datore di lavoro","Non disponibile"],["Tipo contratto",c.tipologia.replaceAll("_"," ")],["Paga oraria diurna","Non disponibile"],["Paga oraria notturna","Non disponibile"],["Codice comunicazione UNILAV","Non disponibile"],["Validità",`${c.dataInizio?.slice(0,10)||"—"} → ${c.dataFine?.slice(0,10)||"Indeterminata"}`]].map(([label,value])=><div key={label} className="border-r border-gray-100 pr-3"><div className="text-xs text-gray-500">{label}</div><div className="mt-1 text-sm font-semibold">{value}</div></div>)}</div>; })()}
+                      <p className="mt-2 text-xs text-gray-500">Datore di lavoro, paga oraria e codice UNILAV non sono ancora esposti dall’API contratti: nessun valore viene inventato.</p>
+                    </section>
                     <div>
                         <Table>
                             <TableHeader>
@@ -1712,7 +1724,7 @@ const DettaglioOperatore = () => {
                             <TableBody>
                                 {contratti.map((contratto) => (
                                     <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
-                                        <TableCell>{contratto.tipologia}</TableCell>
+                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: n.d.</span>}</TableCell>
                                         <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
                                         <TableCell>{contratto.compensoTotaleLordo}</TableCell>
@@ -1775,6 +1787,7 @@ const DettaglioOperatore = () => {
                                             )}
                                         </TableCell>
                                         <TableCell>
+                                            {contratto.tipologia === "CHIAMATA" && <span className="mr-2 inline-flex gap-2 align-middle"><button type="button" className="rounded border border-[#b7d7cc] p-1 text-[#007a55]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="rounded border border-[#b7d7cc] p-1 text-[#007a55]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
                                             {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
                                                 contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
                                                     <button
@@ -2381,6 +2394,8 @@ const DettaglioOperatore = () => {
 
                 </TabsContent>
             </Tabs>
+            <IntermittentiDialog open={archivioChiamateOpen} setOpen={setArchivioChiamateOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} chiamateIniziali={[]} />
+            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} />
         </section>
     )
 }
