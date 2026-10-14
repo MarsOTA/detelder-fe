@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
 import { NascitaResidenzaComponent } from "../components/NascitaResidenzaComponent";
 import { ContrattoChiamataComponent } from "../components/ContrattoChiamataComponent";
+import { ContrattoAttivoHR } from "../components/ContrattoAttivoHR";
 import { ContrattoOccasionaleComponent } from "../components/ContrattoOccasionaleComponent";
 import { ConsegnaBeniFormazioneComponent } from "../components/ConsegnaBeniFormazioneComponent";
 import { DatiGeneraliComponent } from "../components/DatiGeneraliComponent";
@@ -1703,11 +1704,7 @@ const DettaglioOperatore = () => {
                 </TabsContent>
 
                 <TabsContent value="contratti">
-                    <section className="mb-5 rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-5">
-                      <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-xl font-bold text-[#007a55]">Contratto attivo</h2>{(() => { const c=contratti.find(c=>c.dataInizio && c.dataInizio.slice(0,10)<=new Date().toISOString().slice(0,10) && (!c.dataFine || c.dataFine.slice(0,10)>=new Date().toISOString().slice(0,10)));return <span className="rounded-full bg-white px-3 py-1 text-sm font-medium">{c?"In corso":"Nessun contratto attivo"}</span>; })()}</div>
-                      {(() => { const c=contratti.find(c=>c.dataInizio && c.dataInizio.slice(0,10)<=new Date().toISOString().slice(0,10) && (!c.dataFine || c.dataFine.slice(0,10)>=new Date().toISOString().slice(0,10)));if(!c) return <p className="text-sm text-gray-600">Non risultano contratti attivi nel periodo corrente.</p>;return <div className="grid gap-3 rounded-lg bg-white p-4 md:grid-cols-3">{[["Datore di lavoro","Non disponibile"],["Tipo contratto",c.tipologia.replace(/_/g," ")],["Paga oraria diurna","Non disponibile"],["Paga oraria notturna","Non disponibile"],["Codice comunicazione UNILAV","Non disponibile"],["Validità",`${c.dataInizio?.slice(0,10)||"—"} → ${c.dataFine?.slice(0,10)||"Indeterminata"}`]].map(([label,value])=><div key={label} className="border-r border-gray-100 pr-3"><div className="text-xs text-gray-500">{label}</div><div className="mt-1 text-sm font-semibold">{value}</div></div>)}</div>; })()}
-                      <p className="mt-2 text-xs text-gray-500">Datore di lavoro, paga oraria e codice UNILAV non sono ancora esposti dall’API contratti: nessun valore viene inventato.</p>
-                    </section>
+                    <ContrattoAttivoHR contratti={contratti} idOperatore={id} />
                     <div>
                         <Table>
                             <TableHeader>
@@ -1733,13 +1730,13 @@ const DettaglioOperatore = () => {
                                                 <>
                                                     <button
                                                         onClick={() => dowloadPdf(contratto.idContratto, "contrattoFirmato")}
-                                                        className="cursor-pointer text-[#007a55]"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]"
                                                         title="Scarica contratto firmato"
                                                     >
-                                                        <View className="mr-2 h-4 w-4" />
+                                                        <View className="h-4 w-4" />
                                                     </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="cursor-pointer">
-                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </>
 
@@ -1765,10 +1762,10 @@ const DettaglioOperatore = () => {
                                                         className="cursor-pointer text-[#007a55]"
                                                         title="Scarica unilav"
                                                     >
-                                                        <View className="mr-2 h-4 w-4" />
+                                                        <View className="h-4 w-4" />
                                                     </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="cursor-pointer">
-                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </>
 
@@ -1791,12 +1788,12 @@ const DettaglioOperatore = () => {
                                             {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
                                                 contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
                                                     <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="cursor-pointer">
-                                                        <View className="mr-2 h-4 w-4" />
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <View className="h-4 w-4" />
                                                     </button>
                                                 )}
-                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="cursor-pointer">
-                                                <Trash2 className="mr-2 h-4 w-4" />
+                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                <Trash2 className="h-4 w-4" />
                                             </button>
                                         </TableCell>
                                     </TableRow>
