@@ -1741,12 +1741,12 @@ const DettaglioOperatore = () => {
                                                 <>
                                                     <button
                                                         onClick={() => dowloadPdf(contratto.idContratto, "contrattoFirmato")}
-                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]"
+                                                        className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]"
                                                         title="Scarica contratto firmato"
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </>
@@ -1775,7 +1775,7 @@ const DettaglioOperatore = () => {
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </>
@@ -1795,15 +1795,15 @@ const DettaglioOperatore = () => {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {contratto.tipologia === "CHIAMATA" && <span className="mr-2 inline-flex items-center gap-2 align-middle"><button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
+                                            {contratto.tipologia === "CHIAMATA" && <span className="mr-2 inline-flex items-center gap-2 align-middle"><button type="button" className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
                                             {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
                                                 contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
                                                     <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
                                                         <Eye className="h-4 w-4" />
                                                     </button>
                                                 )}
-                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] text-[#315e51] hover:bg-[#ecf3f1]">
+                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
                                         </TableCell>
