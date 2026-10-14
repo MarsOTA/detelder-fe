@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Sparkles, CircleAlert } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 
-type Operatore = { id: number; nome: string; cognome: string; ruolo?: string; stato?: string; codiceFiscale?: string };
+type Operatore = { id: number; nome: string; cognome: string; ruolo?: string; stato?: string; codiceFiscale?: string; codice_fiscale?: string };
 type Contratto = { idContratto: number; tipologia: string; dataInizio: string | null; dataFine: string | null; pathContrattoFirmato?: string | null; pathContrattoUnilav?: string | null };
 type Turno = { idTurno?: number; idOperatore?: number | null; dataTurno?: string; oraInizio?: string; oraFine?: string; statoTurno?: string; nomeEvento?: string; operatore?: string };
 type Riga = { operatore: Operatore; contratti: Contratto[]; turni: Turno[]; prossimoTurno: string | null; criticita: string; priorita: number };
@@ -24,7 +24,7 @@ function valuta(o: Operatore, contratti: Contratto[], turni: Turno[]): Riga {
   const validiOggi = contratti.some(c => copre(c,today()));
   const mancante = !contratti.some(c => isLavoro(c.tipologia));
   const attivo=contratti.find(c=>copre(c,today()));
-  const criticita = !o.codiceFiscale?.trim() ? "CF mancante" : mancante ? "Contratto assente" : scoperti.length ? "Turno senza copertura" : !validiOggi ? "Contratto scaduto o futuro" : attivo&&!attivo.pathContrattoUnilav ? "UNILAV mancante" : "Regolare sui dati disponibili";
+  const criticita = !(o.codiceFiscale || o.codice_fiscale)?.trim() ? "CF mancante" : mancante ? "Contratto assente" : scoperti.length ? "Turno senza copertura" : !validiOggi ? "Contratto scaduto o futuro" : attivo&&!attivo.pathContrattoUnilav ? "UNILAV mancante" : "Regolare sui dati disponibili";
   const prossimoTurno = futuri[0]?.dataTurno ? iso(futuri[0].dataTurno) : null;
   const priorita = prossimoTurno ? Math.max(0, Math.floor((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(today()+"T12:00:00"))/86400000)) : 999999;
   return { operatore:o,contratti,turni,prossimoTurno,criticita,priorita };
