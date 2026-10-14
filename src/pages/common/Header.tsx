@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarSync,
   BookmarkCheck,
+  ClipboardCheck,
   Users,
   UserRoundCheck,
   Factory,
@@ -72,6 +73,7 @@ const Header = () => {
     { label: "Operatori", to: "/admin/operatori", active: isOperatoriActive, icon: Users },
     { label: "Clienti", to: "/admin/clienti", active: location.pathname === "/admin/clienti", icon: Factory },
     { label: "Payroll", to: "/admin/payroll", active: location.pathname === "/admin/payroll", icon: ReceiptEuro },
+    { label: "HR", to: "/admin/modulo-hr", active: location.pathname === "/admin/modulo-hr", icon: ClipboardCheck },
   ];
 
   return (
