@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 
@@ -35,6 +35,7 @@ export default function ModuloHR() {
   const [ricerca,setRicerca] = useState("");
   const [soloAnomalie,setSoloAnomalie] = useState(false);
   const [selezionato,setSelezionato] = useState<number|null>(null);
+  const [espanso,setEspanso] = useState<number|null>(null);
   const [scelte,setScelte] = useState<Record<number,Scelta>>({});
   const [progress,setProgress] = useState("");
   const [turniSenzaOperatore,setTurniSenzaOperatore] = useState(0);
@@ -76,7 +77,17 @@ export default function ModuloHR() {
     </div>
     <div className="rounded-lg border bg-white p-4"><div className="mb-3 flex flex-wrap gap-3 items-center justify-between"><input className="rounded border px-3 py-2" placeholder="Cerca operatore" value={ricerca} onChange={e=>setRicerca(e.target.value)}/><label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={soloAnomalie} onChange={e=>setSoloAnomalie(e.target.checked)}/> Solo posizioni da verificare</label></div>
     <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-gray-100 text-left"><th className="p-3">Operatore</th><th className="p-3">Turni assegnati</th><th className="p-3">Prossimo turno</th><th className="p-3">Esito controllo</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
-    {visibili.map(r=><tr key={r.operatore.id} className="border-b"><td className="p-3 font-semibold">{r.operatore.cognome} {r.operatore.nome}</td><td className="p-3">{r.turni.length}</td><td className="p-3">{r.prossimoTurno||"Nessun turno futuro"}</td><td className="p-3">{r.criticita}</td><td className="p-3">{r.priorita===999999?"Da verificare":r.priorita===0?"Oggi":`Tra ${r.priorita} giorni`}</td><td className="p-3"><button onClick={()=>setSelezionato(r.operatore.id)} className="text-[#007a55] underline">Valuta contratto</button></td></tr>)}
+    {visibili.map(r=><Fragment key={r.operatore.id}>
+      <tr className="border-b">
+        <td className="p-3 font-semibold"><button className="mr-2 text-[#007a55]" aria-label={espanso===r.operatore.id?"Chiudi dettagli operatore":"Apri dettagli operatore"} aria-expanded={espanso===r.operatore.id} onClick={()=>setEspanso(v=>v===r.operatore.id?null:r.operatore.id)}>{espanso===r.operatore.id?"▾":"▸"}</button>{r.operatore.cognome} {r.operatore.nome}</td>
+        <td className="p-3">{r.turni.length}</td>
+        <td className="p-3">{r.prossimoTurno||"Nessun turno futuro"}</td>
+        <td className="p-3">{r.criticita}</td>
+        <td className="p-3">{r.priorita===999999?"Da verificare":r.priorita===0?"Oggi":`Tra ${r.priorita} giorni`}</td>
+        <td className="p-3"><div className="flex flex-wrap gap-3"><Link to={`/admin/dettaglio-operatore/${r.operatore.id}?tab=contratti`} className="rounded-md bg-[#007a55] px-3 py-2 text-sm text-white hover:bg-[#006449]">Vai ai contratti</Link><button onClick={()=>setSelezionato(r.operatore.id)} className="text-sm text-[#007a55] underline">Proponi contratto</button></div></td>
+      </tr>
+      {espanso===r.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={6} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati nei prossimi 90 giorni</h3>{r.turni.length?<div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th></tr></thead><tbody>{[...r.turni].sort((a,b)=>iso(a.dataTurno).localeCompare(iso(b.dataTurno))).map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{iso(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td></tr>)}</tbody></table></div>:<p className="text-sm text-gray-500">Nessun turno assegnato nel periodo.</p>}</div></td></tr>}
+    </Fragment>)}
     {!visibili.length&&<tr><td className="p-4 text-gray-500" colSpan={6}>Nessun risultato.</td></tr>}
     </tbody></table></div></div>
     {selezionato!==null&&scelto&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Assegna contratto" onClick={e=>e.stopPropagation()} className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl">
