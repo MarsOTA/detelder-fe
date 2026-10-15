@@ -20,6 +20,7 @@ import Timbrature from "./pages/admin/timbrature";
 import Payroll from "./pages/admin/payroll";
 import ModuloHR from "./pages/admin/moduloHR";
 import HRCoda from "./pages/admin/hrCoda";
+import HRRuoli from "./pages/admin/hrRuoli";
 
 import Unauthorized from "./pages/Unauthorized";
 
@@ -43,7 +44,8 @@ function App() {
           <Route path="/admin/turni" element={<Turni />} />          
           <Route path="/admin/crea-cliente" element={<CreaCliente />} />
           <Route path="/admin/payroll" element={<Payroll />} />
-          <Route path="/admin/modulo-hr" element={<ModuloHR />} />  
+          <Route path="/admin/modulo-hr" element={<ModuloHR />} />
+          <Route path="/admin/hr-ruoli" element={<HRRuoli />} />  
           <Route path="/admin/gestione-turni/:id" element={<GetsioneTurni />} />
           <Route path="/admin/gestione-turni/:id/:dataTurno" element={<GetsioneTurni />} />
           <Route path="/admin/dettaglio-operatore/:id" element={<DettaglioOperatore />} />
