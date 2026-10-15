@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { listaChiamateHR, leggiDatoreIntermittenti } from "@/utils/chiamateHR";
+import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import type { DatoreIntermittenti } from "@/utils/chiamateHR";
 import type { ChiamataHR } from "@/utils/chiamateHR";
 
@@ -55,7 +55,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
 export default function ModuloHR(){
  const navigate=useNavigate();
  const [righe,setRighe]=useState<Riga[]>([]);
- const [datoreHR,setDatoreHR]=useState<DatoreIntermittenti|null>(null);
+ const [datoreHR,setDatoreHR]=useState<DatoreIntermittenti>(DATORE_DETELDER_DEFAULT);
  const [loading,setLoading]=useState(false);
  const [errore,setErrore]=useState("");
  const [ricerca,setRicerca]=useState("");
@@ -70,7 +70,7 @@ export default function ModuloHR(){
    const inizio=oggi(),fine=new Date();fine.setDate(fine.getDate()+90);
    const dataFine=[fine.getFullYear(),String(fine.getMonth()+1).padStart(2,"0"),String(fine.getDate()).padStart(2,"0")].join("-");
    const [operatori,turni]=await Promise.all([api<Operatore[]>("operatori"),api<Turno[]>(`turni?dataInizio=${inizio}&dataFine=${dataFine}`)]);
-   const datore=await leggiDatoreIntermittenti().catch(()=>null);
+   const datore=await leggiDatoreIntermittenti().catch(()=>DATORE_DETELDER_DEFAULT);
    setDatoreHR(datore);
    if(!Array.isArray(operatori)||!Array.isArray(turni))throw new Error("Risposta API non valida");
    const persone=operatori.filter(o=>!o.ruolo||o.ruolo==="OPERATORE"),dati:Riga[]=[];
@@ -102,8 +102,8 @@ export default function ModuloHR(){
   ...(!(r.operatore.codiceFiscale||r.operatore.codice_fiscale)?.trim()?["Codice fiscale"]:[]),
   ...(richiedePadre?["Contratto a chiamata padre valido"]:[]),
   ...(padre&&!padre.pathContrattoUnilav?["Documento UNILAV"]:[]),
-  ...(padre&&!datoreHR?.codiceFiscale?["Codice fiscale datore di lavoro"]:[]),
-  ...(padre&&!datoreHR?.email?["Email datore di lavoro"]:[]),
+  ...(padre&&!datoreHR.codiceFiscale?["Codice fiscale datore di lavoro"]:[]),
+  ...(padre&&!datoreHR.email?["Email datore di lavoro"]:[]),
   ...(!periodo?["Turni futuri da programmare"]:[])
  ]:[];
  const pronti=!!r&&!richiedePadre&&requisiti.length===0;
