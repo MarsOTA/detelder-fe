@@ -82,7 +82,7 @@ export default function Login() {
       const hrIdentity=await hrMe().catch(()=>null);
       if(hrIdentity?.role === 'HR'){
         navigate('/hr');
-      } else if (data.dipendente.ruolo === 'ADMIN') {
+      } else if(hrIdentity?.role === 'ADMIN' || data.dipendente.ruolo === 'ADMIN'){
         navigate('/admin/turni');
       } else if (data.dipendente.ruolo === 'OPERATORE') {
         navigate('/operator');
