@@ -61,6 +61,7 @@ export default function ModuloHR(){
  const [ricerca,setRicerca]=useState("");
  const [espanso,setEspanso]=useState<number|null>(null);
  const [selezionato,setSelezionato]=useState<number|null>(null);
+ const [dateModificate,setDateModificate]=useState<Record<number,{inizio:string;fine:string}>>({});
  const [progress,setProgress]=useState("");
  const [inlineHR,setInlineHR]=useState<Record<number,{datore:string;tipo:string}>>({});
  const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>({...prev,[id]:{...(prev[id]??{datore:"DETELDER",tipo:""}),[k]:value}}));
@@ -95,9 +96,12 @@ export default function ModuloHR(){
  const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Regolare"),[righe]);
  const visibili=useMemo(()=>irregolari.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())).sort((a,b)=>a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[irregolari,ricerca]);
  const r=selezionato===null?null:righe.find(x=>x.operatore.id===selezionato)||null;
- const periodo=r?.turni.length?{inizio:iso(r.turni[0].dataTurno),fine:iso(r.turni[r.turni.length-1].dataTurno)}:null;
+ const dateTurni=r?.turni.length?{inizio:iso(r.turni[0].dataTurno),fine:iso(r.turni[r.turni.length-1].dataTurno)}:null;
+ const periodo=r?(dateModificate[r.operatore.id]??dateTurni):null;
  const padre=r?.contratti.find(c=>c.tipologia==="CHIAMATA"&&periodo&&copre(c,periodo.inizio));
  const richiedePadre=!padre;
+ const dateValide=!!periodo&&Boolean(periodo.inizio)&&Boolean(periodo.fine)&&periodo.inizio<=periodo.fine;
+ const dentroContratto=!!padre&&!!periodo&&periodo.inizio>=iso(padre.dataInizio)&&(!padre.dataFine||periodo.fine<=iso(padre.dataFine));
  const requisiti=r?[
   ...(!(r.operatore.codiceFiscale||r.operatore.codice_fiscale)?.trim()?["Codice fiscale"]:[]),
   ...(richiedePadre?["Contratto a chiamata padre valido"]:[]),
@@ -106,10 +110,10 @@ export default function ModuloHR(){
   ...(padre&&!datoreHR.email?["Email datore di lavoro"]:[]),
   ...(!periodo?["Turni futuri da programmare"]:[])
  ]:[];
- const pronti=!!r&&!richiedePadre&&requisiti.length===0;
+ const pronti=!!r&&!richiedePadre&&requisiti.length===0&&dateValide&&dentroContratto;
  const vaiContratti=(id:number,prepara=false)=>{
   const p=new URLSearchParams({tab:"contratti"});
-  if(prepara&&padre&&periodo){p.set("azione","chiamata");p.set("contratto",String(padre.idContratto));p.set("inizio",periodo.inizio);p.set("fine",periodo.fine);}
+  if(prepara&&padre&&periodo&&pronti){p.set("azione","chiamata");p.set("contratto",String(padre.idContratto));p.set("inizio",periodo.inizio);p.set("fine",periodo.fine);}
   navigate(`/admin/dettaglio-operatore/${id}?${p.toString()}`);
  };
  return <main className="m-6 space-y-5">
@@ -139,8 +143,8 @@ export default function ModuloHR(){
    <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold">Azione proposta</h2><p className="text-sm text-gray-500">{r.operatore.nome} {r.operatore.cognome}</p></div><button aria-label="Chiudi" onClick={()=>setSelezionato(null)}><X className="h-5 w-5"/></button></div>
    <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-4"><div className="flex items-center gap-2 font-semibold text-[#007a55]"><Sparkles className="h-5 w-5"/>{richiedePadre?"Crea contratto a chiamata padre":"Crea chiamata intermittente"}</div><p className="mt-1 text-sm text-gray-600">{richiedePadre?"Occorre creare o aggiornare il contratto padre prima di comunicare una chiamata.":"Contratto padre individuato. La chiamata va verificata, generata e inviata tramite PEC."}</p></div>
    <div><div className="mb-2 text-sm font-semibold">Requisiti: {pronti?"soddisfatti":"incompleti"}</div>{requisiti.length?<div className="flex flex-wrap gap-2">{requisiti.map(x=><span key={x} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">{x}</span>)}</div>:<span className="inline-flex items-center gap-1 text-sm text-emerald-700"><CheckCircle2 className="h-4 w-4"/>Dati necessari presenti</span>}</div>
-   {periodo&&<div className="grid grid-cols-2 gap-3 rounded-lg border p-3 text-sm"><div><span className="text-gray-500">Data inizio proposta</span><div className="font-semibold">{formatData(periodo.inizio)}</div></div><div><span className="text-gray-500">Data fine proposta</span><div className="font-semibold">{formatData(periodo.fine)}</div></div></div>}
-   {pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)}>INVIA PEC</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>REGOLARIZZA DOCUMENTAZIONE</button>}
+   {periodo&&<div className="grid grid-cols-2 gap-3 rounded-lg border p-3 text-sm"><label><span className="text-gray-500">Data inizio proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo.inizio} min={padre?iso(padre.dataInizio):undefined} max={padre?iso(padre.dataFine):undefined} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{...periodo,inizio:e.target.value}}))}/></label><label><span className="text-gray-500">Data fine proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo.fine} min={padre?iso(padre.dataInizio):undefined} max={padre?iso(padre.dataFine):undefined} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{...periodo,fine:e.target.value}}))}/></label></div>}
+   {pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)} disabled={!dateValide||!dentroContratto}>INVIA PEC</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>REGOLARIZZA DOCUMENTAZIONE</button>}
    <p className="text-xs text-gray-500">INVIA PEC apre il flusso di preparazione e verifica nella tab Contratti; non effettua l'invio automaticamente. Le date sono proposte sulla base dei turni, da verificare prima della comunicazione.</p>
   </section></div>}
   <p className="text-xs text-amber-700">Le selezioni inline sono provvisorie e non vengono ancora salvate su Aiven. La presenza del contratto padre non certifica l'avvenuto invio delle chiamate.</p>
