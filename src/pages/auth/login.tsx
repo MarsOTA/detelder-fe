@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
+import { hrMe } from "@/utils/hrWorkflow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -77,7 +78,11 @@ export default function Login() {
       localStorage.setItem('idOperatore', String(data.dipendente.id));
       localStorage.setItem('operatoreLoggato', `${data.dipendente.nome} ${data.dipendente.cognome}`);
 
-      if (data.dipendente.ruolo === 'ADMIN') {
+      // The HR role is maintained server-side and may be assigned to existing accounts.
+      const hrIdentity=await hrMe().catch(()=>null);
+      if(hrIdentity?.role === 'HR'){
+        navigate('/hr');
+      } else if (data.dipendente.ruolo === 'ADMIN') {
         navigate('/admin/turni');
       } else if (data.dipendente.ruolo === 'OPERATORE') {
         navigate('/operator');
