@@ -19,6 +19,7 @@ import ProgrammazioneEvento from "./pages/admin/programmazioneEvento";
 import Timbrature from "./pages/admin/timbrature";
 import Payroll from "./pages/admin/payroll";
 import ModuloHR from "./pages/admin/moduloHR";
+import HRCoda from "./pages/admin/hrCoda";
 
 import Unauthorized from "./pages/Unauthorized";
 
@@ -49,6 +50,11 @@ function App() {
           <Route path="/admin/assegnaEvento-operatore/:id" element={<AssegnaOperatore />} />
           <Route path="/admin/timbrature-operatore/:id" element={<Timbrature />} />
           <Route path="/admin/programmazione-evento/:id" element={<ProgrammazioneEvento />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRole="HR" />}>
+          <Route path="/hr" element={<HRCoda />} />
+          <Route path="/hr/operatore/:id" element={<DettaglioOperatore />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="OPERATORE" />}>
