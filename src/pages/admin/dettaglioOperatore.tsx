@@ -237,6 +237,21 @@ const DettaglioOperatore = () => {
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
+    const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
+    useEffect(()=>{
+      if(searchParams.get("azione")!=="chiamata"||!id||!contratti.length)return;
+      const requested=Number(searchParams.get("contratto"));
+      const c=contratti.find(item=>item.idContratto===requested&&item.tipologia==="CHIAMATA");
+      if(!c||!c.dataInizio||!c.dataFine)return;
+      const inizio=searchParams.get("inizio")||"";
+      const fine=searchParams.get("fine")||inizio;
+      const dal=c.dataInizio.slice(0,10),al=c.dataFine.slice(0,10);
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(inizio)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(fine)||inizio<dal||fine>al||fine<inizio)return;
+      setContrattoPadre({idContratto:c.idContratto,tipologia:"CHIAMATA",dataInizio:dal,dataFine:al});
+      setDateProposta({inizio,fine});
+      setNuovaChiamataOpen(true);
+    },[id,contratti,searchParams]);
+
     const [chiamateCounts,setChiamateCounts] = useState<Record<number,number>>({});
     const aggiornaChiamate = async () => {
       if(!id)return;
@@ -2403,7 +2418,7 @@ const DettaglioOperatore = () => {
                 </TabsContent>
             </Tabs>
             <IntermittentiDialog open={archivioChiamateOpen} setOpen={setArchivioChiamateOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onUpdated={()=>void aggiornaChiamate()} />
-            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onSaved={()=>void aggiornaChiamate()} />
+            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onSaved={()=>void aggiornaChiamate()} dataInizioProposta={dateProposta?.inizio} dataFineProposta={dateProposta?.fine} />
         </section>
     )
 }
