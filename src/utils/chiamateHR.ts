@@ -18,5 +18,7 @@ export const salvaChiamataHR=(op:number,contratto:number,dataInizio:string,dataF
 export const aggiornaEsitoChiamataHR=(op:number,contratto:number,id:number,stato:"PEC_PREPARATA"|"INVIATA",esitoInvio?:string)=>request<{ok:boolean}>(base(op,contratto)+"/"+id,{method:"PATCH",body:JSON.stringify({stato,esitoInvio})});
 
 export type DatoreIntermittenti = {codiceFiscale:string;email:string};
+// Valori DETELDER confermati dall'amministratore; modificabili tramite API.
+export const DATORE_DETELDER_DEFAULT: DatoreIntermittenti = {codiceFiscale:"13066390967",email:"info@detelder.com"};
 export const leggiDatoreIntermittenti=()=>request<DatoreIntermittenti>("chiamate-hr/config/datore");
 export const salvaDatoreIntermittenti=(codiceFiscale:string,email:string)=>request<DatoreIntermittenti>("chiamate-hr/config/datore",{method:"PUT",body:JSON.stringify({codiceFiscale,email})});
