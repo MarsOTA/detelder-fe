@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { salvaChiamataHR, aggiornaEsitoChiamataHR } from "@/utils/chiamateHR";
+import { salvaChiamataHR, aggiornaEsitoChiamataHR, leggiDatoreIntermittenti, salvaDatoreIntermittenti } from "@/utils/chiamateHR";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,6 +63,37 @@ export const NuovaChiamataIntermittenteDialog = ({
   const [salvatoId,setSalvatoId] = useState<number | null>(null);
   const [salvando,setSalvando] = useState(false);
   const [destinatarioPEC,setDestinatarioPEC] = useState("");
+  const [datoreSalvato,setDatoreSalvato] = useState(false);
+  const [salvandoDatore,setSalvandoDatore] = useState(false);
+  const [caricamentoDatore,setCaricamentoDatore] = useState(false);
+  const [messaggioDatore,setMessaggioDatore] = useState("");
+
+  useEffect(()=>{
+    if(!open)return;
+    let active=true;
+    setCaricamentoDatore(true);
+    setDatoreSalvato(false);
+    setMessaggioDatore("");
+    void leggiDatoreIntermittenti().then(d=>{
+      if(!active)return;
+      setCfDatore(d.codiceFiscale||"");
+      setEmailDatore(d.email||"");
+      setDatoreSalvato(!!d.codiceFiscale&&!!d.email);
+    }).catch(e=>{if(active)setMessaggioDatore(e instanceof Error?e.message:"Impossibile caricare i dati del datore");}).finally(()=>{if(active)setCaricamentoDatore(false);});
+    return ()=>{active=false;};
+  },[open]);
+
+  const registraDatore=async()=>{
+    setSalvandoDatore(true);setMessaggioDatore("");
+    try{
+      const salvati=await salvaDatoreIntermittenti(cfDatore,emailDatore);
+      setCfDatore(salvati.codiceFiscale);
+      setEmailDatore(salvati.email);
+      setDatoreSalvato(true);
+      setMessaggioDatore("Dati datore salvati su Aiven: saranno già compilati nelle chiamate successive.");
+    }catch(e){setMessaggioDatore(e instanceof Error?e.message:"Impossibile salvare i dati datore");}
+    finally{setSalvandoDatore(false);}
+  };
 
   const periodoPadre = useMemo(() => {
     if (!contrattoPadre) return "";
@@ -89,6 +120,7 @@ export const NuovaChiamataIntermittenteDialog = ({
       setXmlGenerato("");
       setErrore("");
       setSalvatoId(null);
+      setDestinatarioPEC("");
     }
   }, [open]);
 
@@ -126,6 +158,10 @@ export const NuovaChiamataIntermittenteDialog = ({
       return;
     }
 
+    if(!datoreSalvato){
+      setErrore("Salva prima il codice fiscale e l’email del datore: verranno riutilizzati nelle chiamate successive.");
+      return;
+    }
     try {
       const xml = generaUniIntermittentiXml({
         cfDatore,
@@ -227,6 +263,7 @@ export const NuovaChiamataIntermittenteDialog = ({
                     value={cfDatore}
                     onChange={(event) => {
                       setCfDatore(event.target.value);
+                      setDatoreSalvato(false);
                       invalidaXml();
                     }}
                   />
@@ -238,6 +275,7 @@ export const NuovaChiamataIntermittenteDialog = ({
                     value={emailDatore}
                     onChange={(event) => {
                       setEmailDatore(event.target.value);
+                      setDatoreSalvato(false);
                       invalidaXml();
                     }}
                   />
@@ -280,6 +318,13 @@ export const NuovaChiamataIntermittenteDialog = ({
                   />
                 </label>
               </div>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Button type="button" variant="outline" onClick={()=>void registraDatore()} disabled={salvandoDatore||caricamentoDatore||datoreSalvato}>
+                  {caricamentoDatore?"Caricamento dati…":salvandoDatore?"Salvataggio…":datoreSalvato?"Dati datore memorizzati":"Salva dati datore"}
+                </Button>
+                <span className="text-xs text-gray-600">Configurazione condivisa tra le chiamate e gli operatori.</span>
+              </div>
+              {messaggioDatore&&<p role="status" className="mt-2 text-sm text-[#315e51]">{messaggioDatore}</p>}
 
               <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm">
                 <input
