@@ -123,6 +123,9 @@ const Header = () => {
               <ClipboardCheck className="mr-2 h-4 w-4" /> HR
             </Button>
           </Link>
+          <Link to="/admin/hr-ruoli">
+            <Button variant="outline" className="border border-[#a5e8cf] bg-[#313131] text-white hover:bg-[#313131] hover:text-[#a5e8cf]">Ruoli HR</Button>
+          </Link>
           <Link to="/admin/payroll">
             <Button variant={(location.pathname === "/admin/payroll") ? "default" : "outline"}
               className={`cursor-pointer border border-[#a5e8cf] bg-[#313131] hover:border-[#a5e8cf] hover:bg-[#313131] 
