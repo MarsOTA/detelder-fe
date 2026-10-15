@@ -4,6 +4,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 //import { useAuth } from './AuthContext';
 import HeaderOperatore from './pages/common/HeaderOperatore';
 import Header from './pages/common/Header';
+import HeaderHR from './pages/common/HeaderHR';
 import { ezystaffBEUrl } from './utils/baseUrl';
 import { hrMe } from './utils/hrWorkflow';
 
@@ -99,7 +100,9 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   let HeaderComponent = null;
   if (ruolo === 'OPERATORE') {
     HeaderComponent = HeaderOperatore;
-  } else if (ruolo === 'ADMIN' || allowedRole === 'HR') {
+  } else if (allowedRole === 'HR') {
+    HeaderComponent = HeaderHR;
+  } else if (ruolo === 'ADMIN') {
     HeaderComponent = Header;
   }
 
