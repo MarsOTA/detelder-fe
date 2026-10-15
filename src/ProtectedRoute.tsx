@@ -92,7 +92,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   }
 
   
-  if (allowedRole === 'OPERATORE' ? ruolo !== 'OPERATORE' : serverHRRole !== allowedRole) {
+  if (allowedRole === 'OPERATORE' ? ruolo !== 'OPERATORE' : allowedRole === 'ADMIN' ? !(serverHRRole === 'ADMIN' || ruolo === 'ADMIN') : serverHRRole !== 'HR') {
     return <Navigate to="/unauthorized" replace />;
   }
     
