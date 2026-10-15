@@ -246,7 +246,7 @@ const DettaglioOperatore = () => {
       const inizio=searchParams.get("inizio")||"";
       const fine=searchParams.get("fine")||inizio;
       const dal=c.dataInizio.slice(0,10),al=c.dataFine.slice(0,10);
-      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(inizio)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(fine)||inizio<dal||fine>al||fine<inizio)return;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(inizio)||!/^\d{4}-\d{2}-\d{2}$/.test(fine)||inizio<dal||fine>al||fine<inizio)return;
       setContrattoPadre({idContratto:c.idContratto,tipologia:"CHIAMATA",dataInizio:dal,dataFine:al});
       setDateProposta({inizio,fine});
       setNuovaChiamataOpen(true);
