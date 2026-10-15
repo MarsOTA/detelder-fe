@@ -6,6 +6,8 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
+import { hrPratiche } from "@/utils/hrWorkflow";
+import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -235,6 +237,17 @@ const DettaglioOperatore = () => {
     const [contratti, setContratti] = useState<Contratto[]>([]);
     const [vistaContratti,setVistaContratti] = useState<"attivo"|"storico">("attivo");
     const [searchParams] = useSearchParams();
+    const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
+    useEffect(()=>{
+      const praticaId=Number(searchParams.get("pratica"));
+      if(!praticaId||!id||!window.location.pathname.startsWith("/hr/"))return;
+      let active=true;
+      void hrPratiche().then(rows=>{
+        if(active)setPraticaHR(rows.find(p=>p.id===praticaId&&p.idOperatore===Number(id))||null);
+      }).catch(()=>{if(active)setPraticaHR(null)});
+      return ()=>{active=false};
+    },[id,searchParams]);
+
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
@@ -1736,7 +1749,7 @@ const DettaglioOperatore = () => {
                       <button type="button" onClick={()=>setVistaContratti("storico")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="storico"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Storico contratti</button>
                     </div>
                     {vistaContratti==="attivo" && <>
-                    <ContrattoAttivoHR contratti={contratti} idOperatore={id} />
+                    <ContrattoAttivoHR contratti={contratti} idOperatore={id} pratica={praticaHR} />
                     </>}
                     {vistaContratti==="storico" && <div>
                         <h2 className="mb-3 text-lg font-bold text-[#007a55]">Storico contratti</h2>
