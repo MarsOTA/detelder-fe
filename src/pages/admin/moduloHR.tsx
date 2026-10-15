@@ -136,7 +136,7 @@ export default function ModuloHR(){
   navigate(`/admin/dettaglio-operatore/${id}?${p.toString()}`);
  };
  return <main className="m-6 space-y-5">
-  <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-extrabold text-[#007a55]">HR · Operatori da regolarizzare</h1><p className="text-sm text-gray-500">Operatori con criticità, ordinati in base al prossimo turno</p></div><button className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50" onClick={()=>void carica()} disabled={loading}>{loading?"Caricamento…":"Aggiorna dati"}</button></div>
+  <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-extrabold text-[#007a55]">ADMIN · Assegnazione contratti</h1><p className="text-sm text-gray-500">Scegli tipologia e datore, poi assegna la pratica alla coda HR.</p></div><button className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50" onClick={()=>void carica()} disabled={loading}>{loading?"Caricamento…":"Aggiorna dati"}</button></div>
   {errore&&<div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-red-800">{errore}</div>}
   {progress&&<p className="text-sm text-gray-500">{progress}</p>}
   <div className="grid gap-4 sm:grid-cols-2">
