@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, AlertCircle, CheckCircle2, CalendarClock, X } from "lucide-react";
+import { Sparkles, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 
 type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFiscale?:string;codice_fiscale?:string };
@@ -23,7 +23,6 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[]):Riga {
  const prossimoTurno=futuri.length?iso(futuri[0].dataTurno):null;
  const priorita=prossimoTurno?Math.max(0,Math.round((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000)):999999;
  const riferimento=prossimoTurno||oggi();
- const padre=contratti.find(c=>c.tipologia==="CHIAMATA"&&copre(c,riferimento));
  const altri=contratti.find(c=>copre(c,riferimento));
  const scaduti=contratti.filter(c=>tipoLavoro(c.tipologia)&&!!c.dataFine&&iso(c.dataFine)<riferimento);
  const isScaduto=!!prossimoTurno&&!altri&&scaduti.length>0;
