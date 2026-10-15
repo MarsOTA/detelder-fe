@@ -2,12 +2,15 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
+import { listaChiamateHR } from "@/utils/chiamateHR";
+import type { ChiamataHR } from "@/utils/chiamateHR";
 
 type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFiscale?:string;codice_fiscale?:string };
 type Contratto = {idContratto:number;tipologia:string;dataInizio:string|null;dataFine:string|null;pathContrattoUnilav?:string|null;cfDatore?:string;emailDatore?:string};
 type Turno = {idTurno?:number;idOperatore?:number|null;dataTurno?:string;oraInizio?:string;oraFine?:string;nomeEvento?:string;via?:string};
 type Stato = "Regolare" | "Incompleto" | "Scaduto";
 type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;stato:Stato;motivi:string[]};
+type ArchivioChiamate = Record<number,ChiamataHR[] | null>;
 const oggi=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
 const iso=(v?:string|null)=>v?String(v).slice(0,10):"";
 const formatData=(v?:string|null)=>{const s=iso(v);return s.length===10?s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(2,4):"—";};
@@ -18,7 +21,7 @@ async function api<T>(path:string):Promise<T>{
  if(!response.ok)throw new Error(`Errore API ${response.status}: ${path}`);
  return response.json() as Promise<T>;
 }
-function valuta(o:Operatore,contratti:Contratto[],turni:Turno[]):Riga {
+function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:ArchivioChiamate):Riga {
  const futuri=turni.filter(t=>iso(t.dataTurno)>=oggi()&&!!t.dataTurno).sort((a,b)=>iso(a.dataTurno).localeCompare(iso(b.dataTurno)));
  const prossimoTurno=futuri.length?iso(futuri[0].dataTurno):null;
  const priorita=prossimoTurno?Math.max(0,Math.round((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000)):999999;
@@ -31,6 +34,18 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[]):Riga {
  if(!cf?.trim())motivi.push("Codice fiscale");
  if(!altri)motivi.push(isScaduto?"Contratto scaduto":"Contratto padre / inquadramento");
  if(altri&&!altri.pathContrattoUnilav)motivi.push("Documento UNILAV");
+ // La chiamata figlia deve coprire la data del turno ed essere dichiarata INVIATA:
+ // BOZZA e PEC_PREPARATA non sono conferme dell'invio.
+ const chiamateMancanti=futuri.filter(t=>{
+  const data=iso(t.dataTurno);
+  const padreTurno=contratti.find(c=>c.tipologia==="CHIAMATA"&&copre(c,data));
+  if(!padreTurno)return false;
+  const lista=archivi[padreTurno.idContratto];
+  if(!lista)return true; // errore API: non dichiarare regolare la posizione
+  return !lista.some(ch=>ch.stato==="INVIATA"&&iso(ch.dataInizio)<=data&&iso(ch.dataFine)>=data);
+ });
+ if(chiamateMancanti.length)motivi.push(contratti.some(c=>c.tipologia==="CHIAMATA"&&archivi[c.idContratto]===null)?"Verifica chiamate non disponibile":"Chiamata intermittente non inviata");
+
  // La copertura del contratto padre non conferma l'esistenza di una chiamata figlia valida.
  // In assenza di un'API che colleghi le chiamate ai turni, non certificare la regolarità.
  const stato:Stato=isScaduto?"Scaduto":motivi.length?"Incompleto":"Regolare";
@@ -58,7 +73,14 @@ export default function ModuloHR(){
    for(let i=0;i<persone.length;i+=4){
     const batch=persone.slice(i,i+4);
     const contratti=await Promise.all(batch.map(o=>api<Contratto[]>(`operatori/listaContrattiOperatore/${o.id}`)));
-    batch.forEach((o,j)=>dati.push(valuta(o,Array.isArray(contratti[j])?contratti[j]:[],turni.filter(t=>Number(t.idOperatore)===Number(o.id)))));
+    const archivi=await Promise.all(batch.map(async(o,j)=>{
+      const perOperatore:ArchivioChiamate={};
+      const padri=Array.isArray(contratti[j])?contratti[j].filter(c=>c.tipologia==="CHIAMATA"):[];
+      const risultati=await Promise.allSettled(padri.map(c=>listaChiamateHR(o.id,c.idContratto)));
+      risultati.forEach((ris,k)=>{perOperatore[padri[k].idContratto]=ris.status==="fulfilled"?ris.value:null;});
+      return perOperatore;
+    }));
+    batch.forEach((o,j)=>dati.push(valuta(o,Array.isArray(contratti[j])?contratti[j]:[],turni.filter(t=>Number(t.idOperatore)===Number(o.id)),archivi[j])));
     setProgress(`Operatori analizzati ${Math.min(i+4,persone.length)}/${persone.length}`);
    }
    setRighe(dati);
