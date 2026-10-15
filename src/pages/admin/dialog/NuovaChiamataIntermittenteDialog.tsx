@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { salvaChiamataHR, aggiornaEsitoChiamataHR, leggiDatoreIntermittenti, salvaDatoreIntermittenti } from "@/utils/chiamateHR";
+import { salvaChiamataHR, aggiornaEsitoChiamataHR, leggiDatoreIntermittenti, salvaDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -52,8 +52,8 @@ export const NuovaChiamataIntermittenteDialog = ({
   dataInizioProposta,
   dataFineProposta,
 }: NuovaChiamataIntermittenteDialogProps) => {
-  const [cfDatore, setCfDatore] = useState("");
-  const [emailDatore, setEmailDatore] = useState("");
+  const [cfDatore, setCfDatore] = useState(DATORE_DETELDER_DEFAULT.codiceFiscale);
+  const [emailDatore, setEmailDatore] = useState(DATORE_DETELDER_DEFAULT.email);
   const [codiceComunicazione, setCodiceComunicazione] = useState("");
   const [dataInizio, setDataInizio] = useState("");
   const [dataFine, setDataFine] = useState("");
@@ -63,7 +63,7 @@ export const NuovaChiamataIntermittenteDialog = ({
   const [salvatoId,setSalvatoId] = useState<number | null>(null);
   const [salvando,setSalvando] = useState(false);
   const [destinatarioPEC,setDestinatarioPEC] = useState("");
-  const [datoreSalvato,setDatoreSalvato] = useState(false);
+  const [datoreSalvato,setDatoreSalvato] = useState(true);
   const [salvandoDatore,setSalvandoDatore] = useState(false);
   const [caricamentoDatore,setCaricamentoDatore] = useState(false);
   const [messaggioDatore,setMessaggioDatore] = useState("");
@@ -72,14 +72,16 @@ export const NuovaChiamataIntermittenteDialog = ({
     if(!open)return;
     let active=true;
     setCaricamentoDatore(true);
-    setDatoreSalvato(false);
+    setDatoreSalvato(true);
+    setCfDatore(DATORE_DETELDER_DEFAULT.codiceFiscale);
+    setEmailDatore(DATORE_DETELDER_DEFAULT.email);
     setMessaggioDatore("");
     void leggiDatoreIntermittenti().then(d=>{
       if(!active)return;
-      setCfDatore(d.codiceFiscale||"");
-      setEmailDatore(d.email||"");
-      setDatoreSalvato(!!d.codiceFiscale&&!!d.email);
-    }).catch(e=>{if(active)setMessaggioDatore(e instanceof Error?e.message:"Impossibile caricare i dati del datore");}).finally(()=>{if(active)setCaricamentoDatore(false);});
+      setCfDatore(d.codiceFiscale||DATORE_DETELDER_DEFAULT.codiceFiscale);
+      setEmailDatore(d.email||DATORE_DETELDER_DEFAULT.email);
+      setDatoreSalvato(true);
+    }).catch(e=>{if(active)setMessaggioDatore("Dati DETELDER preimpostati. La configurazione condivisa non è stata letta dal server: "+(e instanceof Error?e.message:"Errore di caricamento"));}).finally(()=>{if(active)setCaricamentoDatore(false);});
     return ()=>{active=false;};
   },[open]);
 
