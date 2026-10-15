@@ -5,9 +5,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import HeaderOperatore from './pages/common/HeaderOperatore';
 import Header from './pages/common/Header';
 import { ezystaffBEUrl } from './utils/baseUrl';
+import { hrMe } from './utils/hrWorkflow';
 
 interface ProtectedRouteProps {
-  allowedRole: 'ADMIN' | 'OPERATORE';
+  allowedRole: 'ADMIN' | 'OPERATORE' | 'HR';
 }
 
 export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
@@ -16,6 +17,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [serverHRRole,setServerHRRole]=useState<string|null>(null);
   //  const [userRole, setUserRole] = useState<'ADMIN' | 'OPERATORE'>();
     const location = useLocation();
 
@@ -28,6 +30,10 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
         const data = await res.json()
         console.log(data)
         setIsAuthenticated(data.ok)
+        if (data.ok && allowedRole === 'HR') {
+          const identity=await hrMe().catch(()=>null);
+          setServerHRRole(identity?.role??null);
+        }
        // setUserRole(data.role)
 
 
@@ -85,7 +91,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   }
 
   
-  if (ruolo !== allowedRole) {
+  if (allowedRole === 'HR' ? serverHRRole !== 'HR' : ruolo !== allowedRole) {
     return <Navigate to="/unauthorized" replace />;
   }
     
@@ -93,7 +99,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   let HeaderComponent = null;
   if (ruolo === 'OPERATORE') {
     HeaderComponent = HeaderOperatore;
-  } else if (ruolo === 'ADMIN') {
+  } else if (ruolo === 'ADMIN' || allowedRole === 'HR') {
     HeaderComponent = Header;
   }
 
