@@ -1836,7 +1836,7 @@ const DettaglioOperatore = () => {
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
+                    </div>}
 
 
                     {vistaContratti==="attivo" && window.location.pathname.startsWith("/hr/") && <div className="flex gap-3 items-stretch rounded-[10px] bg-[#ecf3f1] p-4 mt-6">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
