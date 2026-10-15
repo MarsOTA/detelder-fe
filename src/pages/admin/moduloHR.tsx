@@ -2,6 +2,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
+import { hrAssegna,hrPratiche } from "@/utils/hrWorkflow";
+import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import type { DatoreIntermittenti } from "@/utils/chiamateHR";
 import type { ChiamataHR } from "@/utils/chiamateHR";
@@ -55,6 +57,8 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
 export default function ModuloHR(){
  const navigate=useNavigate();
  const [righe,setRighe]=useState<Riga[]>([]);
+ const [assegnate,setAssegnate]=useState<HRPratica[]>([]);
+ const [assegnando,setAssegnando]=useState<number|null>(null);
  const [datoreHR,setDatoreHR]=useState<DatoreIntermittenti>(DATORE_DETELDER_DEFAULT);
  const [loading,setLoading]=useState(false);
  const [errore,setErrore]=useState("");
@@ -89,12 +93,27 @@ export default function ModuloHR(){
     setProgress(`Operatori analizzati ${Math.min(i+4,persone.length)}/${persone.length}`);
    }
    setRighe(dati);
+   setAssegnate(await hrPratiche());
   }catch(e){setErrore(e instanceof Error?e.message:"Errore caricamento HR");}
   finally{setLoading(false);setProgress("");}
  };
  useEffect(()=>{void carica();},[]);
  const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Regolare"),[righe]);
  const visibili=useMemo(()=>irregolari.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())).sort((a,b)=>a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[irregolari,ricerca]);
+ const inoltra=async(x:Riga)=>{
+  const tipo=inlineHR[x.operatore.id]?.tipo || x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia || "";
+  const datore=inlineHR[x.operatore.id]?.datore || "DETELDER";
+  if(!tipo){setErrore("Seleziona l'inquadramento per "+x.operatore.cognome);return;}
+  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")){setErrore("Pratica già aperta.");return;}
+  setAssegnando(x.operatore.id);setErrore("");
+  try{
+    await hrAssegna({idOperatore:x.operatore.id,tipologia:tipo,datore,
+       dataInizio:x.turni[0]?iso(x.turni[0].dataTurno):null,
+       dataFine:x.turni.length?iso(x.turni[x.turni.length-1].dataTurno):null});
+    setAssegnate(await hrPratiche());
+  }catch(e){setErrore(e instanceof Error?e.message:"Assegnazione fallita");}
+  finally{setAssegnando(null);}
+ };
  const r=selezionato===null?null:righe.find(x=>x.operatore.id===selezionato)||null;
  const dateTurni=r?.turni.length?{inizio:iso(r.turni[0].dataTurno),fine:iso(r.turni[r.turni.length-1].dataTurno)}:null;
  const periodo=r?(dateModificate[r.operatore.id]??dateTurni):null;
@@ -134,7 +153,7 @@ export default function ModuloHR(){
       <td className="p-3">{formatData(x.prossimoTurno)}</td>
       <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Regolare"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
       <td className="p-3">{x.prossimoTurno&&x.priorita<=3?<span className="font-semibold text-red-700">Alta</span>:x.prossimoTurno&&x.priorita<=14?<span className="font-semibold text-amber-700">Media</span>:<span className="text-gray-500">Bassa</span>}</td>
-      <td className="p-3"><div className="flex items-center gap-2"><Link to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti`} className="rounded-md bg-[#007a55] px-3 py-2 text-xs text-white">Vai ai contratti</Link><button onClick={()=>setSelezionato(x.operatore.id)} title="Azione proposta" aria-label="Visualizza azione proposta" className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#b7d7cc] text-[#007a55]"><Sparkles className="h-5 w-5"/></button></div></td>
+      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")} onClick={()=>void inoltra(x)} className="whitespace-nowrap rounded-md border border-[#007a55] px-3 py-2 text-xs font-semibold text-[#007a55] disabled:opacity-50">{assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")?"Assegnata a HR":assegnando===x.operatore.id?"Assegnazione…":"Da elaborare → HR"}</button><Link to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti`} className="rounded-md bg-[#007a55] px-3 py-2 text-xs text-white">Vai ai contratti</Link><button onClick={()=>setSelezionato(x.operatore.id)} title="Azione proposta" aria-label="Visualizza azione proposta" className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#b7d7cc] text-[#007a55]"><Sparkles className="h-5 w-5"/></button></div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore da regolarizzare"}</td></tr>}
    </tbody></table></div>
@@ -147,6 +166,6 @@ export default function ModuloHR(){
    {pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)} disabled={!dateValide||!dentroContratto}>INVIA PEC</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>REGOLARIZZA DOCUMENTAZIONE</button>}
    <p className="text-xs text-gray-500">INVIA PEC apre il flusso di preparazione e verifica nella tab Contratti; non effettua l'invio automaticamente. Le date sono proposte sulla base dei turni, da verificare prima della comunicazione.</p>
   </section></div>}
-  <p className="text-xs text-amber-700">Le selezioni inline sono provvisorie e non vengono ancora salvate su Aiven. La presenza del contratto padre non certifica l'avvenuto invio delle chiamate.</p>
+  <p className="text-xs text-amber-700">Le scelte inline vengono salvate nella pratica soltanto dopo «Da elaborare → HR». Nessun contratto viene creato automaticamente.</p>
  </main>;
 }
