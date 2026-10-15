@@ -31,6 +31,8 @@ interface NuovaChiamataIntermittenteDialogProps {
   operatore: OperatoreIntermittente;
   idOperatore: number;
   onSaved?: () => void;
+  dataInizioProposta?: string;
+  dataFineProposta?: string;
 }
 
 const formatData = (value?: string) => {
@@ -47,6 +49,8 @@ export const NuovaChiamataIntermittenteDialog = ({
   operatore,
   idOperatore,
   onSaved,
+  dataInizioProposta,
+  dataFineProposta,
 }: NuovaChiamataIntermittenteDialogProps) => {
   const [cfDatore, setCfDatore] = useState("");
   const [emailDatore, setEmailDatore] = useState("");
@@ -66,6 +70,15 @@ export const NuovaChiamataIntermittenteDialog = ({
       contrattoPadre.dataFine,
     )}`;
   }, [contrattoPadre]);
+
+  useEffect(() => {
+    if (open && dataInizioProposta) {
+      setDataInizio(dataInizioProposta);
+      setDataFine(dataFineProposta || dataInizioProposta);
+      setXmlGenerato("");
+      setSalvatoId(null);
+    }
+  }, [open, dataInizioProposta, dataFineProposta]);
 
   useEffect(() => {
     if (!open) {
