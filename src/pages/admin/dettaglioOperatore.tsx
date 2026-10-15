@@ -233,6 +233,7 @@ const DettaglioOperatore = () => {
 
     const [dipendente, setDipendente] = useState<Dipendente>();
     const [contratti, setContratti] = useState<Contratto[]>([]);
+    const [vistaContratti,setVistaContratti] = useState<"attivo"|"storico">("attivo");
     const [searchParams] = useSearchParams();
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
@@ -1730,8 +1731,15 @@ const DettaglioOperatore = () => {
                 </TabsContent>
 
                 <TabsContent value="contratti">
+                    <div className="mb-5 inline-flex rounded-lg border border-[#cfe2dc] bg-white p-1">
+                      <button type="button" onClick={()=>setVistaContratti("attivo")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="attivo"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Contratto attivo</button>
+                      <button type="button" onClick={()=>setVistaContratti("storico")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="storico"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Storico contratti</button>
+                    </div>
+                    {vistaContratti==="attivo" && <>
                     <ContrattoAttivoHR contratti={contratti} idOperatore={id} />
-                    <div>
+                    </>}
+                    {vistaContratti==="storico" && <div>
+                        <h2 className="mb-3 text-lg font-bold text-[#007a55]">Storico contratti</h2>
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-[#ecf3f1] text-[16px] font-bold text-[#5e5d5d]">
@@ -1831,10 +1839,10 @@ const DettaglioOperatore = () => {
                     </div>
 
 
-                    <div className="flex gap-3 items-stretch rounded-[10px] bg-[#ecf3f1] p-4 mt-6">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
+                    {vistaContratti==="attivo" && window.location.pathname.startsWith("/hr/") && <div className="flex gap-3 items-stretch rounded-[10px] bg-[#ecf3f1] p-4 mt-6">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
                         <div className="w-full"> {/* Left side - Event details (40%) */}
                             <div className="text-[26px] font-extrabold font-[800] text-[#007a55] text-center border-b border-[#d8d8d8] pb-2 mb-6">
-                                Generatore Contratti
+                                Elaborazione contratto
                             </div>
 
                             <Select
@@ -1992,7 +2000,7 @@ const DettaglioOperatore = () => {
                             </div>
                             */}
                         </div>
-                    </div>
+                    </div>}
                 </TabsContent>
                 <TabsContent value="allegati">
                     <div className="rounded-[9px] shadow-[0_2px_4px_0_rgba(168,166,166,0.5)] p-6 mb-6">
