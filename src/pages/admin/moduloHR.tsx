@@ -70,7 +70,6 @@ export default function ModuloHR(){
  const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Regolare"),[righe]);
  const visibili=useMemo(()=>irregolari.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())).sort((a,b)=>a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[irregolari,ricerca]);
  const r=selezionato===null?null:righe.find(x=>x.operatore.id===selezionato)||null;
- const primoTurno=r?.turni[0];
  const periodo=r?.turni.length?{inizio:iso(r.turni[0].dataTurno),fine:iso(r.turni[r.turni.length-1].dataTurno)}:null;
  const padre=r?.contratti.find(c=>c.tipologia==="CHIAMATA"&&periodo&&copre(c,periodo.inizio));
  const richiedePadre=!padre;
