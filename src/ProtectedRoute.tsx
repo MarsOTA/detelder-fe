@@ -31,7 +31,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
         const data = await res.json()
         console.log(data)
         setIsAuthenticated(data.ok)
-        if (data.ok && allowedRole === 'HR') {
+        if (data.ok) {
           const identity=await hrMe().catch(()=>null);
           setServerHRRole(identity?.role??null);
         }
@@ -92,7 +92,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   }
 
   
-  if (allowedRole === 'HR' ? serverHRRole !== 'HR' : ruolo !== allowedRole) {
+  if (allowedRole === 'OPERATORE' ? ruolo !== 'OPERATORE' : serverHRRole !== allowedRole) {
     return <Navigate to="/unauthorized" replace />;
   }
     
@@ -102,7 +102,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     HeaderComponent = HeaderOperatore;
   } else if (allowedRole === 'HR') {
     HeaderComponent = HeaderHR;
-  } else if (ruolo === 'ADMIN') {
+  } else if (allowedRole === 'ADMIN') {
     HeaderComponent = Header;
   }
 
