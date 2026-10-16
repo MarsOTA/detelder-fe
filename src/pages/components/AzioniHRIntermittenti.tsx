@@ -37,7 +37,6 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,onC
  const ids=contratti.map(c=>c.idContratto).join(",");
  useEffect(()=>{void refresh()},[idOperatore,ids]);
  const contratto=useMemo(()=>contratti.filter(c=>c.tipologia==="CHIAMATA"&&!!c.dataInizio&&(day(c.dataInizio)===day(pratica.dataInizio))).sort((a,b)=>b.idContratto-a.idContratto)[0]||null,[contratti,pratica.dataInizio]);
- const now=dateToday();
  const rows=turni.map(t=>{
   const d=day(t.dataTurno);
   const parent=contratti.find(c=>c.tipologia==="CHIAMATA"&&!!c.dataInizio&&day(c.dataInizio)<=d&&(!c.dataFine||day(c.dataFine)>=d));
