@@ -19,6 +19,7 @@ import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
 import { NascitaResidenzaComponent } from "../components/NascitaResidenzaComponent";
 import { ContrattoChiamataComponent } from "../components/ContrattoChiamataComponent";
 import { ContrattoAttivoHR } from "../components/ContrattoAttivoHR";
+import AzioniHRIntermittenti from "../components/AzioniHRIntermittenti";
 import { ContrattoOccasionaleComponent } from "../components/ContrattoOccasionaleComponent";
 import { ConsegnaBeniFormazioneComponent } from "../components/ConsegnaBeniFormazioneComponent";
 import { DatiGeneraliComponent } from "../components/DatiGeneraliComponent";
@@ -251,6 +252,7 @@ const DettaglioOperatore = () => {
 
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
+    const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
     const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
     useEffect(()=>{
@@ -1784,6 +1786,22 @@ const DettaglioOperatore = () => {
                     onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
                     onUpload={(event,contractId,kind)=>{void caricaContrattoFirmato(event,contractId,kind)}}
                   />
+                  {window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id&&
+                    <AzioniHRIntermittenti
+                      key={aggiornamentoAzioniHR}
+                      idOperatore={Number(id)}
+                      pratica={praticaHR}
+                      contratti={contratti}
+                      onCreateContract={()=>setFormContrattoOpen(true)}
+                      onCreateCall={(contractId,date)=>{
+                        const padre=contratti.find(c=>c.idContratto===contractId&&c.tipologia==="CHIAMATA");
+                        if(!padre?.dataInizio)return;
+                        setContrattoPadre({idContratto:padre.idContratto,tipologia:"CHIAMATA",dataInizio:padre.dataInizio.slice(0,10),dataFine:padre.dataFine?.slice(0,10)||"9999-12-31"});
+                        setDateProposta({inizio:date,fine:date});
+                        setNuovaChiamataOpen(true);
+                      }}
+                    />
+                  }
                   {contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 font-semibold text-[#315e51]">
@@ -2481,7 +2499,7 @@ const DettaglioOperatore = () => {
                 </TabsContent>
             </Tabs>
             <IntermittentiDialog open={archivioChiamateOpen} setOpen={setArchivioChiamateOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onUpdated={()=>void aggiornaChiamate()} />
-            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onSaved={()=>void aggiornaChiamate()} dataInizioProposta={dateProposta?.inizio} dataFineProposta={dateProposta?.fine} />
+            <NuovaChiamataIntermittenteDialog open={nuovaChiamataOpen} setOpen={setNuovaChiamataOpen} contrattoPadre={contrattoPadre} operatore={{nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",codiceFiscale:dipendente?.codiceFiscale||""}} idOperatore={Number(id)} onSaved={()=>{void aggiornaChiamate();setAggiornamentoAzioniHR(x=>x+1)}} dataInizioProposta={dateProposta?.inizio} dataFineProposta={dateProposta?.fine} />
         </section>
     )
 }
