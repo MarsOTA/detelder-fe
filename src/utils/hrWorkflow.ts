@@ -20,3 +20,5 @@ export const hrAggiornaPeriodo=(id:number,dataInizio:string,dataFine:string|null
 
 export type HRPraticaLog={id:number;praticaId:number;attoreId:number;attoreNome:string|null;attoreCognome:string|null;statoPrima:HRStato|null;statoDopo:HRStato;dettaglio:string|null;creatoIl:string};
 export const hrLog=(id:number)=>hrRequest<HRPraticaLog[]>("pratiche/"+id+"/log");
+
+export const hrRegistraAttivita=(praticaId:number,azione:"CONTRATTO_CREATO"|"CONTRATTO_FIRMATO_CARICATO"|"UNILAV_CARICATO",contrattoId:number)=>hrRequest<{registrato:boolean}>("pratiche/"+praticaId+"/attivita",{method:"POST",body:JSON.stringify({azione,contrattoId})});
