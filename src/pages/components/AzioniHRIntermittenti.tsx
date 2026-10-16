@@ -3,7 +3,6 @@ import {AlertTriangle,CheckCircle2,FilePlus2,RefreshCw,Send} from "lucide-react"
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
-import {DATORE_DETELDER_DEFAULT} from "@/utils/chiamateHR";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
 import {hrLeggiCodiceComunicazione,hrSalvaCodiceComunicazione} from "@/utils/hrWorkflow";
 import type {HRPratica} from "@/utils/hrWorkflow";
