@@ -13,7 +13,6 @@ import type { Dipendente } from "@/entity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
 import { NascitaResidenzaComponent } from "../components/NascitaResidenzaComponent";
 import { ContrattoChiamataComponent } from "../components/ContrattoChiamataComponent";
@@ -1763,9 +1762,8 @@ const DettaglioOperatore = () => {
                       <button type="button" onClick={()=>setVistaContratti("attivo")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="attivo"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Contratto attivo</button>
                       <button type="button" onClick={()=>setVistaContratti("storico")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="storico"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Storico contratti</button>
                     </div>
-                    {vistaContratti==="attivo" && <>
+                    {vistaContratti==="attivo" && <section className="rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-4">
                     <ContrattoAttivoHR contratti={contratti} idOperatore={id} pratica={praticaHR} />
-                    </>}
                     {vistaContratti==="storico" && <div>
                         <h2 className="mb-3 text-lg font-bold text-[#007a55]">Storico contratti</h2>
                         <Table>
@@ -1867,7 +1865,7 @@ const DettaglioOperatore = () => {
                     </div>}
 
 
-                    {vistaContratti==="attivo" && window.location.pathname.startsWith("/hr/") && <div className="rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-5 mt-4">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
+                    {window.location.pathname.startsWith("/hr/") && <div className="rounded-xl bg-white p-5 mt-4">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
                         <div className="w-full"> {/* Left side - Event details (40%) */}
                             <div className="text-[26px] font-extrabold font-[800] text-[#007a55] text-center border-b border-[#d8d8d8] pb-2 mb-6">
                                 Campi del contratto assegnato
@@ -2020,6 +2018,7 @@ const DettaglioOperatore = () => {
                             */}
                         </div>
                     </div>}
+                    </section>}
                 </TabsContent>
                 <TabsContent value="allegati">
                     <div className="rounded-[9px] shadow-[0_2px_4px_0_rgba(168,166,166,0.5)] p-6 mb-6">
