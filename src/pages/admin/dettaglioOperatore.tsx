@@ -1772,6 +1772,22 @@ const DettaglioOperatore = () => {
                     pratica={praticaHR}
                     codiceFiscale={dipendente?.codiceFiscale}
                     isHR={window.location.pathname.startsWith("/hr/")}
+                    azioni={window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id?(
+                      <AzioniHRIntermittenti
+                      key={aggiornamentoAzioniHR}
+                      idOperatore={Number(id)}
+                      pratica={praticaHR}
+                      contratti={contratti}
+                      onCreateContract={()=>setFormContrattoOpen(true)}
+                      onCreateCall={(contractId,date)=>{
+                        const padre=contratti.find(c=>c.idContratto===contractId&&c.tipologia==="CHIAMATA");
+                        if(!padre?.dataInizio)return;
+                        setContrattoPadre({idContratto:padre.idContratto,tipologia:"CHIAMATA",dataInizio:padre.dataInizio.slice(0,10),dataFine:padre.dataFine?.slice(0,10)||"9999-12-31"});
+                        setDateProposta({inizio:date,fine:date});
+                        setNuovaChiamataOpen(true);
+                      }}
+                    />
+                    ):null}
                     onCreate={()=>setFormContrattoOpen(true)}
                     onPeriodSave={async (dataInizio,dataFine)=>{
                       if(!praticaHR)return;
@@ -1786,22 +1802,6 @@ const DettaglioOperatore = () => {
                     onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
                     onUpload={(event,contractId,kind)=>{void caricaContrattoFirmato(event,contractId,kind)}}
                   />
-                  {window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id&&
-                    <AzioniHRIntermittenti
-                      key={aggiornamentoAzioniHR}
-                      idOperatore={Number(id)}
-                      pratica={praticaHR}
-                      contratti={contratti}
-                      onCreateContract={()=>setFormContrattoOpen(true)}
-                      onCreateCall={(contractId,date)=>{
-                        const padre=contratti.find(c=>c.idContratto===contractId&&c.tipologia==="CHIAMATA");
-                        if(!padre?.dataInizio)return;
-                        setContrattoPadre({idContratto:padre.idContratto,tipologia:"CHIAMATA",dataInizio:padre.dataInizio.slice(0,10),dataFine:padre.dataFine?.slice(0,10)||"9999-12-31"});
-                        setDateProposta({inizio:date,fine:date});
-                        setNuovaChiamataOpen(true);
-                      }}
-                    />
-                  }
                   {contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 font-semibold text-[#315e51]">
