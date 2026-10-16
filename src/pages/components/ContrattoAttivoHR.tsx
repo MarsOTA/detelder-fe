@@ -50,7 +50,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
  return <div className="space-y-5">
   <section className="rounded-xl border border-[#cfe2dc] bg-white p-5 shadow-sm">
    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-    <div><p className="text-xs font-semibold uppercase tracking-wider text-[#007a55]">Contratto assegnato · pratica #{pratica.id}</p><h2 className="mt-1 text-2xl font-bold text-[#273b35]">{nice[pratica.tipologia]||pratica.tipologia}</h2></div>
+    <div><p className="text-xs font-semibold uppercase tracking-wider text-[#007a55]">Contratto assegnato</p><h2 className="mt-1 text-2xl font-bold text-[#273b35]">{nice[pratica.tipologia]||pratica.tipologia}</h2></div>
     <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">{pratica.stato.replace(/_/g," ")}</span>
    </div>
    <div className="grid gap-3 rounded-lg border border-[#e2ebe7] bg-[#f8fbfa] p-3 md:grid-cols-[minmax(130px,1fr)_minmax(170px,1fr)_minmax(170px,1fr)]">
@@ -84,7 +84,6 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     {doc.ok&&creato&&onDownload&&<button type="button" className="inline-flex items-center gap-1 rounded border px-3 py-2 text-xs text-[#315e51]" onClick={()=>onDownload(creato.idContratto,doc.kind)}><Eye className="h-4 w-4"/>Apri</button>}
     {doc.upload&&creato&&isHR&&onUpload&&<label className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] px-3 py-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/>Carica<input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
-   {hasUnilav&&<div className="mt-3 rounded-md border border-[#cfe2dc] bg-[#f5faf8] px-3 py-2 text-xs text-[#315e51]"><strong>Codice comunicazione UNILAV:</strong> da registrare nella comunicazione obbligatoria di assunzione. Il codice della singola chiamata intermittente è gestito nel relativo modulo chiamata, non qui.</div>}
    <p className="mt-3 text-xs text-gray-500">I documenti vengono associati al contratto effettivamente registrato. L'UNILAV è distinta dalle comunicazioni delle singole chiamate intermittenti.</p>
   </section>
  </div>;
