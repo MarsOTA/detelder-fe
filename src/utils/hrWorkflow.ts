@@ -15,3 +15,5 @@ export const hrAssegna=(payload:{idOperatore:number;tipologia:string;datore:stri
 export const hrCambiaStato=(id:number,stato:HRStato,note:string)=>hrRequest<{id:number;stato:HRStato}>("pratiche/"+id+"/stato",{method:"PATCH",body:JSON.stringify({stato,note})});
 export const hrUtenti=()=>hrRequest<HRUtente[]>("utenti");
 export const hrAssegnaRuolo=(id:number,role:HRRole|null)=>hrRequest("utenti/"+id+"/ruolo",{method:"PUT",body:JSON.stringify({role})});
+
+export const hrAggiornaPeriodo=(id:number,dataInizio:string,dataFine:string|null)=>hrRequest<{id:number;dataInizio:string;dataFine:string|null}>("pratiche/"+id+"/periodo",{method:"PATCH",body:JSON.stringify({dataInizio,dataFine})});
