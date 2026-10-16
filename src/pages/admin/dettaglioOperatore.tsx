@@ -1787,6 +1787,11 @@ const DettaglioOperatore = () => {
                         setNuovaChiamataOpen(true);
                       }}
                     />
+                    ):window.location.pathname.startsWith("/hr/")&&praticaHR?(
+                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                        <div><p className="text-[10px] font-semibold uppercase text-amber-900">Da fare</p><p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p></div>
+                        {praticaHR.tipologia!=="FATTURA"&&<button type="button" onClick={()=>setFormContrattoOpen(true)} disabled={praticaHR.stato==="COMPLETATO"} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Apri form</button>}
+                      </div>
                     ):null}
                     onCreate={()=>setFormContrattoOpen(true)}
                     onPeriodSave={async (dataInizio,dataFine)=>{
