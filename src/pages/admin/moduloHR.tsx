@@ -121,7 +121,7 @@ export default function ModuloHR(){
  const mostraPratica=async(id:number)=>{
   if(praticaEspansa===id){setPraticaEspansa(null);return}
   setPraticaEspansa(id);setLogError("");
-  try{setLogPratiche(prev=>({...prev,[id]:await hrLog(id)}))}
+  try{const entries=await hrLog(id);setLogPratiche(prev=>({...prev,[id]:entries}))}
   catch(e){setLogError(e instanceof Error?e.message:"Impossibile caricare lo storico")}
  };
  const statoPratica=(stato:string)=>({DA_ELABORARE:"Da elaborare",IN_LAVORAZIONE:"In lavorazione",DOCUMENTI_MANCANTI:"Documenti mancanti",COMPLETATO:"Completato"} as Record<string,string>)[stato]||stato;
