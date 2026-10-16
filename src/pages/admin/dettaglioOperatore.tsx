@@ -1757,7 +1757,7 @@ const DettaglioOperatore = () => {
                       if(!praticaHR)return;
                       await hrAggiornaPeriodo(praticaHR.id,dataInizio,dataFine);
                       setPraticaHR({...praticaHR,dataInizio,dataFine});
-                      const date=value=>value?new Date(value+"T12:00:00"):null;
+                      const date=(value:string|null)=>value?new Date(value+"T12:00:00"):null;
                       setFormContrattoChiamata(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
                       setFormContrattoOccasionale(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
                       setFormContrattoTempoDeterminato(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
