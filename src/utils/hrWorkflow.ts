@@ -22,3 +22,6 @@ export type HRPraticaLog={id:number;praticaId:number;attoreId:number;attoreNome:
 export const hrLog=(id:number)=>hrRequest<HRPraticaLog[]>("pratiche/"+id+"/log");
 
 export const hrRegistraAttivita=(praticaId:number,azione:"CONTRATTO_CREATO"|"CONTRATTO_FIRMATO_CARICATO"|"UNILAV_CARICATO",contrattoId:number)=>hrRequest<{registrato:boolean}>("pratiche/"+praticaId+"/attivita",{method:"POST",body:JSON.stringify({azione,contrattoId})});
+
+export const hrLeggiCodiceComunicazione=(praticaId:number)=>hrRequest<{codice:string}>("pratiche/"+praticaId+"/codice-comunicazione");
+export const hrSalvaCodiceComunicazione=(praticaId:number,codice:string)=>hrRequest<{codice:string}>("pratiche/"+praticaId+"/codice-comunicazione",{method:"PUT",body:JSON.stringify({codice})});
