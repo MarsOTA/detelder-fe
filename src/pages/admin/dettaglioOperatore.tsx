@@ -408,7 +408,22 @@ const DettaglioOperatore = () => {
         elencoBeniStrumentali: ""
     });
 
-    const [tipoContratto, setTipoContratto] = useState<TipoContratto | null>(null);
+    // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
+    const tipoContratto: TipoContratto | null = praticaHR ?
+       ({ TEMPO_DETERMINATO:"CONTRATTO_TEMPO_DETERMINATO",
+          TEMPO_INDETERMINATO:"CONTRATTO_TEMPO_INDETERMINATO",
+          CHIAMATA:"CHIAMATA", OCCASIONALE:"OCCASIONALE",
+          CONSGNA_BENI_FORMAZIONE:"CONSGNA_BENI_FORMAZIONE" } as Record<string,TipoContratto>)[praticaHR.tipologia] ?? null : null;
+    useEffect(()=>{
+      if(!praticaHR)return;
+      // Le date suggerite dall'ADMIN restano modificabili nei form originali.
+      const toDate=(value:string|null)=>value?new Date(value.slice(0,10)+"T12:00:00"):null;
+      const dataInizio=toDate(praticaHR.dataInizio),dataFine=toDate(praticaHR.dataFine);
+      setFormContrattoChiamata(prev=>({...prev,dataInizio,dataFine}));
+      setFormContrattoOccasionale(prev=>({...prev,dataInizio,dataFine}));
+      setFormContrattoTempoDeterminato(prev=>({...prev,dataInizio,dataFine}));
+      setFormContrattoTempoIndeterminato(prev=>({...prev,dataInizio,dataFine}));
+    },[praticaHR?.id]);
 
     useEffect(() => {
         caricaOperatore();
@@ -1852,29 +1867,20 @@ const DettaglioOperatore = () => {
                     </div>}
 
 
-                    {vistaContratti==="attivo" && window.location.pathname.startsWith("/hr/") && <div className="flex gap-3 items-stretch rounded-[10px] bg-[#ecf3f1] p-4 mt-6">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
+                    {vistaContratti==="attivo" && window.location.pathname.startsWith("/hr/") && <div className="rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-5 mt-4">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
                         <div className="w-full"> {/* Left side - Event details (40%) */}
                             <div className="text-[26px] font-extrabold font-[800] text-[#007a55] text-center border-b border-[#d8d8d8] pb-2 mb-6">
-                                Elaborazione contratto
+                                Campi del contratto assegnato
                             </div>
 
-                            <Select
-                                value={tipoContratto ?? ""}
-                                onValueChange={(value) =>
-                                    setTipoContratto(value as TipoContratto)
-                                }
-                            >
-                                <SelectTrigger className="w-full bg-white">
-                                    <SelectValue placeholder="Seleziona tipo contratto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="CHIAMATA">Contratto a chiamata</SelectItem>
-                                    <SelectItem value="OCCASIONALE">Contratto occasionale</SelectItem>
-                                    <SelectItem value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</SelectItem>
-                                    <SelectItem value="CONTRATTO_TEMPO_INDETERMINATO">Contratto a tempo indeterminato</SelectItem>
-                                    <SelectItem value="CONTRATTO_TEMPO_DETERMINATO">Contratto a tempo determinato</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="mb-4 rounded-lg border border-[#cfe2dc] bg-white p-4">
+                                <div className="text-xs font-semibold text-gray-500">Tipologia assegnata dall'ADMIN</div>
+                                <div className="mt-1 font-bold text-[#007a55]">{praticaHR?.tipologia?.replace(/_/g," ") || "Nessuna pratica selezionata"}</div>
+                                <div className="mt-1 text-sm text-gray-500">Il tipo di contratto non è modificabile dall'HR: per cambiarlo occorre una nuova assegnazione ADMIN.</div>
+                            </div>
+                            {!praticaHR && <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">Apri una pratica dalla coda HR per compilare il contratto assegnato.</p>}
+                            {praticaHR && !tipoContratto && <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">La tipologia richiesta non dispone ancora di un form di generazione: chiedere all'ADMIN una tipologia supportata.</p>}
+
 
                             {tipoContratto === "CHIAMATA" && (
                                 <>
