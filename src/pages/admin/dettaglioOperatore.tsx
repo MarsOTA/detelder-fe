@@ -6,7 +6,7 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche, hrAggiornaPeriodo } from "@/utils/hrWorkflow";
+import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
@@ -1057,7 +1057,18 @@ const DettaglioOperatore = () => {
 
             console.log("*** contratto generato ***", data);
 
-            await caricaListaContratti();
+            const aggiornati=await caricaListaContratti();
+            if(praticaHR && window.location.pathname.startsWith("/hr/")){
+                const expected=(value:string)=>value.replace(/^CONTRATTO_/,"");
+                const matches=(aggiornati||[]).filter(c=>expected(c.tipologia)===expected(contrattoFinale.tipologia));
+                const matchingDate=matches.filter(c=>!contrattoFinale.dataInizio||String(c.dataInizio||"").slice(0,10)===String(contrattoFinale.dataInizio).slice(0,10));
+                const idCreato=Number(data?.idContratto||data?.insertId||[...matchingDate].sort((a,b)=>b.idContratto-a.idContratto)[0]?.idContratto);
+                if(Number.isSafeInteger(idCreato)&&idCreato>0){
+                    try{await hrRegistraAttivita(praticaHR.id,"CONTRATTO_CREATO",idCreato)}
+                    catch(e){console.warn("Contratto creato, registrazione attività HR non riuscita:",e)}
+                }
+                setFormContrattoOpen(false);
+            }
         } catch (error) {
             console.error("Errore generazione contratto:", error);
             alert("Errore durante la generazione del contratto");
@@ -1238,6 +1249,7 @@ const DettaglioOperatore = () => {
         console.log(data);
         setContratti(data);
         console.info("**CARICAMENTO CONTRATTI FINE**");
+        return data as Contratto[];
     }
 
     const caricaAllegati = async () => {
@@ -1499,6 +1511,11 @@ const DettaglioOperatore = () => {
             const data = await response.json();
             console.log("Upload completato con successo:", data);
             await caricaListaContratti();
+            if(praticaHR && window.location.pathname.startsWith("/hr/")){
+                const azione=tipoContratto==="contrattoFirmato"?"CONTRATTO_FIRMATO_CARICATO":"UNILAV_CARICATO";
+                try{await hrRegistraAttivita(praticaHR.id,azione,idContratto)}
+                catch(e){console.warn("Documento caricato, tracciamento HR non riuscito:",e)}
+            }
             // Qui puoi aggiornare lo stato o mostrare un messaggio di successo
         } catch (error) {
             console.error("Errore durante l'upload:", error);
