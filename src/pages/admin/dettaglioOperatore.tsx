@@ -6,11 +6,13 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche } from "@/utils/hrWorkflow";
+import { hrPratiche, hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { FileText, UserRound, Paperclip } from "lucide-react";
 import { format } from "date-fns"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
@@ -234,7 +236,7 @@ const DettaglioOperatore = () => {
 
     const [dipendente, setDipendente] = useState<Dipendente>();
     const [contratti, setContratti] = useState<Contratto[]>([]);
-    const [vistaContratti,setVistaContratti] = useState<"attivo"|"storico">("attivo");
+    const [formContrattoOpen,setFormContrattoOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
     useEffect(()=>{
@@ -332,17 +334,7 @@ const DettaglioOperatore = () => {
         "Primo soccorso"
     ];
 
-    const tabTriggerClass = `
-        !shadow-none
-        cursor-pointer
-        !text-[24px]
-        text-[#5e5d5d]
-        data-[state=active]:bg-transparent
-        data-[state=active]:underline
-        data-[state=active]:underline-offset-8
-        data-[state=active]:font-semibold
-        data-[state=active]:text-[#007a55]
-        `;
+
 
     const [formContrattoChiamata, setFormContrattoChiamata] = useState<FormContratto>({
         dataInizio: null,
@@ -408,6 +400,13 @@ const DettaglioOperatore = () => {
     });
 
     // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
+    const contrattiPrecedenti=contratti.filter(c=>{
+      if(!praticaHR)return true;
+      const norm=(v:string)=>v.replace(/^CONTRATTO_/,"");
+      return !(norm(c.tipologia)===norm(praticaHR.tipologia) &&
+        !!c.dataInizio && !!praticaHR.dataInizio &&
+        c.dataInizio.slice(0,10)===String(praticaHR.dataInizio).slice(0,10));
+    });
     const tipoContratto: TipoContratto | null = praticaHR ?
        ({ TEMPO_DETERMINATO:"CONTRATTO_TEMPO_DETERMINATO",
           TEMPO_INDETERMINATO:"CONTRATTO_TEMPO_INDETERMINATO",
@@ -1699,23 +1698,12 @@ const DettaglioOperatore = () => {
                 caricaImmagine={caricaImmagine}
             />
 
-            <Tabs key={searchParams.get("tab") === "contratti" ? "contratti" : "default"} defaultValue={searchParams.get("tab") === "contratti" ? "contratti" : "anagrafica"}>
-                <TabsList className="w-[38%]  bg-transparent border-0">
-                    <TabsTrigger value="anagrafica" className={tabTriggerClass}>
-                        Anagrafica
-                    </TabsTrigger>
-
-                    <TabsTrigger value="contratti" className={tabTriggerClass}>
-                        Contratti
-                    </TabsTrigger>
-
-                    <TabsTrigger value="allegati" className={tabTriggerClass}>
-                        Allegati
-                    </TabsTrigger>
-
+            <Tabs key={searchParams.get("tab")||"contratti"} defaultValue={searchParams.get("tab")||"contratti"}>
+                <TabsList className="mb-6 flex h-auto w-full flex-wrap justify-start gap-2 rounded-xl border border-[#cfe2dc] bg-white p-2 shadow-sm">
+                    <TabsTrigger value="contratti" className="inline-flex flex-none items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-gray-600 data-[state=active]:bg-[#007a55] data-[state=active]:text-white data-[state=active]:shadow-sm"><FileText className="h-4 w-4"/>Contratti</TabsTrigger>
+                    <TabsTrigger value="anagrafica" className="inline-flex flex-none items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-gray-600 data-[state=active]:bg-[#007a55] data-[state=active]:text-white data-[state=active]:shadow-sm"><UserRound className="h-4 w-4"/>Anagrafica</TabsTrigger>
+                    <TabsTrigger value="allegati" className="inline-flex flex-none items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-gray-600 data-[state=active]:bg-[#007a55] data-[state=active]:text-white data-[state=active]:shadow-sm"><Paperclip className="h-4 w-4"/>Allegati</TabsTrigger>
                 </TabsList>
-
-                <div className="border-b border-[#d4d4d4] my-2 mt-6 mb-6" />
 
                 <TabsContent value="anagrafica">
                     <div className="flex justify-between items-start">
@@ -1757,20 +1745,145 @@ const DettaglioOperatore = () => {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="contratti">
-                    <div className="mb-5 inline-flex rounded-lg border border-[#cfe2dc] bg-white p-1">
-                      <button type="button" onClick={()=>setVistaContratti("attivo")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="attivo"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Contratto attivo</button>
-                      <button type="button" onClick={()=>setVistaContratti("storico")} className={`rounded-md px-4 py-2 text-sm font-semibold ${vistaContratti==="storico"?"bg-[#007a55] text-white":"text-[#007a55]"}`}>Storico contratti</button>
-                    </div>
-                    {vistaContratti==="attivo" && <section className="rounded-xl border border-[#cfe2dc] bg-[#ecf3f1] p-4">
-                    <ContrattoAttivoHR contratti={contratti} idOperatore={id} pratica={praticaHR} />
+                <TabsContent value="contratti" className="space-y-5">
+                  <ContrattoAttivoHR
+                    contratti={contratti}
+                    idOperatore={id}
+                    pratica={praticaHR}
+                    codiceFiscale={dipendente?.codiceFiscale}
+                    isHR={window.location.pathname.startsWith("/hr/")}
+                    onCreate={()=>setFormContrattoOpen(true)}
+                    onPeriodSave={async (dataInizio,dataFine)=>{
+                      if(!praticaHR)return;
+                      await hrAggiornaPeriodo(praticaHR.id,dataInizio,dataFine);
+                      setPraticaHR({...praticaHR,dataInizio,dataFine});
+                      const date=value=>value?new Date(value+"T12:00:00"):null;
+                      setFormContrattoChiamata(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
+                      setFormContrattoOccasionale(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
+                      setFormContrattoTempoDeterminato(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
+                      setFormContrattoTempoIndeterminato(old=>({...old,dataInizio:date(dataInizio),dataFine:date(dataFine)}));
+                    }}
+                    onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
+                    onUpload={(event,contractId,kind)=>{void caricaContrattoFirmato(event,contractId,kind)}}
+                  />
+                  {contrattiPrecedenti.length>0&&
+                    <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
+                      <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 font-semibold text-[#315e51]">
+                        <span>Storico contratti</span>
+                        <span className="rounded-full bg-white px-2.5 py-1 text-xs text-gray-600">{contrattiPrecedenti.length} contratti precedenti</span>
+                      </summary>
+                      <div className="overflow-x-auto p-4">
+                        
+                        
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-[#ecf3f1] text-[16px] font-bold text-[#5e5d5d]">
+                                    <TableHead>Tipo Contratto</TableHead>
+                                    <TableHead>Data Inizio</TableHead>
+                                    <TableHead>Data Fine</TableHead>
+                                    <TableHead>Compenso </TableHead>
+                                    <TableHead>Contratto firmato</TableHead>
+                                    <TableHead>Unilav</TableHead>
+                                    <TableHead>Azioni </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {contrattiPrecedenti.map((contratto) => (
+                                    <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
+                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: {chiamateCounts[contratto.idContratto] ?? "—"}</span>}</TableCell>
+                                        <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
+                                        <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
+                                        <TableCell>{contratto.compensoTotaleLordo}</TableCell>
+                                        <TableCell>
+                                            {contratto.pathContrattoFirmato ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoFirmato")}
+                                                        className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]"
+                                                        title="Scarica contratto firmato"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </>
 
+                                            ) : (
+                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
+                                                    Carica
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept=".pdf"
+                                                        onChange={(e) =>
+                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoFirmato")
+                                                        }
+                                                    />
+                                                </label>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {contratto.pathContrattoUnilav ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoUnilav")}
+                                                        className="cursor-pointer text-[#007a55]"
+                                                        title="Scarica unilav"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </>
 
+                                            ) : (
+                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
+                                                    Carica
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept=".pdf"
+                                                        onChange={(e) =>
+                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoUnilav")
+                                                        }
+                                                    />
+                                                </label>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="align-middle">
+                                            <div className="flex flex-nowrap items-center justify-start gap-2">
+                                            {contratto.tipologia === "CHIAMATA" && <span className="inline-flex shrink-0 items-center gap-2"><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
+                                            {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
+                                                contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
+                                                    <button
+                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
 
-                    {window.location.pathname.startsWith("/hr/") && <div className="rounded-xl bg-white p-5 mt-4">  {/* Tutti i div figli vengono messi in orizzontale e spaziati di 32px */}
+                      </div>
+                    </details>}
+                  <Dialog open={formContrattoOpen} onOpenChange={setFormContrattoOpen}>
+                    <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[780px]">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl text-[#007a55]">Crea {tipoContratto?tipoContratto.replace(/_/g," ").toLowerCase():"contratto"}</DialogTitle>
+                        <DialogDescription>Completa i campi richiesti e genera il documento. Il form riprende tutte le sezioni originali del generatore.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-5">
                         <div className="w-full"> {/* Left side - Event details (40%) */}
                             <div className="text-[26px] font-extrabold font-[800] text-[#007a55] text-center border-b border-[#d8d8d8] pb-2 mb-6">
-                                Campi del contratto assegnato
+                                Compila i dati del contratto
                             </div>
 
                             <div className="mb-4 rounded-lg border border-[#cfe2dc] bg-white p-4">
@@ -1919,107 +2032,10 @@ const DettaglioOperatore = () => {
                             </div>
                             */}
                         </div>
-                    </div>}
-                    </section>}
-                    {vistaContratti==="storico" && <div>
-                        <h2 className="mb-3 text-lg font-bold text-[#007a55]">Storico contratti</h2>
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-[#ecf3f1] text-[16px] font-bold text-[#5e5d5d]">
-                                    <TableHead>Tipo Contratto</TableHead>
-                                    <TableHead>Data Inizio</TableHead>
-                                    <TableHead>Data Fine</TableHead>
-                                    <TableHead>Compenso </TableHead>
-                                    <TableHead>Contratto firmato</TableHead>
-                                    <TableHead>Unilav</TableHead>
-                                    <TableHead>Azioni </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {contratti.map((contratto) => (
-                                    <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
-                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: {chiamateCounts[contratto.idContratto] ?? "—"}</span>}</TableCell>
-                                        <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
-                                        <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
-                                        <TableCell>{contratto.compensoTotaleLordo}</TableCell>
-                                        <TableCell>
-                                            {contratto.pathContrattoFirmato ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoFirmato")}
-                                                        className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]"
-                                                        title="Scarica contratto firmato"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </>
 
-                                            ) : (
-                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
-                                                    Carica
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept=".pdf"
-                                                        onChange={(e) =>
-                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoFirmato")
-                                                        }
-                                                    />
-                                                </label>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {contratto.pathContrattoUnilav ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoUnilav")}
-                                                        className="cursor-pointer text-[#007a55]"
-                                                        title="Scarica unilav"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </>
-
-                                            ) : (
-                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
-                                                    Carica
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept=".pdf"
-                                                        onChange={(e) =>
-                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoUnilav")
-                                                        }
-                                                    />
-                                                </label>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="align-middle">
-                                            <div className="flex flex-nowrap items-center justify-start gap-2">
-                                            {contratto.tipologia === "CHIAMATA" && <span className="inline-flex shrink-0 items-center gap-2"><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio || !contratto.dataFine)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
-                                            {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
-                                                contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                )}
-                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </TabsContent>
                 <TabsContent value="allegati">
                     <div className="rounded-[9px] shadow-[0_2px_4px_0_rgba(168,166,166,0.5)] p-6 mb-6">
