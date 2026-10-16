@@ -1774,19 +1774,13 @@ const DettaglioOperatore = () => {
                     isHR={window.location.pathname.startsWith("/hr/")}
                     azioni={window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id?(
                       <AzioniHRIntermittenti
-                      key={aggiornamentoAzioniHR}
-                      idOperatore={Number(id)}
-                      pratica={praticaHR}
-                      contratti={contratti}
-                      onCreateContract={()=>setFormContrattoOpen(true)}
-                      onCreateCall={(contractId,date)=>{
-                        const padre=contratti.find(c=>c.idContratto===contractId&&c.tipologia==="CHIAMATA");
-                        if(!padre?.dataInizio)return;
-                        setContrattoPadre({idContratto:padre.idContratto,tipologia:"CHIAMATA",dataInizio:padre.dataInizio.slice(0,10),dataFine:padre.dataFine?.slice(0,10)||"9999-12-31"});
-                        setDateProposta({inizio:date,fine:date});
-                        setNuovaChiamataOpen(true);
-                      }}
-                    />
+                        key={aggiornamentoAzioniHR}
+                        idOperatore={Number(id)}
+                        pratica={praticaHR}
+                        contratti={contratti}
+                        codiceFiscale={dipendente?.codiceFiscale||""}
+                        onCreateContract={()=>setFormContrattoOpen(true)}
+                      />
                     ):window.location.pathname.startsWith("/hr/")&&praticaHR?(
                       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                         <div><p className="text-[10px] font-semibold uppercase text-amber-900">Da fare</p><p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p></div>
