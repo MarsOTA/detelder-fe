@@ -1061,7 +1061,8 @@ const DettaglioOperatore = () => {
             if(praticaHR && window.location.pathname.startsWith("/hr/")){
                 const expected=(value:string)=>value.replace(/^CONTRATTO_/,"");
                 const matches=(aggiornati||[]).filter(c=>expected(c.tipologia)===expected(contrattoFinale.tipologia));
-                const matchingDate=matches.filter(c=>!contrattoFinale.dataInizio||String(c.dataInizio||"").slice(0,10)===String(contrattoFinale.dataInizio).slice(0,10));
+                const dataRichiesta="dataInizio" in contrattoFinale?contrattoFinale.dataInizio:null;
+                const matchingDate=matches.filter(c=>!dataRichiesta||String(c.dataInizio||"").slice(0,10)===String(dataRichiesta).slice(0,10));
                 const idCreato=Number(data?.idContratto||data?.insertId||[...matchingDate].sort((a,b)=>b.idContratto-a.idContratto)[0]?.idContratto);
                 if(Number.isSafeInteger(idCreato)&&idCreato>0){
                     try{await hrRegistraAttivita(praticaHR.id,"CONTRATTO_CREATO",idCreato)}
