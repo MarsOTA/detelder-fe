@@ -77,15 +77,15 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,on
    </div>}
   </section>
   <section className="rounded-xl border border-[#cfe2dc] bg-white p-5 shadow-sm">
-   <div className="mb-4 flex items-center justify-between gap-3"><h3 className="text-lg font-bold text-[#273b35]">Documenti della pratica</h3><span className="text-xs text-gray-500">{[!!creato,!!creato?.pathContrattoFirmato,...(hasUnilav?[!!creato?.pathContrattoUnilav]:[])].filter(Boolean).length} / {hasUnilav?3:2} disponibili</span></div>
+   <div className="mb-4 flex items-center justify-between gap-3"><h3 className="text-lg font-bold text-[#273b35]">Documenti della pratica</h3><span className="text-xs text-gray-500">{[!!creato,...(hasUnilav?[!!creato?.pathContrattoUnilav]:[])].filter(Boolean).length} / {hasUnilav?2:1} obbligatori disponibili</span></div>
    {[
     {title:"Contratto generato",ok:!!creato,kind:"downloadContratto",upload:null},
     {title:"Contratto firmato",ok:!!creato?.pathContrattoFirmato,kind:"contrattoFirmato",upload:"contrattoFirmato"},
     ...(hasUnilav?[{title:"UNILAV di assunzione",ok:!!creato?.pathContrattoUnilav,kind:"contrattoUnilav",upload:"contrattoUnilav"}]:[])
    ].map(doc=><div key={doc.title} className="flex flex-wrap items-center gap-3 border-t py-3 first:border-0">
     <span className="rounded-lg bg-[#f5faf8] p-2 text-[#315e51]">{doc.ok?<FileCheck2 className="h-5 w-5"/>:<FileText className="h-5 w-5"/>}</span>
-    <div className="min-w-[150px] flex-1"><div className="text-sm font-semibold">{doc.title}</div><div className="text-xs text-gray-500">{doc.ok?"Disponibile":doc.upload?"Da caricare":"Da generare"}</div></div>
-    {statusBadge(doc.ok)}
+    <div className="min-w-[150px] flex-1"><div className="text-sm font-semibold">{doc.title}</div><div className="text-xs text-gray-500">{doc.ok?"Disponibile":doc.kind==="contrattoFirmato"?"Facoltativo · non caricato":doc.upload?"Da caricare":"Da generare"}</div></div>
+    {doc.kind==="contrattoFirmato"&&!doc.ok?<span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">Facoltativo</span>:statusBadge(doc.ok)}
     {doc.ok&&creato&&onDownload&&<button type="button" className="inline-flex items-center gap-1 rounded border px-3 py-2 text-xs text-[#315e51]" onClick={()=>onDownload(creato.idContratto,doc.kind)}><Eye className="h-4 w-4"/>Apri</button>}
     {doc.upload&&creato&&isHR&&onUpload&&<label className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] px-3 py-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/>Carica<input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
