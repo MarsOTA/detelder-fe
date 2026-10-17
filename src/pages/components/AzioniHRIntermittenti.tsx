@@ -77,6 +77,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   setWorking(data);setErrore("");setAvviso("");
   try{
    if(!codiceFiscale?.trim())throw new Error("Codice fiscale del lavoratore mancante nell'anagrafica");
+   if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare la PEC.");
    const employer=datore||await leggiDatoreIntermittenti();
    if(!employer.codiceFiscale||!employer.email)throw new Error("Dati del datore non configurati");
    await saveCode();
