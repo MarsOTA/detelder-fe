@@ -106,6 +106,6 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     </div>}
     {pratica.stato==="COMPLETATO"&&<p className="mt-2 font-semibold text-emerald-700">Lavorazione HR completata e comunicata all'ADMIN.</p>}
     {error&&<p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
-  </section>
+  </section>}
  </div>;
 }
