@@ -25,6 +25,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const [errore,setErrore]=useState("");
  const [avviso,setAvviso]=useState("");
  const [esito,setEsito]=useState<Record<string,string>>({});
+ const [periodo,setPeriodo]=useState<{da:string;a:string}>({da:"",a:""});
  const refresh=async()=>{
   setLoading(true);setErrore("");
   try{
@@ -62,6 +63,11 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    return {data,items,parent,submitted,draft,unknown:!!parent&&!Array.isArray(archives)};
   });
  },[turni,contratti,chiamate]);
+ const archivi=padre?(chiamate[padre.idContratto]||[]):[];
+ const pending=giorni.filter(g=>!g.submitted);
+ const from=periodo.da||pending[0]?.data||"";
+ const to=periodo.a||pending[pending.length-1]?.data||from;
+ const valido=!!padre&&!!from&&!!to&&from<=to&&from>=day(padre.dataInizio)&&(!padre.dataFine||to<=day(padre.dataFine));
  const saveCode=async()=>{
   if(codice.trim()===codiceSalvato)return;
   const v=await hrSalvaCodiceComunicazione(pratica.id,codice.trim());
@@ -74,8 +80,8 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    const employer=datore||await leggiDatoreIntermittenti();
    if(!employer.codiceFiscale||!employer.email)throw new Error("Dati del datore non configurati");
    await saveCode();
-   const xml=draft?.xmlArchiviato||generaUniIntermittentiXml({cfDatore:employer.codiceFiscale,emailDatore:employer.email,lavoratori:[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:data,dataFine:data}]});
-   const callId=draft?.id||(await salvaChiamataHR(idOperatore,parent.idContratto,data,data,xml)).id;
+   const xml=draft?.xmlArchiviato||generaUniIntermittentiXml({cfDatore:employer.codiceFiscale,emailDatore:employer.email,lavoratori:[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:data,dataFine:to}]});
+   const callId=draft?.id||(await salvaChiamataHR(idOperatore,parent.idContratto,data,to,xml)).id;
    await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,callId,"PEC_PREPARATA");
    downloadXml(xml,"UNI_Intermittenti_"+data+".xml");
    const subject=encodeURIComponent("UNI_Intermittenti - "+data);
@@ -106,18 +112,28 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   </div>
   {errore&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{errore}</p>}
   {avviso&&<p role="status" className="rounded bg-emerald-50 p-2 text-xs text-emerald-800">{avviso}</p>}
-  {loading?<p className="text-xs text-gray-500">Verifica chiamate in corso…</p>:giorni.length===0?<p className="rounded border bg-white p-3 text-xs text-gray-600">Nessun turno nei prossimi 7 giorni: nessuna chiamata da predisporre.</p>:
-   <div className="space-y-1.5">{giorni.map(g=>{
-    const ok=!!g.submitted,problem=!g.parent||g.unknown;
-    return <div key={g.data} className={`rounded-md border px-3 py-2 ${ok?"border-emerald-200 bg-emerald-50":problem?"border-red-200 bg-red-50":"border-amber-200 bg-amber-50"}`}>
-     <div className="flex flex-wrap items-center gap-2"><span>{ok?<CheckCircle2 className="h-4 w-4 text-emerald-700"/>:problem?<AlertTriangle className="h-4 w-4 text-red-700"/>:<Send className="h-4 w-4 text-amber-800"/>}</span>
-      <div className="flex-1 text-sm"><strong>{fmt(g.data)}</strong> · {g.items.length} turno/i <span className="text-xs text-gray-600">{g.items.map(x=>x.nomeEvento||x.titoloEvento||"Turno "+x.idTurno).join(" · ")}</span></div>
-      {ok?<span className="text-xs font-semibold text-emerald-800">PEC inviata</span>:g.parent&&!g.unknown?<button type="button" disabled={working!==null||!datore} onClick={()=>void prepara(g.data,g.parent!,g.draft)} className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">{working===g.data?"Preparazione…":g.draft?"Riprendi PEC":"Prepara PEC"}</button>:<span className="text-xs text-red-800">{g.unknown?"Verifica archivio indisponibile":"Contratto padre mancante"}</span>}
-     </div>
-     {!ok&&g.draft&&g.parent&&<div className="mt-2 flex flex-wrap items-center gap-2 border-t border-amber-200 pt-2"><span className="text-xs text-amber-900">PEC preparata, invio da confermare</span><input className="min-w-[200px] flex-1 rounded border bg-white px-2 py-1 text-xs" placeholder="Riferimento ricevuta PEC" value={esito[g.data]||""} onChange={e=>setEsito(p=>({...p,[g.data]:e.target.value}))}/><button type="button" disabled={working!==null} onClick={()=>void conferma(g.data,g.parent!,g.draft!)} className="rounded bg-[#007a55] px-3 py-1 text-xs font-semibold text-white">Conferma invio</button></div>}
-    </div>
-   })}</div>
-  }
+  <div className="rounded-md border bg-white px-3 py-3">
+   <h4 className="text-sm font-semibold text-[#315e51]">Turni in programma</h4>
+   {loading?<p className="mt-2 text-xs text-gray-500">Caricamento turni…</p>:giorni.length===0?<p className="mt-2 text-xs text-gray-500">Nessun turno nei prossimi sette giorni.</p>:
+    <div className="mt-2 flex flex-wrap gap-1.5">{giorni.map(g=><span key={g.data} className={`rounded-full border px-2.5 py-1 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50 text-emerald-700":"border-amber-200 bg-amber-50 text-amber-800"}`}>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</span>)}</div>}
+   <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+    <label className="text-xs text-gray-600">Chiamata dal<input type="date" value={from} onChange={e=>setPeriodo(p=>({...p,da:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
+    <label className="text-xs text-gray-600">Al<input type="date" min={from||undefined} value={to} onChange={e=>setPeriodo(p=>({...p,a:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
+    <button type="button" disabled={!valido||working!==null||!datore} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Prepara PEC</button>
+   </div>
+   {!valido&&<p className="mt-2 text-xs text-amber-700">Seleziona un periodo valido all'interno del contratto padre. Le date possono raggruppare più turni.</p>}
+  </div>
+  <details className="rounded-md border bg-white px-3 py-2">
+   <summary className="cursor-pointer text-sm font-semibold text-[#315e51]">Archivio chiamate del contratto ({archivi.length})</summary>
+   {archivi.length?<div className="mt-2 space-y-2">{archivi.map(c=><div key={c.id} className="rounded-md border bg-[#f8fbfa] p-2 text-xs">
+    <div className="flex flex-wrap justify-between gap-2"><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><span className={c.stato==="INVIATA"?"font-semibold text-emerald-700":"font-semibold text-amber-800"}>{c.stato.replace(/_/g," ")}</span></div>
+    {c.esitoInvio&&<p className="mt-1 text-gray-600">Ricevuta: {c.esitoInvio}</p>}
+    {c.stato!=="INVIATA"&&padre&&<div className="mt-2 flex flex-wrap items-center gap-2">
+      <input className="min-w-[175px] flex-1 rounded border px-2 py-1" placeholder="Riferimento ricevuta PEC" value={esito[String(c.id)]||""} onChange={e=>setEsito(p=>({...p,[c.id]:e.target.value}))}/>
+      <button type="button" disabled={working!==null} onClick={()=>void conferma(String(c.id),padre,c)} className="rounded bg-[#007a55] px-3 py-1 font-semibold text-white">Conferma invio</button>
+    </div>}
+   </div>)}</div>:<p className="mt-2 text-xs text-gray-500">Nessuna chiamata registrata.</p>}
+  </details>
   <p className="text-[11px] text-gray-500">Le chiamate sono raggruppate per giornata. “Prepara PEC” genera e scarica l'XML e apre l'email; l'invio effettivo avviene dal gestore PEC e richiede la conferma della ricevuta.</p>
  </section>;
 }
