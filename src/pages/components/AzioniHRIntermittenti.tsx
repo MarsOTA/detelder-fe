@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from "react";
-import {AlertTriangle,CheckCircle2,FilePlus2,RefreshCw,Send} from "lucide-react";
+import {CheckCircle2,FilePlus2,RefreshCw,Send} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
