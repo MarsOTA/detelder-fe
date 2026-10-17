@@ -6,7 +6,7 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrCambiaStato } from "@/utils/hrWorkflow";
+import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
@@ -1806,17 +1806,12 @@ const DettaglioOperatore = () => {
                       await caricaListaContratti();
                       setAggiornamentoAzioniHR(x=>x+1);
                     }}
-                    onStatus={async(stato,note)=>{
-                      if(!praticaHR)return;
-                      await hrCambiaStato(praticaHR.id,stato,note);
-                      const aggiornate=await hrPratiche();
-                      setPraticaHR(aggiornate.find(p=>p.id===praticaHR.id)||null);
-                    }}
+
                   />
                   {contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
-                      <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 font-semibold text-[#315e51]">
-                        <span>Storico contratti</span>
+                      <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 text-lg font-bold text-[#007a55]">
+                        <span>Archivio contratti</span>
                         <span className="rounded-full bg-white px-2.5 py-1 text-xs text-gray-600">{contrattiPrecedenti.length} contratti precedenti</span>
                       </summary>
                       <div className="overflow-x-auto p-4">
