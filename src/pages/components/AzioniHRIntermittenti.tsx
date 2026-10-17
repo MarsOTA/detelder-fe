@@ -4,7 +4,7 @@ import {ezystaffBEUrl} from "@/utils/baseUrl";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
-import {hrLeggiCodiceComunicazione,hrSalvaCodiceComunicazione} from "@/utils/hrWorkflow";
+import {hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
 import type {HRPratica} from "@/utils/hrWorkflow";
 
 export type ProssimaAzioneTurno={idTurno:number;dataTurno:string;oraInizio?:string;oraFine?:string;titoloEvento?:string;nomeEvento?:string};
@@ -18,8 +18,6 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
- const [codice,setCodice]=useState("");
- const [codiceSalvato,setCodiceSalvato]=useState("");
  const [loading,setLoading]=useState(true);
  const [working,setWorking]=useState<string|null>(null);
  const [errore,setErrore]=useState("");
@@ -45,11 +43,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  };
  const ids=contratti.map(c=>c.idContratto).join(",");
  useEffect(()=>{void refresh()},[idOperatore,ids]);
- useEffect(()=>{let active=true;void Promise.all([hrLeggiCodiceComunicazione(pratica.id),leggiDatoreIntermittenti()]).then(([saved,employer])=>{
-  if(!active)return;setCodice(saved.codice||"");setCodiceSalvato(saved.codice||"");setDatore(employer);
- }).catch(e=>{if(active)setErrore(e instanceof Error?e.message:"Configurazione PEC non disponibile")});
- return ()=>{active=false};
- },[pratica.id]);
+ useEffect(()=>{let active=true;void leggiDatoreIntermittenti().then(v=>{if(active)setDatore(v)}).catch(e=>{if(active)setErrore(e instanceof Error?e.message:"Configurazione datore non disponibile")});return()=>{active=false}},[pratica.id]);
  const padre=useMemo(()=>contratti.filter(c=>c.tipologia==="CHIAMATA"&&day(c.dataInizio)===day(pratica.dataInizio)).sort((a,b)=>b.idContratto-a.idContratto)[0]||null,[contratti,pratica.dataInizio]);
  // Group multiple shift rows on the same day; one communication covers that calendar day.
  const giorni=useMemo(()=>{
@@ -68,11 +62,6 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const from=periodo.da||pending[0]?.data||"";
  const to=periodo.a||pending[pending.length-1]?.data||from;
  const valido=!!padre&&!!from&&!!to&&from<=to&&from>=day(padre.dataInizio)&&(!padre.dataFine||to<=day(padre.dataFine));
- const saveCode=async()=>{
-  if(codice.trim()===codiceSalvato)return;
-  const v=await hrSalvaCodiceComunicazione(pratica.id,codice.trim());
-  setCodice(v.codice);setCodiceSalvato(v.codice);
- };
  const prepara=async(data:string,parent:ContrattoPadreAzione,draft?:ChiamataHR)=>{
   setWorking(data);setErrore("");setAvviso("");
   try{
@@ -80,7 +69,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare la PEC.");
    const employer=datore||await leggiDatoreIntermittenti();
    if(!employer.codiceFiscale||!employer.email)throw new Error("Dati del datore non configurati");
-   await saveCode();
+   const {codice}=await hrLeggiCodiceComunicazione(pratica.id);
    const xml=draft?.xmlArchiviato||generaUniIntermittentiXml({cfDatore:employer.codiceFiscale,emailDatore:employer.email,lavoratori:[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:data,dataFine:to}]});
    const callId=draft?.id||(await salvaChiamataHR(idOperatore,parent.idContratto,data,to,xml)).id;
    await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,callId,"PEC_PREPARATA");
@@ -102,30 +91,27 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   finally{setWorking(null)}
  };
  return <section className="space-y-2 rounded-lg border border-[#bfdad0] bg-[#f9fcfb] p-3">
-  <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-bold text-[#233f35]">Da fare · contratto e chiamate dei prossimi 7 giorni</h3>
+  <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold text-[#315e51]">Contratto e chiamate · prossimi 7 giorni</h4>
    <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
   </div>
-  {!padre?<div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2"><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" onClick={onCreateContract}>Crea contratto</button></div>:
-  <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800"><CheckCircle2 className="h-4 w-4"/>Contratto a chiamata registrato</div>}
-  <div className="flex flex-wrap items-center gap-3 rounded-md border bg-white px-3 py-2">
-   <label className="min-w-[230px] flex-1 text-xs font-medium text-gray-600">Codice comunicazione UNILAV (comune alle chiamate)<input className="mt-1 block w-full rounded border px-3 py-1.5 text-sm text-[#273b35]" value={codice} onChange={e=>setCodice(e.target.value)} onBlur={()=>void saveCode().catch(e=>setErrore(e instanceof Error?e.message:"Salvataggio codice fallito"))} placeholder="Se disponibile, inserisci una sola volta"/></label>
-   <button type="button" disabled={working!==null||codice===codiceSalvato} onClick={()=>void saveCode().catch(e=>setErrore(e instanceof Error?e.message:"Salvataggio codice fallito"))} className="rounded-md border border-[#007a55] px-3 py-2 text-xs font-semibold text-[#007a55] disabled:opacity-50">{codice===codiceSalvato?"Codice salvato":"Salva codice"}</button>
-  </div>
+  {!padre?<div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div><button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" onClick={onCreateContract}>Crea contratto</button></div>:
+  <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800"><CheckCircle2 className="h-4 w-4"/>Contratto a chiamata registrato · requisiti soddisfatti</div>}
   {errore&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{errore}</p>}
   {avviso&&<p role="status" className="rounded bg-emerald-50 p-2 text-xs text-emerald-800">{avviso}</p>}
   <div className="rounded-md border bg-white px-3 py-3">
    <h4 className="text-sm font-semibold text-[#315e51]">Turni in programma</h4>
    {loading?<p className="mt-2 text-xs text-gray-500">Caricamento turni…</p>:giorni.length===0?<p className="mt-2 text-xs text-gray-500">Nessun turno nei prossimi sette giorni.</p>:
-    <div className="mt-2 flex flex-wrap gap-1.5">{giorni.map(g=><span key={g.data} className={`rounded-full border px-2.5 py-1 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50 text-emerald-700":"border-amber-200 bg-amber-50 text-amber-800"}`}>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</span>)}</div>}
+    <div className="mt-2 space-y-1.5">{giorni.map(g=><div key={g.data} className={`rounded-md border px-3 py-2 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><strong>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</strong><div className="mt-1 space-y-0.5 text-gray-700">{g.items.map(t=><div key={t.idTurno}>{t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}{t.oraInizio?" · "+String(t.oraInizio).slice(0,5):""}{t.oraFine?"–"+String(t.oraFine).slice(0,5):""}</div>)}</div></div>)}</div>}
    <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
     <label className="text-xs text-gray-600">Chiamata dal<input type="date" value={from} onChange={e=>setPeriodo(p=>({...p,da:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
     <label className="text-xs text-gray-600">Al<input type="date" min={from||undefined} value={to} onChange={e=>setPeriodo(p=>({...p,a:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
     <button type="button" disabled={!valido||working!==null||!datore} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Prepara PEC</button>
    </div>
+   <p className="mt-2 text-xs text-gray-600">Requisiti: contratto a chiamata attivo, CF lavoratore e datore configurati, intervallo valido e codice UNILAV se disponibile. La PEC va inviata dal gestore autorizzato.</p>
    {!valido&&<p className="mt-2 text-xs text-amber-700">Seleziona un periodo valido all'interno del contratto padre. Le date possono raggruppare più turni.</p>}
   </div>
   <details className="rounded-md border bg-white px-3 py-2">
-   <summary className="cursor-pointer text-sm font-semibold text-[#315e51]">Archivio chiamate del contratto ({archivi.length})</summary>
+   <summary className="cursor-pointer text-sm font-semibold text-[#007a55]">Archivio chiamate del contratto ({archivi.length})</summary>
    {archivi.length?<div className="mt-2 space-y-2">{archivi.map(c=><div key={c.id} className="rounded-md border bg-[#f8fbfa] p-2 text-xs">
     <div className="flex flex-wrap justify-between gap-2"><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><span className={c.stato==="INVIATA"?"font-semibold text-emerald-700":"font-semibold text-amber-800"}>{c.stato.replace(/_/g," ")}</span></div>
     {c.esitoInvio&&<p className="mt-1 text-gray-600">Ricevuta: {c.esitoInvio}</p>}
