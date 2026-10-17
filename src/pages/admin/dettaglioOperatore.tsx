@@ -253,6 +253,17 @@ const DettaglioOperatore = () => {
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
+    // The workflow derives status from persisted contracts, UNILAV and PEC confirmations.
+    useEffect(()=>{
+      if(!praticaHR?.id||!window.location.pathname.startsWith("/hr/"))return;
+      let active=true;
+      void hrPratiche().then(rows=>{
+        const latest=rows.find(p=>p.id===praticaHR.id);
+        if(active&&latest&&(latest.stato!==praticaHR.stato||latest.note!==praticaHR.note))setPraticaHR(latest);
+      }).catch(()=>{});
+      return ()=>{active=false};
+    },[contratti,aggiornamentoAzioniHR,praticaHR?.id]);
+
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
     const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
     useEffect(()=>{
@@ -1780,6 +1791,7 @@ const DettaglioOperatore = () => {
                         contratti={contratti}
                         codiceFiscale={dipendente?.codiceFiscale||""}
                         onCreateContract={()=>setFormContrattoOpen(true)}
+                        onProgressUpdated={()=>setAggiornamentoAzioniHR(x=>x+1)}
                       />
                     ):window.location.pathname.startsWith("/hr/")&&praticaHR?(
                       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
