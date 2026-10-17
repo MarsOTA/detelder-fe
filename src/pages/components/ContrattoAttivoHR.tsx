@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, FileCheck2, FilePlus2, FileText, UploadCloud, Eye } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileCheck2, FilePlus2, FileText, UploadCloud, Eye, Trash2 } from "lucide-react";
 import type { ChangeEvent, ReactNode } from "react";
 import type { HRPratica } from "@/utils/hrWorkflow";
 
@@ -13,18 +13,22 @@ type Props={
  codiceFiscale?:string|null;isHR?:boolean;azioni?:ReactNode;onCreate?:()=>void;onPeriodSave?:(inizio:string,fine:string|null)=>Promise<void>;
  onDownload?:(contractId:number,kind:string)=>void;
  onUpload?:(event:ChangeEvent<HTMLInputElement>,contractId:number,kind:DocKind)=>void;
+ onDelete?:(contractId:number,kind:"contratto"|"contrattoFirmato"|"contrattoUnilav")=>Promise<void>;
+ onStatus?:(status:"IN_LAVORAZIONE"|"DOCUMENTI_MANCANTI"|"COMPLETATO",reason:string)=>Promise<void>;
 };
 const nice:Record<string,string>={CHIAMATA:"Contratto a chiamata",OCCASIONALE:"Contratto occasionale",TEMPO_DETERMINATO:"Contratto a tempo determinato",CONTRATTO_TEMPO_DETERMINATO:"Contratto a tempo determinato",TEMPO_INDETERMINATO:"Contratto a tempo indeterminato",CONTRATTO_TEMPO_INDETERMINATO:"Contratto a tempo indeterminato",CONSGNA_BENI_FORMAZIONE:"Consegna beni e formazione",FATTURA:"Collaborazione con fattura"};
 const employers:Record<string,string>={DETELDER:"DETELDER",SOCIETA_APPALTO:"Società in appalto",AUTONOMO_PIVA:"Autonomo · P.IVA"};
 const iso=(v:string|null|undefined)=>v?String(v).slice(0,10):"";
 const isValid=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T12:00:00Z"));
 const canonical=(v:string)=>v.replace(/^CONTRATTO_/,"");
-export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,azioni,onCreate,onPeriodSave,onDownload,onUpload}:Props){
+export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,azioni,onCreate,onPeriodSave,onDownload,onUpload,onDelete,onStatus}:Props){
  const [inizio,setInizio]=useState("");
  const [fine,setFine]=useState("");
  const [saving,setSaving]=useState(false);
  const [error,setError]=useState("");
  const [saved,setSaved]=useState(false);
+ const [missingReason,setMissingReason]=useState("");
+ const [statusBusy,setStatusBusy]=useState(false);
  useEffect(()=>{setInizio(iso(pratica?.dataInizio));setFine(iso(pratica?.dataFine));setError("");setSaved(false)},[pratica?.id,pratica?.dataInizio,pratica?.dataFine]);
  const matches=pratica?contratti.filter(c=>canonical(c.tipologia)===canonical(pratica.tipologia)).sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))):[];
  // A document created before this assignment must not be shown as generated for the current case.
@@ -82,9 +86,26 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     <div className="min-w-[150px] flex-1"><div className="text-sm font-semibold">{doc.title}</div><div className="text-xs text-gray-500">{doc.ok?"Disponibile":doc.kind==="contrattoFirmato"?"Facoltativo · non caricato":doc.upload?"Da caricare":"Da generare"}</div></div>
     {doc.kind==="contrattoFirmato"&&!doc.ok?<span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">Facoltativo</span>:statusBadge(doc.ok)}
     {doc.ok&&creato&&onDownload&&<button type="button" className="inline-flex items-center gap-1 rounded border px-3 py-2 text-xs text-[#315e51]" onClick={()=>onDownload(creato.idContratto,doc.kind)}><Eye className="h-4 w-4"/>Apri</button>}
+    {doc.ok&&creato&&isHR&&onDelete&&pratica.stato!=="COMPLETATO"&&<button type="button" title={"Elimina "+doc.title} className="inline-flex items-center gap-1 rounded border border-red-200 px-3 py-2 text-xs text-red-700" onClick={()=>{if(window.confirm("Eliminare "+doc.title+"? L'operazione è irreversibile."))void onDelete(creato.idContratto,doc.kind==="downloadContratto"?"contratto":doc.kind as DocKind).catch(e=>setError(e instanceof Error?e.message:"Cancellazione fallita"))}}><Trash2 className="h-4 w-4"/>Elimina</button>}
     {doc.upload&&creato&&isHR&&onUpload&&<label className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] px-3 py-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/>Carica<input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
    <p className="mt-3 text-xs text-gray-500">I documenti vengono associati al contratto effettivamente registrato. L'UNILAV è distinta dalle comunicazioni delle singole chiamate intermittenti.</p>
+  </section>
+  {isHR&&onStatus&&<section className="rounded-xl border border-[#cfe2dc] bg-white p-4">
+    <h3 className="font-semibold text-[#273b35]">Stato della lavorazione HR</h3>
+    <p className="mt-1 text-xs text-gray-600">Da qui l'HR aggiorna lo stato. L'ADMIN visualizza l'esito nella propria dashboard.</p>
+    {pratica.stato!=="COMPLETATO"&&<div className="mt-3 space-y-3">
+      <label className="block text-xs text-gray-600">Motivo dei documenti mancanti (obbligatorio soltanto per questo stato)
+        <input value={missingReason} onChange={e=>setMissingReason(e.target.value)} placeholder="Es. UNILAV di assunzione mancante" className="mt-1 w-full rounded-md border px-3 py-2 text-sm"/>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        {pratica.stato!=="IN_LAVORAZIONE"&&<button disabled={statusBusy} onClick={()=>void (async()=>{setStatusBusy(true);try{await onStatus("IN_LAVORAZIONE","")}catch(e){setError(e instanceof Error?e.message:"Errore stato")}finally{setStatusBusy(false)}})()} className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white">In lavorazione</button>}
+        {pratica.stato!=="DOCUMENTI_MANCANTI"&&<button disabled={statusBusy||missingReason.trim().length<5} onClick={()=>void (async()=>{setStatusBusy(true);try{await onStatus("DOCUMENTI_MANCANTI",missingReason)}catch(e){setError(e instanceof Error?e.message:"Errore stato")}finally{setStatusBusy(false)}})()} className="rounded-md bg-amber-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Documenti mancanti</button>}
+        {pratica.stato==="IN_LAVORAZIONE"&&<button disabled={statusBusy} onClick={()=>void (async()=>{setStatusBusy(true);try{await onStatus("COMPLETATO","Lavorazione HR completata")}catch(e){setError(e instanceof Error?e.message:"Controlli obbligatori non soddisfatti")}finally{setStatusBusy(false)}})()} className="rounded-md bg-emerald-700 px-3 py-2 text-xs font-semibold text-white">Completa pratica</button>}
+      </div>
+    </div>}
+    {pratica.stato==="COMPLETATO"&&<p className="mt-2 font-semibold text-emerald-700">Lavorazione HR completata e comunicata all'ADMIN.</p>}
+    {error&&<p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
   </section>
  </div>;
 }
