@@ -13,8 +13,8 @@ const day=(x?:string|null)=>x?String(x).slice(0,10):"";
 const fmt=(v:string)=>v?v.slice(8,10)+"/"+v.slice(5,7)+"/"+v.slice(0,4):"";
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const plus=(date:string,days:number)=>{const d=new Date(date+"T12:00:00");d.setDate(d.getDate()+days);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
-type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void};
-export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract}:Props){
+type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;onProgressUpdated?:()=>void};
+export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,onProgressUpdated}:Props){
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
@@ -86,7 +86,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   const value=(esito[data]||"").trim();
   if(value.length<5){setErrore("Inserisci gli estremi verificabili della ricevuta PEC.");return}
   setWorking(data);setErrore("");
-  try{await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,draft.id,"INVIATA",value);await refresh();setAvviso("Comunicazione registrata come inviata con riferimento PEC.");}
+  try{await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,draft.id,"INVIATA",value);await refresh();setAvviso("Comunicazione registrata come inviata con riferimento PEC.");onProgressUpdated?.();}
   catch(e){setErrore(e instanceof Error?e.message:"Conferma invio non riuscita")}
   finally{setWorking(null)}
  };
