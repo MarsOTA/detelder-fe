@@ -6,7 +6,7 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
+import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrCambiaStato } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
@@ -1800,6 +1800,18 @@ const DettaglioOperatore = () => {
                     }}
                     onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
                     onUpload={(event,contractId,kind)=>{void caricaContrattoFirmato(event,contractId,kind)}}
+                    onDelete={async(contractId,kind)=>{
+                      if(kind==="contratto")await getsioneCancellazioneTuttiContratti(contractId);
+                      else await getsioneCancellazioneSingoloContratto(contractId,kind);
+                      await caricaListaContratti();
+                      setAggiornamentoAzioniHR(x=>x+1);
+                    }}
+                    onStatus={async(stato,note)=>{
+                      if(!praticaHR)return;
+                      await hrCambiaStato(praticaHR.id,stato,note);
+                      const aggiornate=await hrPratiche();
+                      setPraticaHR(aggiornate.find(p=>p.id===praticaHR.id)||null);
+                    }}
                   />
                   {contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
