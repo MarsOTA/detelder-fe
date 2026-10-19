@@ -11,7 +11,7 @@ import type { ChiamataHR } from "@/utils/chiamateHR";
 type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFiscale?:string;codice_fiscale?:string };
 type Contratto = {idContratto:number;tipologia:string;dataInizio:string|null;dataFine:string|null;pathContrattoUnilav?:string|null;pathContrattoFirmato?:string|null;cfDatore?:string;emailDatore?:string};
 type Turno = {idTurno?:number;idOperatore?:number|null;dataTurno?:string;oraInizio?:string;oraFine?:string;nomeEvento?:string;via?:string};
-type Stato = "Regolare" | "Incompleto" | "Scaduto";
+type Stato = "Completo" | "Incompleto" | "Scaduto";
 type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;stato:Stato;motivi:string[]};
 type ArchivioChiamate = Record<number,ChiamataHR[] | null>;
 const oggi=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
@@ -51,7 +51,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
 
  // La copertura del contratto padre non conferma l'esistenza di una chiamata figlia valida.
  // In assenza di un'API che colleghi le chiamate ai turni, non certificare la regolarità.
- const stato:Stato=isScaduto?"Scaduto":motivi.length?"Incompleto":"Regolare";
+ const stato:Stato=isScaduto?"Scaduto":motivi.length?"Incompleto":"Completo";
  return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,stato,motivi};
 }
 export default function ModuloHR(){
@@ -129,7 +129,7 @@ export default function ModuloHR(){
   finally{setLoading(false);setProgress("");}
  };
  useEffect(()=>{void carica();},[]);
- const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Regolare"),[righe]);
+ const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Completo"),[righe]);
  const visibili=useMemo(()=>righe.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())).sort((a,b)=>a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,ricerca]);
  const inoltra=async(x:Riga)=>{
   const tipoOrigine=inlineHR[x.operatore.id]?.tipo || x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia || "";
@@ -194,9 +194,9 @@ export default function ModuloHR(){
 {tipoSelezionato(x)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs disabled:bg-gray-100" disabled={periodiBloccati[x.operatore.id]||praticaCorrente(x)?.stato==="COMPLETATO"} min={dateContratto[x.operatore.id]?.inizio||undefined} value={dateContratto[x.operatore.id]?.fine??iso(praticaCorrente(x)?.dataFine)??(tipoSelezionato(x)==="CHIAMATA"?iso(x.turni[x.turni.length-1]?.dataTurno):"")} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??iso(praticaCorrente(x)?.dataInizio),fine:e.target.value}}))}/>}
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span></div>
 <button type="button" title={periodiBloccati[x.operatore.id]?"Sblocca date":"Salva e blocca le date"} disabled={salvataggioPeriodo!==null||praticaCorrente(x)?.stato==="COMPLETATO"} onClick={()=>void bloccaPeriodo(x)} className="rounded-md border border-[#cfe2dc] p-2 text-[#007a55] disabled:opacity-40">{periodiBloccati[x.operatore.id]?<LockKeyhole className="h-4 w-4"/>:<LockKeyholeOpen className="h-4 w-4"/>}</button></div></td>
-      <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Regolare"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
+      <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
       <td className="p-3">{x.prossimoTurno&&x.priorita<=3?<span className="font-semibold text-red-700">Alta</span>:x.prossimoTurno&&x.priorita<=14?<span className="font-semibold text-amber-700">Media</span>:<span className="text-gray-500">Bassa</span>}</td>
-      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||!!praticaCorrente(x)} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"?"Elaborato":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?"Assegnata HR":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).slice(-1)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
+      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||!!praticaCorrente(x)} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"?"Elaborato":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?"Assegnata HR":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore da regolarizzare"}</td></tr>}
    </tbody></table></div>
