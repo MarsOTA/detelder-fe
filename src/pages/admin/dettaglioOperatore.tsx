@@ -1799,6 +1799,17 @@ const DettaglioOperatore = () => {
                         {praticaHR.tipologia!=="FATTURA"&&<button type="button" onClick={()=>setFormContrattoOpen(true)} disabled={praticaHR.stato==="COMPLETATO"} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Apri form</button>}
                       </div>
                     ):null}
+                    archivioChiamate={window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id?(
+                      <AzioniHRIntermittenti
+                        key={"archivio-"+aggiornamentoAzioniHR}
+                        mode="archive"
+                        idOperatore={Number(id)}
+                        pratica={praticaHR}
+                        contratti={contratti}
+                        codiceFiscale={dipendente?.codiceFiscale||""}
+                        onCreateContract={()=>setFormContrattoOpen(true)}
+                      />
+                    ):null}
                     onCreate={()=>setFormContrattoOpen(true)}
                     onPeriodSave={async (dataInizio,dataFine)=>{
                       if(!praticaHR)return;
