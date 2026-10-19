@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from "react";
 import {CheckCircle2,FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle,Ban,Trash2} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
-import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR,simulaAnnullamentoChiamataHR,resetSimulazioniChiamataHR} from "@/utils/chiamateHR";
+import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR,simulaAnnullamentoChiamataHR,resetSimulazioniChiamataHR,eliminaVecchieChiamate18Ottobre} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
 import {hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
@@ -98,6 +98,17 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   }catch(e){setErrore(e instanceof Error?e.message:"Annullamento test non riuscito")}
   finally{setWorking(null)}
  };
+ const pulisciVecchie18=async()=>{
+  if(!padre||readOnly)return;
+  if(!window.confirm("Eliminare SOLO le 2 vecchie chiamate del 18/10/2026 in stato Preparata di questo contratto? Il server bloccherà l’operazione se non corrispondono esattamente due record."))return;
+  setWorking("legacy18");setErrore("");setAvviso("");
+  try{
+   const result=await eliminaVecchieChiamate18Ottobre(idOperatore,padre.idContratto);
+   setAvviso(result.eliminate+" vecchie chiamate preparate del 18/10 eliminate dal database di test.");
+   await refresh();onProgressUpdated?.();
+  }catch(e){setErrore(e instanceof Error?e.message:"Impossibile eliminare i vecchi record")}
+  finally{setWorking(null)}
+ };
  const pulisciTest=async()=>{
   if(!padre||readOnly)return;
   if(!window.confirm("Eliminare tutte le comunicazioni SIMULATE di questo contratto dal database di test? Non saranno cancellate chiamate reali o contratti."))return;
@@ -109,6 +120,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  if(mode==="archive")return <section className="rounded-lg border border-[#cfe2dc] bg-white p-3">
  <div className="flex items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><Archive className="h-5 w-5"/>Archivio chiamate del contratto</h3><span className="rounded-full bg-[#ecf3f1] px-2 py-1 text-xs font-semibold text-[#007a55]">{archivi.length} chiamate</span></div>
  {loading?<p className="mt-2 text-xs text-gray-500">Caricamento…</p>:archivi.length?<div className="mt-2 divide-y">{archivi.map(c=><div key={c.id} className="flex items-center justify-between gap-2 py-2 text-xs"><div><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><p className="text-gray-500">UNI-Intermittenti · #{c.id}</p></div><span className={c.stato==="INVIATA"?"rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"rounded-full bg-indigo-100 px-2 py-1 font-semibold text-indigo-800":c.stato==="PEC_PREPARATA"?"rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800":"rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"}>{c.annullamentoTest?"Annullata (test)":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"Invio simulato":c.stato==="INVIATA"?"Invio registrato":c.stato==="PEC_PREPARATA"?"Preparata":"Bozza"}</span>{!readOnly&&c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&!c.annullamentoTest&&<button type="button" disabled={working!==null} onClick={()=>void annullaTest(c)} aria-label={"Simula annullamento chiamata "+c.id} title="Simula annullamento ministeriale (nessuna email spedita)" className="rounded-md border border-amber-200 p-1.5 text-amber-700 disabled:opacity-40"><Ban className="h-4 w-4"/></button>}{!c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&c.stato==="INVIATA"&&<button type="button" disabled title="Annullamento reale: integrazione email ministeriale non ancora disponibile" className="rounded-md border p-1.5 opacity-50"><Ban className="h-4 w-4"/></button>}</div>)}<p className="mt-1 text-xs text-gray-500">{archivi.filter(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST")).length} prove di test disponibili; non sono ricevute di consegna reali.</p></div>:<p className="mt-2 text-xs text-gray-500">Nessuna comunicazione archiviata.</p>}
+ {!readOnly&&archivi.filter(c=>day(c.dataInizio)==="2026-10-18"&&c.stato==="PEC_PREPARATA"&&!c.esitoInvio).length===2&&<button type="button" disabled={working!==null} onClick={()=>void pulisciVecchie18()} className="mt-3 mr-2 inline-flex items-center gap-2 rounded border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-800 disabled:opacity-40"><Trash2 className="h-4 w-4"/>Elimina 2 vecchie chiamate del 18/10</button>}
  {!readOnly&&archivi.some(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST"))&&<button type="button" disabled={working!==null} onClick={()=>void pulisciTest()} className="mt-3 inline-flex items-center gap-2 rounded border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-40"><Trash2 className="h-4 w-4"/>Pulisci simulazioni di questo contratto</button>}
  {errore&&<p role="alert" className="mt-2 text-xs text-red-700">{errore}</p>}
  {avviso&&<p role="status" className="mt-2 text-xs text-emerald-700">{avviso}</p>}
