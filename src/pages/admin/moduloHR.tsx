@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, AlertCircle, CheckCircle2, X, Eye } from "lucide-react";
+import { Sparkles, AlertCircle, CheckCircle2, X, Eye, LockKeyhole, LockKeyholeOpen } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { hrAssegna,hrPratiche } from "@/utils/hrWorkflow";
+import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import type { DatoreIntermittenti } from "@/utils/chiamateHR";
@@ -68,7 +68,37 @@ export default function ModuloHR(){
  const [dateModificate,setDateModificate]=useState<Record<number,{inizio:string;fine:string}>>({});
  const [progress,setProgress]=useState("");
  const [inlineHR,setInlineHR]=useState<Record<number,{datore:string;tipo:string}>>({});
- const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>({});
+ const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>(()=>{
+  try{return JSON.parse(localStorage.getItem("detelder_admin_date_contratto_v1")||"{}") as Record<number,{inizio:string;fine:string}>}catch{return {}}
+ });
+ const [periodiBloccati,setPeriodiBloccati]=useState<Record<number,boolean>>({});
+ const [salvataggioPeriodo,setSalvataggioPeriodo]=useState<number|null>(null);
+ useEffect(()=>{localStorage.setItem("detelder_admin_date_contratto_v1",JSON.stringify(dateContratto))},[dateContratto]);
+ const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia.replace(/^CONTRATTO_/,"")||"";
+ const praticaCorrente=(x:Riga)=>assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0];
+ const periodoVisualizzato=(x:Riga)=>{
+  const p=praticaCorrente(x),draft=dateContratto[x.operatore.id];
+  return {inizio:draft?.inizio??iso(p?.dataInizio)??"",fine:draft?.fine??iso(p?.dataFine)??""};
+ };
+ const bloccaPeriodo=async(x:Riga)=>{
+  const id=x.operatore.id,periodo=periodoVisualizzato(x),pratica=praticaCorrente(x);
+  if(periodiBloccati[id]){setPeriodiBloccati(v=>({...v,[id]:false}));return;}
+  if(!periodo.inizio){setErrore("Indica la data di inizio per "+x.operatore.cognome);return;}
+  const fine=tipoSelezionato(x)==="TEMPO_INDETERMINATO"?null:periodo.fine||null;
+  if(!fine&&tipoSelezionato(x)!=="TEMPO_INDETERMINATO"){setErrore("Indica la data di fine per "+x.operatore.cognome);return;}
+  if(fine&&fine<periodo.inizio){setErrore("Periodo contrattuale non valido");return;}
+  setSalvataggioPeriodo(id);setErrore("");
+  try{
+   if(pratica&&pratica.stato!=="COMPLETATO"){
+    await hrAggiornaPeriodo(pratica.id,periodo.inizio,fine);
+    setAssegnate(await hrPratiche());
+   }
+   setDateContratto(v=>({...v,[id]:{inizio:periodo.inizio,fine:fine||""}}));
+   setPeriodiBloccati(v=>({...v,[id]:true}));
+  }catch(e){setErrore(e instanceof Error?e.message:"Salvataggio periodo non riuscito")}
+  finally{setSalvataggioPeriodo(null)}
+ };
+
  const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>({...prev,[id]:{...(prev[id]??{datore:"DETELDER",tipo:""}),[k]:value}}));
  const carica=async()=>{
   setLoading(true);setErrore("");setProgress("Caricamento operatori e turni…");
@@ -113,7 +143,7 @@ export default function ModuloHR(){
   if(finish&&finish<start){setErrore("La data fine non può precedere quella di inizio");return;}
   if(x.contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===tipo&&iso(c.dataInizio)===start)){setErrore("Esiste già un contratto di questo tipo con la stessa data di inizio");return;}
   if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.tipologia===tipo&&iso(p.dataInizio)===start)){setErrore("Esiste già una pratica per questa data e tipologia");return;}
-  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")){setErrore("Pratica già aperta.");return;}
+  if(assegnate.some(p=>p.idOperatore===x.operatore.id)){setErrore("Pratica già aperta.");return;}
   setAssegnando(x.operatore.id);setErrore("");
   try{
     await hrAssegna({idOperatore:x.operatore.id,tipologia:tipo,datore,
@@ -159,10 +189,14 @@ export default function ModuloHR(){
       <td className="p-3 font-semibold"><button type="button" aria-expanded={espanso===x.operatore.id} aria-label="Dettagli turni" className="mr-2 text-[#007a55]" onClick={()=>setEspanso(v=>v===x.operatore.id?null:x.operatore.id)}>{espanso===x.operatore.id?"▾":"▸"}</button>{x.operatore.cognome} {x.operatore.nome}</td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Inquadramento" value={inlineHR[x.operatore.id]?.tipo??x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia??""} onChange={e=>aggiorna(x.operatore.id,"tipo",e.target.value)}><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</option><option value="FATTURA">Fattura (senza generatore)</option></select></td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Datore di lavoro" value={inlineHR[x.operatore.id]?.datore??"DETELDER"} onChange={e=>aggiorna(x.operatore.id,"datore",e.target.value)}><option value="DETELDER">DETELDER</option><option value="SOCIETA_APPALTO">Società in appalto</option><option value="AUTONOMO_PIVA">Autonomo - P.IVA</option></select></td>
-      <td className="p-3"><div className="flex min-w-[220px] flex-col gap-1"><input type="date" title="Data inizio contratto" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs" value={dateContratto[x.operatore.id]?.inizio||((inlineHR[x.operatore.id]?.tipo||"")==="CHIAMATA"?iso(x.turni[0]?.dataTurno):"")} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine||""}}))}/>{!((inlineHR[x.operatore.id]?.tipo||"").includes("INDETERMINATO"))&&<input type="date" title="Data fine contratto" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs" min={dateContratto[x.operatore.id]?.inizio||undefined} value={dateContratto[x.operatore.id]?.fine||((inlineHR[x.operatore.id]?.tipo||"")==="CHIAMATA"?iso(x.turni[x.turni.length-1]?.dataTurno):"")} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio||"",fine:e.target.value}}))}/>}<span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span></div></td>
-      <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Regolare"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span>{assegnate.filter(p=>p.idOperatore===x.operatore.id).slice(-1).map(p=><span key={p.id} className={`mt-1 block whitespace-nowrap rounded-full px-2 py-1 text-center text-xs font-semibold ${p.stato==="COMPLETATO"?"bg-emerald-100 text-emerald-800":p.stato==="IN_LAVORAZIONE"?"bg-blue-100 text-blue-800":"bg-amber-100 text-amber-800"}`}>{p.stato==="COMPLETATO"?"Elaborato HR":p.stato==="IN_LAVORAZIONE"?"In lavorazione HR":"Da elaborare HR"}</span>)}</td>
+      <td className="p-3"><div className="flex min-w-[210px] items-center gap-2"><div className="flex min-w-0 flex-1 flex-col gap-1">
+<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs disabled:bg-gray-100" disabled={periodiBloccati[x.operatore.id]||praticaCorrente(x)?.stato==="COMPLETATO"} value={dateContratto[x.operatore.id]?.inizio??iso(praticaCorrente(x)?.dataInizio)??(tipoSelezionato(x)==="CHIAMATA"?iso(x.turni[0]?.dataTurno):"")} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??iso(praticaCorrente(x)?.dataFine)}}))}/>
+{tipoSelezionato(x)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs disabled:bg-gray-100" disabled={periodiBloccati[x.operatore.id]||praticaCorrente(x)?.stato==="COMPLETATO"} min={dateContratto[x.operatore.id]?.inizio||undefined} value={dateContratto[x.operatore.id]?.fine??iso(praticaCorrente(x)?.dataFine)??(tipoSelezionato(x)==="CHIAMATA"?iso(x.turni[x.turni.length-1]?.dataTurno):"")} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??iso(praticaCorrente(x)?.dataInizio),fine:e.target.value}}))}/>}
+<span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span></div>
+<button type="button" title={periodiBloccati[x.operatore.id]?"Sblocca date":"Salva e blocca le date"} disabled={salvataggioPeriodo!==null||praticaCorrente(x)?.stato==="COMPLETATO"} onClick={()=>void bloccaPeriodo(x)} className="rounded-md border border-[#cfe2dc] p-2 text-[#007a55] disabled:opacity-40">{periodiBloccati[x.operatore.id]?<LockKeyhole className="h-4 w-4"/>:<LockKeyholeOpen className="h-4 w-4"/>}</button></div></td>
+      <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Regolare"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
       <td className="p-3">{x.prossimoTurno&&x.priorita<=3?<span className="font-semibold text-red-700">Alta</span>:x.prossimoTurno&&x.priorita<=14?<span className="font-semibold text-amber-700">Media</span>:<span className="text-gray-500">Bassa</span>}</td>
-      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${assegnate.find(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")?.stato==="IN_LAVORAZIONE"?"bg-blue-600":assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")?"bg-amber-600":"bg-[#007a55]"}`}>{assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO")?"In gestione HR":assegnando===x.operatore.id?"Assegnazione…":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).slice(-1)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
+      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||!!praticaCorrente(x)} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"?"Elaborato":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?"Assegnata HR":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).slice(-1)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore da regolarizzare"}</td></tr>}
    </tbody></table></div>
