@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from "react";
-import {CheckCircle2,FilePlus2,RefreshCw,Send} from "lucide-react";
+import {CheckCircle2,FilePlus2,RefreshCw,Send,Info,Archive} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
@@ -13,8 +13,8 @@ const day=(x?:string|null)=>x?String(x).slice(0,10):"";
 const fmt=(v:string)=>v?v.slice(8,10)+"/"+v.slice(5,7)+"/"+v.slice(0,4):"";
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const plus=(date:string,days:number)=>{const d=new Date(date+"T12:00:00");d.setDate(d.getDate()+days);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
-type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;onProgressUpdated?:()=>void};
-export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,onProgressUpdated}:Props){
+type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;onProgressUpdated?:()=>void;mode?:"tasks"|"archive"};
+export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,onProgressUpdated,mode="tasks"}:Props){
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
@@ -22,7 +22,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const [working,setWorking]=useState<string|null>(null);
  const [errore,setErrore]=useState("");
  const [avviso,setAvviso]=useState("");
- const [esito,setEsito]=useState<Record<string,string>>({});
+ const [showTurni,setShowTurni]=useState(false);
  const [periodo,setPeriodo]=useState<{da:string;a:string}>({da:"",a:""});
  const refresh=async()=>{
   setLoading(true);setErrore("");
@@ -77,21 +77,18 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    const subject=encodeURIComponent("UNI_Intermittenti - "+data);
    const body=encodeURIComponent("Allego la comunicazione UNI_Intermittenti in formato XML. Verificare destinatario, allegato ed esito dell'invio PEC.");
    window.location.href="mailto:?subject="+subject+"&body="+body;
-   setAvviso("XML scaricato e bozza email aperta. Allega il file alla PEC e inviala dal gestore autorizzato; successivamente registra la ricevuta.");
+   setAvviso("XML preparato e archiviato. L’invio e l’acquisizione automatica delle ricevute richiedono il collegamento del gestore PEC.");
    await refresh();
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile preparare la PEC")}
   finally{setWorking(null)}
  };
- const conferma=async(data:string,parent:ContrattoPadreAzione,draft:ChiamataHR)=>{
-  const value=(esito[data]||"").trim();
-  if(value.length<5){setErrore("Inserisci gli estremi verificabili della ricevuta PEC.");return}
-  setWorking(data);setErrore("");
-  try{await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,draft.id,"INVIATA",value);await refresh();setAvviso("Comunicazione registrata come inviata con riferimento PEC.");onProgressUpdated?.();}
-  catch(e){setErrore(e instanceof Error?e.message:"Conferma invio non riuscita")}
-  finally{setWorking(null)}
- };
- return <section className="space-y-2 rounded-lg border border-[#bfdad0] bg-[#f9fcfb] p-3">
-  <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold text-[#315e51]">Contratto e chiamate · prossimi 7 giorni</h4>
+ if(mode==="archive")return <section className="rounded-lg border border-[#cfe2dc] bg-white p-3">
+ <div className="flex items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><Archive className="h-5 w-5"/>Archivio chiamate del contratto</h3><span className="rounded-full bg-[#ecf3f1] px-2 py-1 text-xs font-semibold text-[#007a55]">{archivi.length} chiamate</span></div>
+ {loading?<p className="mt-2 text-xs text-gray-500">Caricamento…</p>:archivi.length?<div className="mt-2 divide-y">{archivi.map(c=><div key={c.id} className="flex items-center justify-between gap-2 py-2 text-xs"><div><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><p className="text-gray-500">UNI-Intermittenti · #{c.id}</p></div><span className={c.stato==="INVIATA"?"rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800":c.stato==="PEC_PREPARATA"?"rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800":"rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"}>{c.stato==="INVIATA"?"Invio registrato":c.stato==="PEC_PREPARATA"?"PEC preparata":"Bozza"}</span></div>)}</div>:<p className="mt-2 text-xs text-gray-500">Nessuna comunicazione archiviata.</p>}
+ <p className="mt-2 text-[11px] text-gray-500">Le ricevute PEC certificate saranno disponibili dopo l'attivazione dell'integrazione con il gestore.</p>
+ </section>;
+ return <section className="space-y-2">
+  <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold text-[#315e51]">{Number(!padre)+Number(giorni.some(g=>!g.submitted))} attività da completare</p>
    <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
   </div>
   {!padre?<div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div><button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" onClick={onCreateContract}>Crea contratto</button></div>:
@@ -99,28 +96,17 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   {errore&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{errore}</p>}
   {avviso&&<p role="status" className="rounded bg-emerald-50 p-2 text-xs text-emerald-800">{avviso}</p>}
   <div className="rounded-md border bg-white px-3 py-3">
-   <h4 className="text-sm font-semibold text-[#315e51]">Turni in programma</h4>
+   <div className="flex items-center justify-between"><h4 className="text-sm font-semibold text-[#315e51]">Turni in programma · prossimi 7 giorni</h4><button type="button" title="Dettaglio turni" aria-label="Espandi dettaglio turni" aria-expanded={showTurni} onClick={()=>setShowTurni(v=>!v)} className="rounded-full border p-1.5 text-[#007a55]"><Info className="h-4 w-4"/></button></div>
    {loading?<p className="mt-2 text-xs text-gray-500">Caricamento turni…</p>:giorni.length===0?<p className="mt-2 text-xs text-gray-500">Nessun turno nei prossimi sette giorni.</p>:
-    <div className="mt-2 space-y-1.5">{giorni.map(g=><div key={g.data} className={`rounded-md border px-3 py-2 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><strong>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</strong><div className="mt-1 space-y-0.5 text-gray-700">{g.items.map(t=><div key={t.idTurno}>{t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}{t.oraInizio?" · "+String(t.oraInizio).slice(0,5):""}{t.oraFine?"–"+String(t.oraFine).slice(0,5):""}</div>)}</div></div>)}</div>}
+    <div className="mt-2 flex flex-wrap gap-1.5">{giorni.map(g=><div key={g.data} className={`rounded-md border px-3 py-2 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><strong>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</strong>{showTurni&&<div className="mt-1 space-y-0.5 text-gray-700">{g.items.map(t=><div key={t.idTurno}>{t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}{t.oraInizio?" · "+String(t.oraInizio).slice(0,5):""}{t.oraFine?"–"+String(t.oraFine).slice(0,5):""}</div>)}</div>}</div>)}</div>}
    <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
     <label className="text-xs text-gray-600">Chiamata dal<input type="date" value={from} onChange={e=>setPeriodo(p=>({...p,da:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
     <label className="text-xs text-gray-600">Al<input type="date" min={from||undefined} value={to} onChange={e=>setPeriodo(p=>({...p,a:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
-    <button type="button" disabled={!valido||working!==null||!datore} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Prepara PEC</button>
+    <button type="button" disabled={!valido||working!==null||!datore} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Prepara comunicazione</button>
    </div>
    <p className="mt-2 text-xs text-gray-600">Requisiti: contratto a chiamata attivo, CF lavoratore e datore configurati, intervallo valido e codice UNILAV se disponibile. La PEC va inviata dal gestore autorizzato.</p>
    {!valido&&<p className="mt-2 text-xs text-amber-700">Seleziona un periodo valido all'interno del contratto padre. Le date possono raggruppare più turni.</p>}
   </div>
-  <details className="rounded-md border bg-white px-3 py-2">
-   <summary className="cursor-pointer text-sm font-semibold text-[#007a55]">Archivio chiamate del contratto ({archivi.length})</summary>
-   {archivi.length?<div className="mt-2 space-y-2">{archivi.map(c=><div key={c.id} className="rounded-md border bg-[#f8fbfa] p-2 text-xs">
-    <div className="flex flex-wrap justify-between gap-2"><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><span className={c.stato==="INVIATA"?"font-semibold text-emerald-700":"font-semibold text-amber-800"}>{c.stato.replace(/_/g," ")}</span></div>
-    {c.esitoInvio&&<p className="mt-1 text-gray-600">Ricevuta: {c.esitoInvio}</p>}
-    {c.stato!=="INVIATA"&&padre&&<div className="mt-2 flex flex-wrap items-center gap-2">
-      <input className="min-w-[175px] flex-1 rounded border px-2 py-1" placeholder="Riferimento ricevuta PEC" value={esito[String(c.id)]||""} onChange={e=>setEsito(p=>({...p,[c.id]:e.target.value}))}/>
-      <button type="button" disabled={working!==null} onClick={()=>void conferma(String(c.id),padre,c)} className="rounded bg-[#007a55] px-3 py-1 font-semibold text-white">Conferma invio</button>
-    </div>}
-   </div>)}</div>:<p className="mt-2 text-xs text-gray-500">Nessuna chiamata registrata.</p>}
-  </details>
-  <p className="text-[11px] text-gray-500">Le chiamate sono raggruppate per giornata. “Prepara PEC” genera e scarica l'XML e apre l'email; l'invio effettivo avviene dal gestore PEC e richiede la conferma della ricevuta.</p>
+  <p className="text-[11px] text-gray-500">Le chiamate sono raggruppate per giornata. La preparazione genera l’XML. L’invio automatico dalla PEC Detelder e le ricevute sono ancora da integrare.</p>
  </section>;
 }
