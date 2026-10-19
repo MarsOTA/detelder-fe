@@ -14,7 +14,7 @@ const fmt=(v:string)=>v?v.slice(8,10)+"/"+v.slice(5,7)+"/"+v.slice(0,4):"";
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const plus=(date:string,days:number)=>{const d=new Date(date+"T12:00:00");d.setDate(d.getDate()+days);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;onProgressUpdated?:()=>void;mode?:"tasks"|"archive"};
-export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,onProgressUpdated,mode="tasks"}:Props){
+export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,mode="tasks"}:Props){
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
