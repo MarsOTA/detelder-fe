@@ -1,7 +1,7 @@
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 export type HRRole="ADMIN"|"HR";
 export type HRStato="DA_ELABORARE"|"IN_LAVORAZIONE"|"DOCUMENTI_MANCANTI"|"COMPLETATO";
-export type HRPratica={id:number;idOperatore:number;nome:string;cognome:string;tipologia:string;datore:string;dataInizio:string|null;dataFine:string|null;stato:HRStato;note:string|null;assegnatoDa:number;presoInCaricoDa:number|null;assegnatoDaNome?:string|null;assegnatoDaCognome?:string|null;presoInCaricoDaNome?:string|null;presoInCaricoDaCognome?:string|null;aggiornatoIl?:string;creatoIl:string};
+export type HRPratica={id:number;idOperatore:number;nome:string;cognome:string;tipologia:string;datore:string;dataInizio:string|null;dataFine:string|null;stato:HRStato;simulazioneTest?:boolean;note:string|null;assegnatoDa:number;presoInCaricoDa:number|null;assegnatoDaNome?:string|null;assegnatoDaCognome?:string|null;presoInCaricoDaNome?:string|null;presoInCaricoDaCognome?:string|null;aggiornatoIl?:string;creatoIl:string};
 export type HRUtente={id:number;nome:string;cognome:string;email?:string;ruoloPrincipale:string;ruoloHR:HRRole|null};
 export async function hrRequest<T>(path:string,init?:RequestInit):Promise<T>{
  const response=await fetch(ezystaffBEUrl+"hr-workflow/"+path,{...init,credentials:"include",headers:{Authorization:"Bearer "+(localStorage.getItem("token")||""),Accept:"application/json",...(init?.body?{"Content-Type":"application/json"}:{}),...init?.headers}});
