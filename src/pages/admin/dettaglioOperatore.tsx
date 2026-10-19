@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
+import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
@@ -1807,9 +1807,14 @@ const DettaglioOperatore = () => {
                         onProgressUpdated={()=>setAggiornamentoAzioniHR(x=>x+1)}
                       />
                     ):praticaHR?(
-                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                        <div><p className="text-[10px] font-semibold uppercase text-amber-900">Da fare</p><p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p></div>
-                        {praticaHR.tipologia!=="FATTURA"&&<button type="button" onClick={()=>setFormContrattoOpen(true)} disabled={praticaHR.stato==="COMPLETATO"} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Apri form</button>}
+                      contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===praticaHR.tipologia&&!!praticaHR.dataInizio&&c.dataInizio?.slice(0,10)===praticaHR.dataInizio.slice(0,10))
+                      ?<div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-[#163d30]"><CheckCircle2 className="h-5 w-5 text-emerald-700"/>Contratto generato</div>
+                        <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">ATTIVITÀ COMPLETATE</span>
+                      </div>
+                      :<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                        <p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p>
+                        {praticaHR.tipologia!=="FATTURA"&&window.location.pathname.startsWith("/hr/")&&<button type="button" onClick={()=>setFormContrattoOpen(true)} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white">Apri form</button>}
                       </div>
                     ):null}
                     archivioChiamate={praticaHR?.tipologia==="CHIAMATA"&&id?(
