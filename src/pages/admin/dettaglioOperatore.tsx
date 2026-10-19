@@ -436,7 +436,7 @@ const DettaglioOperatore = () => {
       setFormContrattoOccasionale(prev=>({...prev,dataInizio,dataFine}));
       setFormContrattoTempoDeterminato(prev=>({...prev,dataInizio,dataFine}));
       setFormContrattoTempoIndeterminato(prev=>({...prev,dataInizio,dataFine}));
-    },[praticaHR?.id]);
+    },[praticaHR?.id,praticaHR?.dataInizio,praticaHR?.dataFine]);
 
     useEffect(() => {
         caricaOperatore();
@@ -1150,6 +1150,16 @@ const DettaglioOperatore = () => {
 
 
     const generaContrattoOccasionale = async () => {
+        const from=formContrattoOccasionale.dataInizio;
+        const to=formContrattoOccasionale.dataFine;
+        if(!from||!to||format(to,"yyyy-MM-dd")<format(from,"yyyy-MM-dd")){
+            window.alert("Imposta date valide di inizio e fine del contratto occasionale.");
+            return;
+        }
+        if(contratti.some(c=>c.tipologia==="OCCASIONALE"&&c.dataInizio?.slice(0,10)===format(from,"yyyy-MM-dd"))){
+            window.alert("Esiste già un contratto occasionale con la stessa data di inizio.");
+            return;
+        }
         setLoading(true);
 
         try {
