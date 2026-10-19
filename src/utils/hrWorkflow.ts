@@ -25,3 +25,5 @@ export const hrRegistraAttivita=(praticaId:number,azione:"CONTRATTO_CREATO"|"CON
 
 export const hrLeggiCodiceComunicazione=(praticaId:number)=>hrRequest<{codice:string}>("pratiche/"+praticaId+"/codice-comunicazione");
 export const hrSalvaCodiceComunicazione=(praticaId:number,codice:string)=>hrRequest<{codice:string}>("pratiche/"+praticaId+"/codice-comunicazione",{method:"PUT",body:JSON.stringify({codice})});
+
+export const hrPrendiInCarico=(id:number)=>hrRequest<{ok:boolean}>("pratiche/"+id+"/prendi-in-carico",{method:"POST"});
