@@ -12,11 +12,14 @@ type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFisc
 type Contratto = {idContratto:number;tipologia:string;dataInizio:string|null;dataFine:string|null;pathContrattoUnilav?:string|null;pathContrattoFirmato?:string|null;cfDatore?:string;emailDatore?:string};
 type Turno = {idTurno?:number;idOperatore?:number|null;dataTurno?:string;oraInizio?:string;oraFine?:string;nomeEvento?:string;via?:string};
 type Stato = "Completo" | "Incompleto" | "Scaduto";
-type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;stato:Stato;motivi:string[]};
+type Livello = "Alta" | "Media" | "Bassa" | "Nessuna";
+type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;livello:Livello;stato:Stato;motivi:string[]};
 type ArchivioChiamate = Record<number,ChiamataHR[] | null>;
 const oggi=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
 const iso=(v?:string|null)=>v?String(v).slice(0,10):"";
 const formatData=(v?:string|null)=>{const s=iso(v);return s.length===10?s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(2,4):"—";};
+const giorniDaOggi=(data:string)=>Math.round((Date.parse(data+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000);
+const fineTurno=(t:Turno)=>{const data=iso(t.dataTurno);if(!data)return "";const da=(t.oraInizio||"").slice(0,5),a=(t.oraFine||"").slice(0,5);if(da&&a&&a<=da){const d=new Date(data+"T12:00:00");d.setDate(d.getDate()+1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}return data;};
 const tipoLavoro=(t:string)=>["CHIAMATA","OCCASIONALE","TEMPO_DETERMINATO","TEMPO_INDETERMINATO","CONTRATTO_TEMPO_DETERMINATO","CONTRATTO_TEMPO_INDETERMINATO"].includes(t);
 const copre=(c:Contratto,data:string)=>tipoLavoro(c.tipologia)&&iso(c.dataInizio)<=data&&!!c.dataInizio&&(!c.dataFine||iso(c.dataFine)>=data);
 async function api<T>(path:string):Promise<T>{
@@ -31,11 +34,16 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const riferimento=prossimoTurno||oggi();
  const altri=contratti.find(c=>copre(c,riferimento));
  const scaduti=contratti.filter(c=>tipoLavoro(c.tipologia)&&!!c.dataFine&&iso(c.dataFine)<riferimento);
+ const scoperti=futuri.filter(t=>!contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
+ const primaScopertura=scoperti.length?iso(scoperti[0].dataTurno):null;
+ const prossimaScadenza=contratti.filter(c=>tipoLavoro(c.tipologia)&&c.dataFine&&iso(c.dataFine)>=oggi()&&giorniDaOggi(iso(c.dataFine))<=30).sort((a,b)=>iso(a.dataFine).localeCompare(iso(b.dataFine)))[0];
  const isScaduto=!!prossimoTurno&&!altri&&scaduti.length>0;
  const cf=o.codiceFiscale||o.codice_fiscale;
  const motivi:string[]=[];
  if(!cf?.trim())motivi.push("Codice fiscale");
- if(!altri)motivi.push(isScaduto?"Contratto scaduto":"Contratto padre / inquadramento");
+ if(!altri&&prossimoTurno)motivi.push(isScaduto?"Contratto scaduto":"Contratto padre / inquadramento");
+ if(primaScopertura)motivi.push("Turno del "+formatData(primaScopertura)+" senza copertura contrattuale completa");
+ else if(prossimaScadenza)motivi.push("Contratto in scadenza il "+formatData(prossimaScadenza.dataFine));
  if(altri&&["CHIAMATA","CONTRATTO_TEMPO_DETERMINATO","CONTRATTO_TEMPO_INDETERMINATO","TEMPO_DETERMINATO","TEMPO_INDETERMINATO"].includes(altri.tipologia)&&!altri.pathContrattoUnilav)motivi.push("Documento UNILAV");
  // La chiamata figlia deve coprire la data del turno ed essere dichiarata INVIATA:
  // BOZZA e PEC_PREPARATA non sono conferme dell'invio.
@@ -59,7 +67,9 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const stato:Stato=pratica
    ?(!associato?"Incompleto":scadutoAssociato?"Scaduto":unilavRichiesta&&!associato.pathContrattoUnilav?"Incompleto":"Completo")
    :isScaduto?"Scaduto":motivi.length?"Incompleto":"Completo";
- return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,stato,motivi};
+ const urgenza=primaScopertura?giorniDaOggi(primaScopertura):null;
+ const livello:Livello=urgenza!==null?(urgenza<=7?"Alta":"Media"):chiamateMancanti.length?(priorita<=7?"Alta":"Media"):motivi.length||stato!=="Completo"?"Bassa":"Nessuna";
+ return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,livello,stato,motivi};
 }
 export default function ModuloHR(){
  const navigate=useNavigate();
@@ -70,6 +80,8 @@ export default function ModuloHR(){
  const [loading,setLoading]=useState(false);
  const [errore,setErrore]=useState("");
  const [ricerca,setRicerca]=useState("");
+ const [ricercaEvento,setRicercaEvento]=useState("");
+ const [filtroPriorita,setFiltroPriorita]=useState<Livello|"Tutte">("Tutte");
  const [espanso,setEspanso]=useState<number|null>(null);
  const [selezionato,setSelezionato]=useState<number|null>(null);
  const [dateModificate,setDateModificate]=useState<Record<number,{inizio:string;fine:string}>>({});
@@ -140,7 +152,9 @@ export default function ModuloHR(){
  };
  useEffect(()=>{void carica();},[]);
  const irregolari=useMemo(()=>righe.filter(r=>r.stato!=="Completo"),[righe]);
- const visibili=useMemo(()=>righe.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())).sort((a,b)=>a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,ricerca]);
+ const visibili=useMemo(()=>righe.filter(r=>[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())&&(filtroPriorita==="Tutte"||r.livello===filtroPriorita)&&(!ricercaEvento||r.turni.some(t=>(t.nomeEvento||"").toLowerCase().includes(ricercaEvento.toLowerCase())))).sort((a,b)=>({Alta:0,Media:1,Bassa:2,Nessuna:3}[a.livello]-{Alta:0,Media:1,Bassa:2,Nessuna:3}[b.livello])||a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,ricerca,ricercaEvento,filtroPriorita]);
+ const nomiOperatori=useMemo(()=>righe.map(r=>r.operatore.cognome+" "+r.operatore.nome),[righe]);
+ const nomiEventi=useMemo(()=>[...new Set(righe.flatMap(r=>r.turni.map(t=>t.nomeEvento||"").filter(Boolean)))].sort(),[righe]);
  const inoltra=async(x:Riga)=>{
   const tipoOrigine=inlineHR[x.operatore.id]?.tipo || x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia || "";
   const tipo=tipoOrigine==="CONTRATTO_TEMPO_DETERMINATO"?"TEMPO_DETERMINATO":tipoOrigine==="CONTRATTO_TEMPO_INDETERMINATO"?"TEMPO_INDETERMINATO":tipoOrigine;
@@ -190,10 +204,10 @@ export default function ModuloHR(){
   {progress&&<p className="text-sm text-gray-500">{progress}</p>}
   <div className="grid gap-4 sm:grid-cols-2">
    <div className="rounded-xl border border-[#cfe2dc] bg-white p-5"><div className="text-sm font-semibold">Operatori da regolarizzare</div><div className="mt-2 text-3xl font-bold text-[#007a55]">{irregolari.length}</div></div>
-   <div className="rounded-xl border border-red-200 bg-red-50/50 p-5"><div className="text-sm font-semibold text-red-800">Urgenti da regolarizzare</div><div className="mt-2 text-3xl font-bold text-red-700">{irregolari.filter(x=>x.prossimoTurno!==null&&x.priorita<=3).length}</div></div>
+   <div className="rounded-xl border border-red-200 bg-red-50/50 p-5"><div className="text-sm font-semibold text-red-800">Urgenti da regolarizzare</div><div className="mt-2 text-3xl font-bold text-red-700">{righe.filter(x=>x.livello==="Alta").length}</div></div>
   </div>
   <div className="rounded-xl border bg-white p-4">
-   <div className="mb-3 flex justify-between gap-2"><input aria-label="Cerca operatore" placeholder="Cerca operatore o codice fiscale" value={ricerca} onChange={e=>setRicerca(e.target.value)} className="w-full max-w-sm rounded-md border px-3 py-2 text-sm"/><span className="self-center text-xs text-gray-500">Ordine: priorità turno</span></div>
+   <div className="mb-3 space-y-3"><div className="flex flex-wrap gap-2"><input list="hr-nomi-operatori" aria-label="Cerca operatore" placeholder="Cerca operatore o codice fiscale" value={ricerca} onChange={e=>setRicerca(e.target.value)} className="min-w-[230px] flex-1 rounded-md border px-3 py-2 text-sm"/><datalist id="hr-nomi-operatori">{nomiOperatori.map(n=><option key={n} value={n}/>)}</datalist><input list="hr-nomi-eventi" aria-label="Cerca evento" placeholder="Cerca evento" value={ricercaEvento} onChange={e=>setRicercaEvento(e.target.value)} className="min-w-[230px] flex-1 rounded-md border px-3 py-2 text-sm"/><datalist id="hr-nomi-eventi">{nomiEventi.map(n=><option key={n} value={n}/>)}</datalist></div><div className="flex flex-wrap items-center gap-2">{(["Tutte","Alta","Media","Bassa","Nessuna"] as const).map(v=><button key={v} type="button" aria-pressed={filtroPriorita===v} onClick={()=>setFiltroPriorita(v)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filtroPriorita===v?"border-[#007a55] bg-[#007a55] text-white":"bg-white text-gray-700"}`}>{v} ({v==="Tutte"?righe.length:righe.filter(r=>r.livello===v).length})</button>)}<button type="button" onClick={()=>{setRicerca("");setRicercaEvento("");setFiltroPriorita("Tutte");}} className="ml-auto text-xs text-[#007a55] underline">Azzera filtri</button></div></div>
    <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead><tr className="bg-[#ecf3f1] text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Periodo contratto</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
     {visibili.map(x=><Fragment key={x.operatore.id}><tr className="border-b">
       <td className="p-3 font-semibold"><button type="button" aria-expanded={espanso===x.operatore.id} aria-label="Dettagli turni" className="mr-2 text-[#007a55]" onClick={()=>setEspanso(v=>v===x.operatore.id?null:x.operatore.id)}>{espanso===x.operatore.id?"▾":"▸"}</button>{x.operatore.cognome} {x.operatore.nome}</td>
@@ -205,19 +219,19 @@ export default function ModuloHR(){
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span></div>
 <button type="button" title={periodiBloccati[x.operatore.id]?"Sblocca date":"Salva e blocca le date"} disabled={salvataggioPeriodo!==null||praticaCorrente(x)?.stato==="COMPLETATO"} onClick={()=>void bloccaPeriodo(x)} className="rounded-md border border-[#cfe2dc] p-2 text-[#007a55] disabled:opacity-40">{periodiBloccati[x.operatore.id]?<LockKeyhole className="h-4 w-4"/>:<LockKeyholeOpen className="h-4 w-4"/>}</button></div></td>
       <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
-      <td className="p-3">{x.prossimoTurno&&x.priorita<=3?<span className="font-semibold text-red-700">Alta</span>:x.prossimoTurno&&x.priorita<=14?<span className="font-semibold text-amber-700">Media</span>:<span className="text-gray-500">Bassa</span>}</td>
+      <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span>{x.motivi.length>0&&<p className="mt-1 max-w-[230px] text-xs text-gray-500">{x.motivi.join(" · ")}</p>}</td>
       <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||!!praticaCorrente(x)} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"?(praticaCorrente(x)?.simulazioneTest?"Elaborato (test)":"Elaborato"):praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?"Assegnata HR":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
-    {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore da regolarizzare"}</td></tr>}
+    {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
    </tbody></table></div>
   </div>
   {r&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Azione proposta" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
    <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold">Azione proposta</h2><p className="text-sm text-gray-500">{r.operatore.nome} {r.operatore.cognome}</p></div><button aria-label="Chiudi" onClick={()=>setSelezionato(null)}><X className="h-5 w-5"/></button></div>
-   <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-4"><div className="flex items-center gap-2 font-semibold text-[#007a55]"><Sparkles className="h-5 w-5"/>{richiedePadre?"Crea contratto a chiamata padre":"Crea chiamata intermittente"}</div><p className="mt-1 text-sm text-gray-600">{richiedePadre?"Occorre creare o aggiornare il contratto padre prima di comunicare una chiamata.":"Contratto padre individuato. La chiamata va verificata, generata e inviata tramite PEC."}</p></div>
+   <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-4"><div className="flex items-center gap-2 font-semibold text-[#007a55]"><Sparkles className="h-5 w-5"/>{richiedePadre?"Crea contratto a chiamata padre":"Crea chiamata intermittente"}</div><p className="mt-1 text-sm text-gray-600">{richiedePadre?"Occorre creare o aggiornare il contratto padre prima di comunicare una chiamata.":"Contratto padre individuato. La chiamata va verificata, generata e inviata tramite email ordinaria."}</p></div>
    <div><div className="mb-2 text-sm font-semibold">Requisiti: {pronti?"soddisfatti":"incompleti"}</div>{requisiti.length?<div className="flex flex-wrap gap-2">{requisiti.map(x=><span key={x} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">{x}</span>)}</div>:<span className="inline-flex items-center gap-1 text-sm text-emerald-700"><CheckCircle2 className="h-4 w-4"/>Dati necessari presenti</span>}</div>
    {periodo&&<div className="grid grid-cols-2 gap-3 rounded-lg border p-3 text-sm"><label><span className="text-gray-500">Data inizio proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo.inizio} min={padre?iso(padre.dataInizio):undefined} max={padre?iso(padre.dataFine):undefined} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{...periodo,inizio:e.target.value}}))}/></label><label><span className="text-gray-500">Data fine proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo.fine} min={padre?iso(padre.dataInizio):undefined} max={padre?iso(padre.dataFine):undefined} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{...periodo,fine:e.target.value}}))}/></label></div>}
-   {pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)} disabled={!dateValide||!dentroContratto}>INVIA PEC</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>REGOLARIZZA DOCUMENTAZIONE</button>}
-   <p className="text-xs text-gray-500">INVIA PEC apre il flusso di preparazione e verifica nella tab Contratti; non effettua l'invio automaticamente. Le date sono proposte sulla base dei turni, da verificare prima della comunicazione.</p>
+   {pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)} disabled={!dateValide||!dentroContratto}>PREPARA EMAIL</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>REGOLARIZZA DOCUMENTAZIONE</button>}
+   <p className="text-xs text-gray-500">PREPARA EMAIL apre il flusso di preparazione e verifica nella tab Contratti; non effettua l'invio automaticamente. Le date sono proposte sulla base dei turni, da verificare prima della comunicazione.</p>
   </section></div>}
   <p className="text-xs text-amber-700">Le scelte inline vengono salvate nella pratica soltanto dopo «Da elaborare → HR». Nessun contratto viene creato automaticamente.</p>
  </main>;
