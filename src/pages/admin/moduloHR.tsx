@@ -71,7 +71,10 @@ export default function ModuloHR(){
  const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>(()=>{
   try{return JSON.parse(localStorage.getItem("detelder_admin_date_contratto_v1")||"{}") as Record<number,{inizio:string;fine:string}>}catch{return {}}
  });
- const [periodiBloccati,setPeriodiBloccati]=useState<Record<number,boolean>>({});
+ const [periodiBloccati,setPeriodiBloccati]=useState<Record<number,boolean>>(()=>{
+   try{return JSON.parse(localStorage.getItem("detelder_admin_periodi_bloccati_v1")||"{}") as Record<number,boolean>}catch{return {}}
+ });
+ useEffect(()=>{localStorage.setItem("detelder_admin_periodi_bloccati_v1",JSON.stringify(periodiBloccati))},[periodiBloccati]);
  const [salvataggioPeriodo,setSalvataggioPeriodo]=useState<number|null>(null);
  useEffect(()=>{localStorage.setItem("detelder_admin_date_contratto_v1",JSON.stringify(dateContratto))},[dateContratto]);
  const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia.replace(/^CONTRATTO_/,"")||"";
