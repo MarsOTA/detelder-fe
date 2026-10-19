@@ -29,7 +29,7 @@ export default function HRCoda(){
      <td className="p-3">{p.tipologia.replace(/_/g," ")}</td>
      <td className="p-3">{p.datore.replace(/_/g," ")}</td>
      <td className="p-3 whitespace-nowrap">{date(p.dataInizio)} – {date(p.dataFine)}</td>
-     <td className="p-3"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badge[p.stato]}`}>{labels[p.stato]}</span></td>
+     <td className="p-3"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badge[p.stato]}`}>{p.stato==="COMPLETATO"&&p.simulazioneTest?"Elaborato (test)":labels[p.stato]}</span></td>
      <td className="p-3"><Link title="Visualizza e lavora contratto" aria-label={"Apri contratto di "+p.cognome+" "+p.nome} to={`/hr/operatore/${p.idOperatore}?tab=contratti&pratica=${p.id}`} className="inline-flex rounded-md border border-[#b7d7cc] p-2 text-[#007a55] hover:bg-[#ecf3f1]"><Eye className="h-5 w-5"/></Link></td>
     </tr>)}{!visibili.length&&<tr><td colSpan={6} className="p-6 text-center text-gray-500">{busy?"Caricamento…":"Nessuna pratica trovata"}</td></tr>}</tbody>
    </table></div>
