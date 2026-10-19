@@ -56,7 +56,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
  return <div className="space-y-5">
   <section className="rounded-xl border border-[#cfe2dc] bg-white p-5 shadow-sm">
    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-    <div><p className="text-xs font-semibold uppercase tracking-wider text-[#007a55]">Contratto assegnato</p><h2 className="mt-1 text-2xl font-bold text-[#273b35]">{nice[pratica.tipologia]||pratica.tipologia}</h2></div>
+    <div><p className="text-xs font-semibold uppercase tracking-wider text-[#007a55]">Contratto assegnato</p><h2 className="mt-1 text-2xl font-bold text-[#007a55]">{nice[pratica.tipologia]||pratica.tipologia}</h2></div>
     <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${pratica.stato==="COMPLETATO"?"bg-emerald-100 text-emerald-800":pratica.stato==="IN_LAVORAZIONE"?"bg-blue-100 text-blue-800":"bg-amber-100 text-amber-800"}`}>{pratica.stato==="COMPLETATO"?(pratica.simulazioneTest?"Elaborato (test)":"Elaborato"):pratica.stato==="IN_LAVORAZIONE"?"In lavorazione":"Da elaborare"}</span>
    </div>
    <div className="grid gap-3 rounded-lg border border-[#e2ebe7] bg-[#f8fbfa] p-3 md:grid-cols-[minmax(120px,1fr)_minmax(190px,1.2fr)_minmax(155px,1fr)_minmax(155px,1fr)]">
