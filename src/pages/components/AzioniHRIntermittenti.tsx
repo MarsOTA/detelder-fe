@@ -52,7 +52,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   return [...map].map(([data,items])=>{
    const parent=contratti.find(c=>c.tipologia==="CHIAMATA"&&day(c.dataInizio)<=data&&(!c.dataFine||day(c.dataFine)>=data));
    const archives=parent?chiamate[parent.idContratto]:[];
-   const submitted=archives?.find(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
+   const submitted=archives?.find(c=>c.stato==="INVIATA"&&!c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    const draft=archives?.find(c=>c.stato!=="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    return {data,items,parent,submitted,draft,unknown:!!parent&&!Array.isArray(archives)};
   });
@@ -75,7 +75,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,callId,"PEC_PREPARATA");
    const sim=await simulaInvioChiamataHR(idOperatore,parent.idContratto,callId);
    downloadXml(xml,"UNI_Intermittenti_"+data+".xml");
-   setAvviso(sim.simulata?"SIMULAZIONE TEST: invio registrato nel database, nessuna email realmente spedita. XML e prova simulata consultabili nell’archivio.":"Simulazione non disponibile");
+   setAvviso(sim.simulata?"SIMULAZIONE TEST: stato INVIATA nell’archivio, nessuna email realmente spedita. XML e prova simulata consultabili; il turno resta da comunicare realmente.":"Simulazione non disponibile");
    await refresh();onProgressUpdated?.();
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile preparare la PEC")}
   finally{setWorking(null)}
