@@ -98,12 +98,13 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     
 
   let HeaderComponent = null;
-  if (ruolo === 'OPERATORE') {
-    HeaderComponent = HeaderOperatore;
-  } else if (allowedRole === 'HR') {
+  if (allowedRole === 'HR') {
+    // HR access overrides the operator's primary role for navigation.
     HeaderComponent = HeaderHR;
   } else if (allowedRole === 'ADMIN') {
     HeaderComponent = Header;
+  } else if (ruolo === 'OPERATORE') {
+    HeaderComponent = HeaderOperatore;
   }
 
   return (
