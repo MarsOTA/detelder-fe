@@ -1821,6 +1821,7 @@ const DettaglioOperatore = () => {
                       <AzioniHRIntermittenti
                         key={"archivio-"+aggiornamentoAzioniHR}
                         mode="archive"
+                        readOnly={!window.location.pathname.startsWith("/hr/")}
                         idOperatore={Number(id)}
                         pratica={praticaHR}
                         contratti={contratti}
