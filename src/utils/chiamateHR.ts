@@ -27,3 +27,5 @@ export const simulaInvioChiamataHR=(op:number,contratto:number,id:number)=>reque
 
 export const simulaAnnullamentoChiamataHR=(op:number,contratto:number,id:number,xml:string)=>request<{ok:boolean;simulata:boolean;esito:string}>(base(op,contratto)+"/"+id+"/simula-annullamento",{method:"POST",body:JSON.stringify({xml})});
 export const resetSimulazioniChiamataHR=(op:number,contratto:number)=>request<{ok:boolean;eliminate:number}>(base(op,contratto)+"/simulazioni",{method:"DELETE"});
+
+export const eliminaVecchieChiamate18Ottobre=(op:number,contratto:number)=>request<{ok:boolean;eliminate:number;ids:number[]}>(base(op,contratto)+"/legacy-2026-10-18",{method:"DELETE"});
