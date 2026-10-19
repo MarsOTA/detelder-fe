@@ -1789,6 +1789,7 @@ const DettaglioOperatore = () => {
                       <AzioniHRIntermittenti
                         key={aggiornamentoAzioniHR}
                         idOperatore={Number(id)}
+                        readOnly={!window.location.pathname.startsWith("/hr/")}
                         pratica={praticaHR}
                         contratti={contratti}
                         codiceFiscale={dipendente?.codiceFiscale||""}
