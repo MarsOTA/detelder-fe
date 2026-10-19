@@ -14,7 +14,7 @@ const fmt=(v:string)=>v?v.slice(8,10)+"/"+v.slice(5,7)+"/"+v.slice(0,4):"";
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 const plus=(date:string,days:number)=>{const d=new Date(date+"T12:00:00");d.setDate(d.getDate()+days);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
 type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;onProgressUpdated?:()=>void;mode?:"tasks"|"archive";readOnly?:boolean};
-export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,mode="tasks",readOnly=false}:Props){
+export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,onProgressUpdated,mode="tasks",readOnly=false}:Props){
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
@@ -76,7 +76,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    const sim=await simulaInvioChiamataHR(idOperatore,parent.idContratto,callId);
    downloadXml(xml,"UNI_Intermittenti_"+data+".xml");
    setAvviso(sim.simulata?"SIMULAZIONE TEST: invio registrato nel database, nessuna email realmente spedita. XML e prova simulata consultabili nell’archivio.":"Simulazione non disponibile");
-   await refresh();
+   await refresh();onProgressUpdated?.();
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile preparare la PEC")}
   finally{setWorking(null)}
  };
@@ -84,6 +84,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  <div className="flex items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><Archive className="h-5 w-5"/>Archivio chiamate del contratto</h3><span className="rounded-full bg-[#ecf3f1] px-2 py-1 text-xs font-semibold text-[#007a55]">{archivi.length} chiamate</span></div>
  {loading?<p className="mt-2 text-xs text-gray-500">Caricamento…</p>:archivi.length?<div className="mt-2 divide-y">{archivi.map(c=><div key={c.id} className="flex items-center justify-between gap-2 py-2 text-xs"><div><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><p className="text-gray-500">UNI-Intermittenti · #{c.id}</p></div><span className={c.stato==="INVIATA"?"rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"rounded-full bg-indigo-100 px-2 py-1 font-semibold text-indigo-800":c.stato==="PEC_PREPARATA"?"rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800":"rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"}>{c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"Invio simulato":c.stato==="INVIATA"?"Invio registrato":c.stato==="PEC_PREPARATA"?"Preparata":"Bozza"}</span></div>)}<p className="mt-1 text-xs text-gray-500">{archivi.filter(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST")).length} prove di test disponibili; non sono ricevute di consegna reali.</p></div>:<p className="mt-2 text-xs text-gray-500">Nessuna comunicazione archiviata.</p>}
  {archivi.some(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST"))&&<p className="mt-2 text-xs font-semibold text-indigo-700">Solo test: nessuna email spedita, nessuna ricevuta reale.</p>}
+ {archivi.length>0&&<div className="mt-2 flex flex-wrap gap-2">{archivi.filter(c=>c.xmlArchiviato||c.esitoInvio?.startsWith("SIMULAZIONE TEST")).map(c=><div key={c.id} className="flex gap-1 text-xs">{c.xmlArchiviato&&<button title={"XML chiamata "+c.id} type="button" className="rounded border px-2 py-1 text-[#007a55]" onClick={()=>downloadXml(c.xmlArchiviato||"","UNI_Intermittenti_"+c.id+".xml")}>XML #{c.id}</button>}{c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&<button type="button" title="Mostra prova simulata" className="rounded border border-indigo-200 px-2 py-1 text-indigo-700" onClick={()=>window.alert(c.esitoInvio||"")}>Prova TEST #{c.id}</button>}</div>)}</div>}
  <p className="mt-2 text-[11px] text-gray-500">Le ricevute PEC certificate saranno disponibili dopo l'attivazione dell'integrazione con il gestore.</p>
  </section>;
  return <section className="space-y-2">
