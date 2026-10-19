@@ -22,3 +22,5 @@ export type DatoreIntermittenti = {codiceFiscale:string;email:string};
 export const DATORE_DETELDER_DEFAULT: DatoreIntermittenti = {codiceFiscale:"13066390967",email:"info@detelder.com"};
 export const leggiDatoreIntermittenti=()=>request<DatoreIntermittenti>("chiamate-hr/config/datore");
 export const salvaDatoreIntermittenti=(codiceFiscale:string,email:string)=>request<DatoreIntermittenti>("chiamate-hr/config/datore",{method:"PUT",body:JSON.stringify({codiceFiscale,email})});
+
+export const simulaInvioChiamataHR=(op:number,contratto:number,id:number)=>request<{ok:boolean;simulata:boolean;ricevuta:string}>(base(op,contratto)+"/"+id+"/simula-invio",{method:"POST"});
