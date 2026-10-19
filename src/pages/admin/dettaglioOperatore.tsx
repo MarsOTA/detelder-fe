@@ -6,7 +6,7 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
+import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrPrendiInCarico } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
@@ -244,9 +244,11 @@ const DettaglioOperatore = () => {
       const praticaId=Number(searchParams.get("pratica"));
       if(!praticaId||!id)return;
       let active=true;
-      void hrPratiche().then(rows=>{
+      void (async()=>{
+        if(window.location.pathname.startsWith("/hr/"))await hrPrendiInCarico(praticaId);
+        const rows=await hrPratiche();
         if(active)setPraticaHR(rows.find(p=>p.id===praticaId&&p.idOperatore===Number(id))||null);
-      }).catch(()=>{if(active)setPraticaHR(null)});
+      })().catch(()=>{if(active)setPraticaHR(null)});
       return ()=>{active=false};
     },[id,searchParams]);
 
