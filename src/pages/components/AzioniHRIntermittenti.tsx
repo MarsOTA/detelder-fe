@@ -52,19 +52,23 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   return [...map].map(([data,items])=>{
    const parent=contratti.find(c=>c.tipologia==="CHIAMATA"&&day(c.dataInizio)<=data&&(!c.dataFine||day(c.dataFine)>=data));
    const archives=parent?chiamate[parent.idContratto]:[];
-   const submitted=archives?.find(c=>c.stato==="INVIATA"&&!c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
+   const submitted=archives?.find(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    const draft=archives?.find(c=>c.stato!=="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    return {data,items,parent,submitted,draft,unknown:!!parent&&!Array.isArray(archives)};
   });
  },[turni,contratti,chiamate]);
  const archivi=padre?(chiamate[padre.idContratto]||[]):[];
  const pending=giorni.filter(g=>!g.submitted);
+ const copertiDaTest=giorni.some(g=>!!g.submitted?.esitoInvio?.startsWith("SIMULAZIONE TEST"));
+ const chiamateCompletate=giorni.length>0&&giorni.every(g=>!!g.submitted)&&!giorni.some(g=>g.unknown);
  const from=periodo.da||pending[0]?.data||"";
  const to=periodo.a||pending[pending.length-1]?.data||from;
  const valido=!!padre&&!!from&&!!to&&from<=to&&from>=day(padre.dataInizio)&&(!padre.dataFine||to<=day(padre.dataFine));
+ const coperturaEsistente=archivi.some(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=from&&day(c.dataFine)>=to);
  const prepara=async(data:string,parent:ContrattoPadreAzione,draft?:ChiamataHR)=>{
   setWorking(data);setErrore("");setAvviso("");
   try{
+   if(archivi.some(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=to))throw new Error("Chiamata già inviata o simulata per questo periodo: consulta l’archivio.");
    if(!codiceFiscale?.trim())throw new Error("Codice fiscale del lavoratore mancante nell'anagrafica");
    if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare la PEC.");
    const employer=datore||await leggiDatoreIntermittenti();
@@ -75,7 +79,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    await aggiornaEsitoChiamataHR(idOperatore,parent.idContratto,callId,"PEC_PREPARATA");
    const sim=await simulaInvioChiamataHR(idOperatore,parent.idContratto,callId);
    downloadXml(xml,"UNI_Intermittenti_"+data+".xml");
-   setAvviso(sim.simulata?"SIMULAZIONE TEST: stato INVIATA nell’archivio, nessuna email realmente spedita. XML e prova simulata consultabili; il turno resta da comunicare realmente.":"Simulazione non disponibile");
+   setAvviso(sim.simulata?"SIMULAZIONE TEST: stato INVIATA nell’archivio, nessuna email realmente spedita. Task completato nella simulazione; XML e prova disponibili nell’archivio.":"Simulazione non disponibile");
    await refresh();onProgressUpdated?.();
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile preparare la PEC")}
   finally{setWorking(null)}
@@ -88,23 +92,24 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  <p className="mt-2 text-[11px] text-gray-500">Le ricevute PEC certificate saranno disponibili dopo l'attivazione dell'integrazione con il gestore.</p>
  </section>;
  return <section className="contents">
-  <div className="absolute right-0 top-0 flex items-center gap-2"><p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(giorni.some(g=>!g.submitted))} DA COMPLETARE</p>
+  <div className="absolute right-0 top-0 flex items-center gap-2"><p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(giorni.length>0&&(!chiamateCompletate))} DA COMPLETARE</p>
    <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
   </div>
   {!padre?<div className="order-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div><button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" disabled={readOnly} onClick={onCreateContract}>Crea contratto</button></div>:
   <div className="order-1 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4"><div className="flex items-center gap-2 text-sm font-bold text-[#102e4d]"><CheckCircle2 className="h-5 w-5 text-emerald-700"/>Contratto a chiamata generato<span className="ml-auto rounded-full bg-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">COMPLETATO</span></div><p className="mt-2 border-t border-emerald-100 pt-2 text-xs text-gray-600">Requisiti: CF lavoratore ✓ · Datore di lavoro ✓ · Periodo valido ✓</p></div>}
   {errore&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{errore}</p>}
   {avviso&&<p role="status" className="rounded bg-emerald-50 p-2 text-xs text-emerald-800">{avviso}</p>}
-  <div className="order-3 rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-4">
-   <div className="mb-3 flex items-center justify-between"><h4 className="flex items-center gap-2 text-sm font-bold text-[#102e4d]"><AlertCircle className="h-5 w-5 text-amber-600"/>Prepara e invia chiamate intermittenti</h4><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{giorni.every(g=>!!g.submitted)?"COMUNICATE":"DA INVIARE"}</span></div><div className="flex items-center justify-between"><h4 className="text-xs font-semibold text-[#007a55]">Turni in programma · prossimi 7 giorni</h4><button type="button" title="Dettaglio turni" aria-label="Espandi dettaglio turni" aria-expanded={showTurni} onClick={()=>setShowTurni(v=>!v)} className="rounded-full border p-1.5 text-[#007a55]"><Info className="h-4 w-4"/></button></div>
+  <div className={`order-3 rounded-xl border px-4 py-4 ${chiamateCompletate?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50/60"}`}>
+   <div className="mb-3 flex items-center justify-between"><h4 className="flex items-center gap-2 text-sm font-bold text-[#102e4d]"><AlertCircle className="h-5 w-5 text-amber-600"/>Prepara e invia chiamate intermittenti</h4><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{chiamateCompletate?(copertiDaTest?"SIMULAZIONE COMPLETATA":"COMPLETATO"):"DA INVIARE"}</span></div><div className="flex items-center justify-between"><h4 className="text-xs font-semibold text-[#007a55]">Turni in programma · prossimi 7 giorni</h4><button type="button" title="Dettaglio turni" aria-label="Espandi dettaglio turni" aria-expanded={showTurni} onClick={()=>setShowTurni(v=>!v)} className="rounded-full border p-1.5 text-[#007a55]"><Info className="h-4 w-4"/></button></div>
    {loading?<p className="mt-2 text-xs text-gray-500">Caricamento turni…</p>:giorni.length===0?<p className="mt-2 text-xs text-gray-500">Nessun turno nei prossimi sette giorni.</p>:
     <div className="mt-2 flex flex-wrap gap-1.5">{giorni.map(g=><div key={g.data} className={`rounded-md border px-3 py-2 text-xs ${g.submitted?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><strong>{fmt(g.data)} · {g.items.length} turno/i {g.submitted?"✓":""}</strong>{showTurni&&<div className="mt-1 space-y-0.5 text-gray-700">{g.items.map(t=><div key={t.idTurno}>{t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}{t.oraInizio?" · "+String(t.oraInizio).slice(0,5):""}{t.oraFine?"–"+String(t.oraFine).slice(0,5):""}</div>)}</div>}</div>)}</div>}
    <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
     <label className="text-xs text-gray-600">Chiamata dal<input type="date" disabled={readOnly} value={from} onChange={e=>setPeriodo(p=>({...p,da:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
     <label className="text-xs text-gray-600">Al<input type="date" disabled={readOnly} min={from||undefined} value={to} onChange={e=>setPeriodo(p=>({...p,a:e.target.value}))} className="mt-1 w-full rounded border px-2 py-2"/></label>
-    <button type="button" disabled={readOnly||!valido||working!==null||!datore} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Simula invio email</button>
+    <button type="button" disabled={readOnly||!valido||working!==null||!datore||coperturaEsistente} onClick={()=>void prepara(from,padre!)} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><Send className="mr-1 inline h-4 w-4"/>Simula invio email</button>
    </div>
    <p className="mt-2 text-xs text-gray-600">Requisiti: contratto a chiamata attivo, CF lavoratore e datore configurati, intervallo valido e codice UNILAV se disponibile. La PEC va inviata dal gestore autorizzato.</p>
+   {coperturaEsistente&&<p className="mt-2 text-xs font-semibold text-emerald-700">Periodo già comunicato in test: puoi consultarlo nell’archivio.</p>}
    {!valido&&<p className="mt-2 text-xs text-amber-700">Seleziona un periodo valido all'interno del contratto padre. Le date possono raggruppare più turni.</p>}
   </div>
   <p className="text-[11px] text-gray-500">Le chiamate sono raggruppate per giornata. Test: genera XML e registra un esito simulato senza inviare email. L’invio reale da info@detelder.com richiederà l’integrazione con il provider.</p>
