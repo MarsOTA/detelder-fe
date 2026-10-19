@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from "react";
-import {CheckCircle2,FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle} from "lucide-react";
+import {CheckCircle2,FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle,Ban,Trash2} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
-import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR} from "@/utils/chiamateHR";
+import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR,simulaAnnullamentoChiamataHR,resetSimulazioniChiamataHR} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
 import {hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
@@ -52,7 +52,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   return [...map].map(([data,items])=>{
    const parent=contratti.find(c=>c.tipologia==="CHIAMATA"&&day(c.dataInizio)<=data&&(!c.dataFine||day(c.dataFine)>=data));
    const archives=parent?chiamate[parent.idContratto]:[];
-   const submitted=archives?.find(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
+   const submitted=archives?.find(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    const draft=archives?.find(c=>c.stato!=="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=data);
    return {data,items,parent,submitted,draft,unknown:!!parent&&!Array.isArray(archives)};
   });
@@ -64,11 +64,11 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const from=periodo.da||pending[0]?.data||"";
  const to=periodo.a||pending[pending.length-1]?.data||from;
  const valido=!!padre&&!!from&&!!to&&from<=to&&from>=day(padre.dataInizio)&&(!padre.dataFine||to<=day(padre.dataFine));
- const coperturaEsistente=archivi.some(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=from&&day(c.dataFine)>=to);
+ const coperturaEsistente=archivi.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&day(c.dataInizio)<=from&&day(c.dataFine)>=to);
  const prepara=async(data:string,parent:ContrattoPadreAzione,draft?:ChiamataHR)=>{
   setWorking(data);setErrore("");setAvviso("");
   try{
-   if(archivi.some(c=>c.stato==="INVIATA"&&day(c.dataInizio)<=data&&day(c.dataFine)>=to))throw new Error("Chiamata già inviata o simulata per questo periodo: consulta l’archivio.");
+   if(archivi.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&day(c.dataInizio)<=data&&day(c.dataFine)>=to))throw new Error("Chiamata già inviata o simulata per questo periodo: consulta l’archivio.");
    if(!codiceFiscale?.trim())throw new Error("Codice fiscale del lavoratore mancante nell'anagrafica");
    if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare la PEC.");
    const employer=datore||await leggiDatoreIntermittenti();
@@ -84,15 +84,40 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile preparare la PEC")}
   finally{setWorking(null)}
  };
+ const annullaTest=async(c:ChiamataHR)=>{
+  if(!padre||!c.esitoInvio?.startsWith("SIMULAZIONE TEST")||c.annullamentoTest)return;
+  if(!window.confirm("Simulare l’annullamento della chiamata #"+c.id+"? Non verrà inviata alcuna email reale."))return;
+  setWorking("annulla-"+c.id);setErrore("");
+  try{
+   const employer=datore||await leggiDatoreIntermittenti();
+   const {codice}=await hrLeggiCodiceComunicazione(pratica.id);
+   const xml=generaUniIntermittentiXml({cfDatore:employer.codiceFiscale,emailDatore:employer.email,annullamento:true,lavoratori:[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:day(c.dataInizio),dataFine:day(c.dataFine)}]});
+   await simulaAnnullamentoChiamataHR(idOperatore,padre.idContratto,c.id,xml);
+   downloadXml(xml,"ANNULLAMENTO_TEST_Intermittenti_"+c.id+".xml");
+   await refresh();onProgressUpdated?.();
+  }catch(e){setErrore(e instanceof Error?e.message:"Annullamento test non riuscito")}
+  finally{setWorking(null)}
+ };
+ const pulisciTest=async()=>{
+  if(!padre||readOnly)return;
+  if(!window.confirm("Eliminare tutte le comunicazioni SIMULATE di questo contratto dal database di test? Non saranno cancellate chiamate reali o contratti."))return;
+  setWorking("reset");setErrore("");
+  try{const result=await resetSimulazioniChiamataHR(idOperatore,padre.idContratto);setAvviso(result.eliminate+" comunicazioni simulate eliminate dal test.");await refresh();onProgressUpdated?.()}
+  catch(e){setErrore(e instanceof Error?e.message:"Pulizia chiamate test non riuscita")}
+  finally{setWorking(null)}
+ };
  if(mode==="archive")return <section className="rounded-lg border border-[#cfe2dc] bg-white p-3">
  <div className="flex items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><Archive className="h-5 w-5"/>Archivio chiamate del contratto</h3><span className="rounded-full bg-[#ecf3f1] px-2 py-1 text-xs font-semibold text-[#007a55]">{archivi.length} chiamate</span></div>
- {loading?<p className="mt-2 text-xs text-gray-500">Caricamento…</p>:archivi.length?<div className="mt-2 divide-y">{archivi.map(c=><div key={c.id} className="flex items-center justify-between gap-2 py-2 text-xs"><div><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><p className="text-gray-500">UNI-Intermittenti · #{c.id}</p></div><span className={c.stato==="INVIATA"?"rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"rounded-full bg-indigo-100 px-2 py-1 font-semibold text-indigo-800":c.stato==="PEC_PREPARATA"?"rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800":"rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"}>{c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"Invio simulato":c.stato==="INVIATA"?"Invio registrato":c.stato==="PEC_PREPARATA"?"Preparata":"Bozza"}</span></div>)}<p className="mt-1 text-xs text-gray-500">{archivi.filter(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST")).length} prove di test disponibili; non sono ricevute di consegna reali.</p></div>:<p className="mt-2 text-xs text-gray-500">Nessuna comunicazione archiviata.</p>}
+ {loading?<p className="mt-2 text-xs text-gray-500">Caricamento…</p>:archivi.length?<div className="mt-2 divide-y">{archivi.map(c=><div key={c.id} className="flex items-center justify-between gap-2 py-2 text-xs"><div><strong>{fmt(day(c.dataInizio))} – {fmt(day(c.dataFine))}</strong><p className="text-gray-500">UNI-Intermittenti · #{c.id}</p></div><span className={c.stato==="INVIATA"?"rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"rounded-full bg-indigo-100 px-2 py-1 font-semibold text-indigo-800":c.stato==="PEC_PREPARATA"?"rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800":"rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"}>{c.annullamentoTest?"Annullata (test)":c.esitoInvio?.startsWith("SIMULAZIONE TEST")?"Invio simulato":c.stato==="INVIATA"?"Invio registrato":c.stato==="PEC_PREPARATA"?"Preparata":"Bozza"}</span>{!readOnly&&c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&!c.annullamentoTest&&<button type="button" disabled={working!==null} onClick={()=>void annullaTest(c)} aria-label={"Simula annullamento chiamata "+c.id} title="Simula annullamento ministeriale (nessuna email spedita)" className="rounded-md border border-amber-200 p-1.5 text-amber-700 disabled:opacity-40"><Ban className="h-4 w-4"/></button>}{!c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&c.stato==="INVIATA"&&<button type="button" disabled title="Annullamento reale: integrazione email ministeriale non ancora disponibile" className="rounded-md border p-1.5 opacity-50"><Ban className="h-4 w-4"/></button>}</div>)}<p className="mt-1 text-xs text-gray-500">{archivi.filter(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST")).length} prove di test disponibili; non sono ricevute di consegna reali.</p></div>:<p className="mt-2 text-xs text-gray-500">Nessuna comunicazione archiviata.</p>}
+ {!readOnly&&archivi.some(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST"))&&<button type="button" disabled={working!==null} onClick={()=>void pulisciTest()} className="mt-3 inline-flex items-center gap-2 rounded border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-40"><Trash2 className="h-4 w-4"/>Pulisci simulazioni di questo contratto</button>}
+ {errore&&<p role="alert" className="mt-2 text-xs text-red-700">{errore}</p>}
+ {avviso&&<p role="status" className="mt-2 text-xs text-emerald-700">{avviso}</p>}
  {archivi.some(c=>c.esitoInvio?.startsWith("SIMULAZIONE TEST"))&&<p className="mt-2 text-xs font-semibold text-indigo-700">Solo test: nessuna email spedita, nessuna ricevuta reale.</p>}
- {archivi.length>0&&<div className="mt-2 flex flex-wrap gap-2">{archivi.filter(c=>c.xmlArchiviato||c.esitoInvio?.startsWith("SIMULAZIONE TEST")).map(c=><div key={c.id} className="flex gap-1 text-xs">{c.xmlArchiviato&&<button title={"XML chiamata "+c.id} type="button" className="rounded border px-2 py-1 text-[#007a55]" onClick={()=>downloadXml(c.xmlArchiviato||"","UNI_Intermittenti_"+c.id+".xml")}>XML #{c.id}</button>}{c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&<button type="button" title="Mostra prova simulata" className="rounded border border-indigo-200 px-2 py-1 text-indigo-700" onClick={()=>window.alert(c.esitoInvio||"")}>Prova TEST #{c.id}</button>}</div>)}</div>}
+ {archivi.length>0&&<div className="mt-2 flex flex-wrap gap-2">{archivi.filter(c=>c.xmlArchiviato||c.esitoInvio?.startsWith("SIMULAZIONE TEST")).map(c=><div key={c.id} className="flex gap-1 text-xs">{c.xmlAnnullamento&&<button title={"XML annullamento test "+c.id} type="button" className="rounded border border-amber-200 px-2 py-1 text-amber-700" onClick={()=>downloadXml(c.xmlAnnullamento||"","ANNULLAMENTO_TEST_"+c.id+".xml")}>Annullamento #{c.id}</button>}{c.xmlArchiviato&&<button title={"XML chiamata "+c.id} type="button" className="rounded border px-2 py-1 text-[#007a55]" onClick={()=>downloadXml(c.xmlArchiviato||"","UNI_Intermittenti_"+c.id+".xml")}>XML #{c.id}</button>}{c.esitoInvio?.startsWith("SIMULAZIONE TEST")&&<button type="button" title="Mostra prova simulata" className="rounded border border-indigo-200 px-2 py-1 text-indigo-700" onClick={()=>window.alert(c.esitoInvio||"")}>Prova TEST #{c.id}</button>}</div>)}</div>}
  <p className="mt-2 text-[11px] text-gray-500">Le ricevute PEC certificate saranno disponibili dopo l'attivazione dell'integrazione con il gestore.</p>
  </section>;
  return <section className="contents">
-  <div className="absolute right-0 top-0 flex items-center gap-2"><p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(giorni.length>0&&(!chiamateCompletate))} DA COMPLETARE</p>
+  <div className="absolute right-0 top-0 flex items-center gap-2">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(giorni.length>0&&!chiamateCompletate)>0&&<p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(giorni.length>0&&!chiamateCompletate)} DA COMPLETARE</p>}
    <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
   </div>
   {!padre?<div className="order-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div><button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" disabled={readOnly} onClick={onCreateContract}>Crea contratto</button></div>:
