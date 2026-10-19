@@ -1,7 +1,7 @@
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 export type ChiamataHR = {
  id:number; dataInizio:string; dataFine:string; stato:"BOZZA"|"PEC_PREPARATA"|"INVIATA";
- xmlArchiviato?:string; dataOraInvio?:string; esitoInvio?:string;
+ xmlArchiviato?:string; dataOraInvio?:string; esitoInvio?:string; annullamentoTest?:boolean; xmlAnnullamento?:string|null; esitoAnnullamento?:string|null;
 };
 async function request<T>(path:string,init?:RequestInit):Promise<T>{
  const response=await fetch(ezystaffBEUrl+path,{
@@ -24,3 +24,6 @@ export const leggiDatoreIntermittenti=()=>request<DatoreIntermittenti>("chiamate
 export const salvaDatoreIntermittenti=(codiceFiscale:string,email:string)=>request<DatoreIntermittenti>("chiamate-hr/config/datore",{method:"PUT",body:JSON.stringify({codiceFiscale,email})});
 
 export const simulaInvioChiamataHR=(op:number,contratto:number,id:number)=>request<{ok:boolean;simulata:boolean;ricevuta:string}>(base(op,contratto)+"/"+id+"/simula-invio",{method:"POST"});
+
+export const simulaAnnullamentoChiamataHR=(op:number,contratto:number,id:number,xml:string)=>request<{ok:boolean;simulata:boolean;esito:string}>(base(op,contratto)+"/"+id+"/simula-annullamento",{method:"POST",body:JSON.stringify({xml})});
+export const resetSimulazioniChiamataHR=(op:number,contratto:number)=>request<{ok:boolean;eliminate:number}>(base(op,contratto)+"/simulazioni",{method:"DELETE"});
