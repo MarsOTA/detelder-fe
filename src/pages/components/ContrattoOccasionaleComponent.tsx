@@ -1,116 +1,38 @@
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { ChangeEvent } from "react";
 
 interface FormContrattoOccasionale {
   dataInizio: Date | null;
   dataFine: Date | null;
   dataFirmaContratto: Date | null;
 }
-
-interface ContrattoChiamataProps {
+interface Props {
   formContrattoOccasionale: FormContrattoOccasionale;
   handleChangeContrattoChiamata: <K extends keyof FormContrattoOccasionale>(
     field: K,
     value: FormContrattoOccasionale[K]
   ) => void;
 }
+const iso=(value:Date|null)=>value?[
+ value.getFullYear(),String(value.getMonth()+1).padStart(2,"0"),String(value.getDate()).padStart(2,"0")
+].join("-"):"";
+const asDate=(event:ChangeEvent<HTMLInputElement>)=>event.target.value?new Date(event.target.value+"T12:00:00"):null;
 
-export const ContrattoOccasionaleComponent = ({
-  formContrattoOccasionale,
-  handleChangeContrattoChiamata,
-}: ContrattoChiamataProps) => {
-  return (
-    <div
-      className="flex-1 space-y-4"
-      style={{
-        color: "#5e5d5d",
-        backgroundColor: "#eaeff4",
-        borderRadius: 9,
-        padding: 14,
-        fontSize: 16,
-      }}
-    >
-
-      <div className="grid grid-cols-2">
-        <span>Data Inizio Contratto</span>
-        <span>Data Fine Contratto</span>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full rounded-none">
-              {formContrattoOccasionale.dataInizio
-                ? format(formContrattoOccasionale.dataInizio, "dd/MM/yyyy")
-                : "Seleziona data"}
-              <CalendarIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formContrattoOccasionale.dataInizio ?? undefined}
-              onSelect={(date) =>
-                handleChangeContrattoChiamata("dataInizio", date ?? null)
-              }
-              locale={it}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full rounded-none">
-              {formContrattoOccasionale.dataFine
-                ? format(formContrattoOccasionale.dataFine, "dd/MM/yyyy")
-                : "Seleziona data"}
-              <CalendarIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formContrattoOccasionale.dataFine ?? undefined}
-              onSelect={(date) =>
-                handleChangeContrattoChiamata("dataFine", date ?? null)
-              }
-              locale={it}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div className="grid grid-cols-2">
-        <span>Data Firma Contratto</span>
-        <span />
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full rounded-none">
-              {formContrattoOccasionale.dataFirmaContratto
-                ? format(formContrattoOccasionale.dataFirmaContratto, "dd/MM/yyyy")
-                : "Seleziona data"}
-              <CalendarIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formContrattoOccasionale.dataFirmaContratto ?? undefined}
-              onSelect={(date) =>
-                handleChangeContrattoChiamata("dataFirmaContratto", date ?? null)
-              }
-              locale={it}
-            />
-          </PopoverContent>
-        </Popover>
-        <span />
-      </div>
-    </div>
-  );
+export const ContrattoOccasionaleComponent=({formContrattoOccasionale,handleChangeContrattoChiamata}:Props)=>{
+ const inizio=iso(formContrattoOccasionale.dataInizio);
+ const fine=iso(formContrattoOccasionale.dataFine);
+ return <div className="rounded-lg border border-[#d4e4dd] bg-[#f5faf8] p-4">
+  <p className="mb-3 text-sm text-gray-600">Periodo proposto dall'ADMIN, modificabile prima di generare il contratto.</p>
+  <div className="grid gap-3 sm:grid-cols-2">
+   <label className="text-sm font-semibold text-[#315e51]">Data inizio contratto
+     <input className="mt-1 block w-full rounded-md border border-[#bfd5cb] bg-white p-2 text-sm" type="date" required value={inizio} max={fine||undefined} onChange={e=>handleChangeContrattoChiamata("dataInizio",asDate(e))}/>
+   </label>
+   <label className="text-sm font-semibold text-[#315e51]">Data fine contratto
+     <input className="mt-1 block w-full rounded-md border border-[#bfd5cb] bg-white p-2 text-sm" type="date" required value={fine} min={inizio||undefined} onChange={e=>handleChangeContrattoChiamata("dataFine",asDate(e))}/>
+   </label>
+   <label className="text-sm font-semibold text-[#315e51]">Data firma contratto
+     <input className="mt-1 block w-full rounded-md border border-[#bfd5cb] bg-white p-2 text-sm" type="date" value={iso(formContrattoOccasionale.dataFirmaContratto)} onChange={e=>handleChangeContrattoChiamata("dataFirmaContratto",asDate(e))}/>
+   </label>
+  </div>
+  {inizio&&fine&&fine<inizio&&<p role="alert" className="mt-2 text-xs text-red-700">La data di fine non può precedere quella di inizio.</p>}
+ </div>;
 };
