@@ -242,7 +242,7 @@ const DettaglioOperatore = () => {
     const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
     useEffect(()=>{
       const praticaId=Number(searchParams.get("pratica"));
-      if(!praticaId||!id||!window.location.pathname.startsWith("/hr/"))return;
+      if(!praticaId||!id)return;
       let active=true;
       void hrPratiche().then(rows=>{
         if(active)setPraticaHR(rows.find(p=>p.id===praticaId&&p.idOperatore===Number(id))||null);
@@ -255,7 +255,7 @@ const DettaglioOperatore = () => {
     const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
     // The workflow derives status from persisted contracts, UNILAV and PEC confirmations.
     useEffect(()=>{
-      if(!praticaHR?.id||!window.location.pathname.startsWith("/hr/"))return;
+      if(!praticaHR?.id)return;
       let active=true;
       void hrPratiche().then(rows=>{
         const latest=rows.find(p=>p.id===praticaHR.id);
@@ -1783,7 +1783,7 @@ const DettaglioOperatore = () => {
                     pratica={praticaHR}
                     codiceFiscale={dipendente?.codiceFiscale}
                     isHR={window.location.pathname.startsWith("/hr/")}
-                    azioni={window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id?(
+                    azioni={praticaHR?.tipologia==="CHIAMATA"&&id?(
                       <AzioniHRIntermittenti
                         key={aggiornamentoAzioniHR}
                         idOperatore={Number(id)}
@@ -1793,13 +1793,13 @@ const DettaglioOperatore = () => {
                         onCreateContract={()=>setFormContrattoOpen(true)}
                         onProgressUpdated={()=>setAggiornamentoAzioniHR(x=>x+1)}
                       />
-                    ):window.location.pathname.startsWith("/hr/")&&praticaHR?(
+                    ):praticaHR?(
                       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                         <div><p className="text-[10px] font-semibold uppercase text-amber-900">Da fare</p><p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p></div>
                         {praticaHR.tipologia!=="FATTURA"&&<button type="button" onClick={()=>setFormContrattoOpen(true)} disabled={praticaHR.stato==="COMPLETATO"} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Apri form</button>}
                       </div>
                     ):null}
-                    archivioChiamate={window.location.pathname.startsWith("/hr/")&&praticaHR?.tipologia==="CHIAMATA"&&id?(
+                    archivioChiamate={praticaHR?.tipologia==="CHIAMATA"&&id?(
                       <AzioniHRIntermittenti
                         key={"archivio-"+aggiornamentoAzioniHR}
                         mode="archive"
