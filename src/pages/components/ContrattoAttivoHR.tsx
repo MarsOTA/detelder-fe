@@ -69,7 +69,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
    {false&&isHR&&changed&&<button type="button" disabled={!ready||saving} onClick={()=>void save()} className="mt-2 rounded-md border border-[#007a55] px-3 py-1.5 text-sm font-semibold text-[#007a55] disabled:opacity-50">{saving?"Salvataggio…":"Salva periodo"}</button>}
    {saved&&<p role="status" className="mt-2 text-sm text-emerald-700">Periodo salvato sulla pratica.</p>}
    {error&&<p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
-   <div className="mt-4 space-y-5"><div className="relative flex min-w-0 flex-col gap-3">{(!creato||(hasUnilav&&!creato.pathContrattoUnilav)||!!azioni)&&<h3 className="mb-2 flex items-center gap-2 text-lg font-bold text-[#007a55]"><ClipboardList className="h-5 w-5"/>Attività da fare</h3>}
+   <div className="mt-4 grid items-start gap-4 lg:grid-cols-2"><div className="relative flex min-w-0 flex-col gap-3">{(!creato||(hasUnilav&&!creato.pathContrattoUnilav)||!!azioni)&&<h3 className="mb-2 flex items-center gap-2 text-lg font-bold text-[#007a55]"><ClipboardList className="h-5 w-5"/>Attività da fare</h3>}
    {((creato&&hasUnilav&&!creato.pathContrattoUnilav?null:azioni)||(!creato&&!azioni?<div className={`rounded-xl border px-4 py-4 ${creato?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold text-[#102e4d]">{creato?"Contratto generato":"Crea "+(nice[pratica.tipologia]||pratica.tipologia)}</p>{isHR&&!creato&&pratica.tipologia!=="FATTURA"&&<button type="button" onClick={onCreate} disabled={!ready||changed} className="rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Crea contratto</button>}</div>
       <p className="mt-1 text-xs text-gray-600">Requisiti: {req.filter(x=>!x.ok).map(x=>x.label).join(" · ")||"Soddisfatti"}</p>
@@ -91,7 +91,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     {doc.upload&&doc.kind!=="contrattoUnilav"&&creato&&isHR&&onUpload&&<label title={"Carica "+doc.title} className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] p-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/><input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
    <p className="mt-3 text-xs text-gray-500">I documenti vengono associati al contratto effettivamente registrato. L'UNILAV è distinta dalle comunicazioni delle singole chiamate intermittenti.</p>
-  </div>{archivioChiamate&&<div className="w-full">{archivioChiamate}</div>}</div></div>
+  </div></div>{archivioChiamate&&<div className="mt-5 w-full">{archivioChiamate}</div>}
   </section>
  </div>;
 }
