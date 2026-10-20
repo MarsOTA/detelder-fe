@@ -151,8 +151,8 @@ export default function ModuloHR(){
   finally{setLoading(false);setProgress("");}
  };
  useEffect(()=>{void carica();},[]);
- const irregolari=useMemo(()=>righe.filter(r=>r.turni.length>0&&r.livello!=="Nessuna"&&r.stato!=="Completo"),[righe]);
- const visibili=useMemo(()=>righe.filter(r=>r.turni.length>0&&(r.stato!=="Completo"||r.motivi.some(m=>!m.startsWith("Contratto in scadenza")))&&r.livello!=="Nessuna"&&[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())&&(filtroPriorita==="Tutte"||r.livello===filtroPriorita)&&(!ricercaEvento||r.turni.some(t=>(t.nomeEvento||"").toLowerCase().includes(ricercaEvento.toLowerCase())))).sort((a,b)=>({Alta:0,Media:1,Bassa:2,Nessuna:3}[a.livello]-{Alta:0,Media:1,Bassa:2,Nessuna:3}[b.livello])||a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,ricerca,ricercaEvento,filtroPriorita]);
+ const irregolari=useMemo(()=>righe.filter(r=>r.turni.length>0&&r.livello!=="Nessuna"&&(r.stato!=="Completo"||r.motivi.length>0)),[righe]);
+ const visibili=useMemo(()=>righe.filter(r=>r.turni.length>0&&(r.stato!=="Completo"||r.motivi.length>0)&&r.livello!=="Nessuna"&&[r.operatore.nome,r.operatore.cognome,r.operatore.codiceFiscale||r.operatore.codice_fiscale].join(" ").toLowerCase().includes(ricerca.toLowerCase())&&(filtroPriorita==="Tutte"||r.livello===filtroPriorita)&&(!ricercaEvento||r.turni.some(t=>(t.nomeEvento||"").toLowerCase().includes(ricercaEvento.toLowerCase())))).sort((a,b)=>({Alta:0,Media:1,Bassa:2,Nessuna:3}[a.livello]-{Alta:0,Media:1,Bassa:2,Nessuna:3}[b.livello])||a.priorita-b.priorita||a.operatore.cognome.localeCompare(b.operatore.cognome)),[righe,ricerca,ricercaEvento,filtroPriorita]);
  const nomiOperatori=useMemo(()=>righe.map(r=>r.operatore.cognome+" "+r.operatore.nome),[righe]);
  const nomiEventi=useMemo(()=>[...new Set(righe.flatMap(r=>r.turni.map(t=>t.nomeEvento||"").filter(Boolean)))].sort(),[righe]);
  const inoltra=async(x:Riga)=>{
