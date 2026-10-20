@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive, CheckCircle2 } from "lucide-react";
+import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
