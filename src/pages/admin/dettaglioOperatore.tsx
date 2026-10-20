@@ -1804,14 +1804,17 @@ const DettaglioOperatore = () => {
                         contratti={contratti}
                         codiceFiscale={dipendente?.codiceFiscale||""}
                         onCreateContract={()=>setFormContrattoOpen(true)}
+                        createFields={window.location.pathname.startsWith("/hr/")?<div className="w-full space-y-3 rounded-lg border bg-white p-3">
+                          <p className="text-xs text-gray-600">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"—"}</p>
+                          <label className="block text-xs">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata.dataFirmaContratto?format(formContrattoChiamata.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoChiamata(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>
+                          <div className="grid gap-2 md:grid-cols-2">{(["cittaPredefinita","indirizzoPredefinito","cittaAlternativa","indirizzoAlternativo"] as const).map(k=><label key={k} className="block text-xs">{({cittaPredefinita:"Città sede",indirizzoPredefinito:"Indirizzo sede",cittaAlternativa:"Città alternativa",indirizzoAlternativo:"Indirizzo alternativo"})[k]}<input className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata[k]} onChange={e=>setFormContrattoChiamata(v=>({...v,[k]:e.target.value}))}/></label>)}</div>
+                          <button type="button" disabled={loading||!praticaHR.dataInizio||!praticaHR.dataFine} onClick={()=>void generaContrattoChiamata()} className="rounded bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto a chiamata"}</button>
+                        </div>:null}
                         onProgressUpdated={()=>setAggiornamentoAzioniHR(x=>x+1)}
                       />
                     ):praticaHR?(
                       contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===praticaHR.tipologia&&!!praticaHR.dataInizio&&c.dataInizio?.slice(0,10)===praticaHR.dataInizio.slice(0,10))
-                      ?<div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-[#163d30]"><CheckCircle2 className="h-5 w-5 text-emerald-700"/>Contratto generato</div>
-                        <span className="rounded-full bg-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">ATTIVITÀ COMPLETATE</span>
-                      </div>
+                      ?null
                       :<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                         <p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p>
                         {praticaHR.tipologia!=="FATTURA"&&window.location.pathname.startsWith("/hr/")&&<div className="w-full space-y-3 rounded-lg border bg-white p-4">
