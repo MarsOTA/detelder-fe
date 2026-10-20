@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from "react";
 import type {ReactNode} from "react";
-import {CheckCircle2,FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle,Ban,Trash2,FileDown,FileCode2} from "lucide-react";
+import {FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle,Ban,Trash2,FileDown,FileCode2} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR,simulaAnnullamentoChiamataHR,resetSimulazioniChiamataHR,eliminaVecchieChiamate18Ottobre} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
