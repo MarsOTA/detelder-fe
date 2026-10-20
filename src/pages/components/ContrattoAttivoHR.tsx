@@ -91,7 +91,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     {doc.upload&&doc.kind!=="contrattoUnilav"&&creato&&isHR&&onUpload&&<label title={"Carica "+doc.title} className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] p-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/><input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
    <p className="mt-3 text-xs text-gray-500">I documenti vengono associati al contratto effettivamente registrato. L'UNILAV è distinta dalle comunicazioni delle singole chiamate intermittenti.</p>
-  </div></div>{archivioChiamate&&<div className="mt-5 w-full">{archivioChiamate}</div>}
+  </div></div></div>{archivioChiamate&&<div className="mt-5 w-full">{archivioChiamate}</div>}
   </section>
  </div>;
 }
