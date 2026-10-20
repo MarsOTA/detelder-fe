@@ -53,9 +53,9 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
   if(!padreTurno)return false;
   const lista=archivi[padreTurno.idContratto];
   if(!lista)return true; // errore API: non dichiarare regolare la posizione
-  return !lista.some(ch=>ch.stato==="INVIATA"&&iso(ch.dataInizio)<=data&&iso(ch.dataFine)>=data);
+  return !lista.some(ch=>ch.stato==="INVIATA"&&!ch.annullamentoTest&&iso(ch.dataInizio)<=data&&iso(ch.dataFine)>=fineTurno(t));
  });
- if(chiamateMancanti.length)motivi.push(contratti.some(c=>c.tipologia==="CHIAMATA"&&archivi[c.idContratto]===null)?"Verifica chiamate non disponibile":"Chiamata intermittente non inviata");
+ if(chiamateMancanti.length)motivi.push(contratti.some(c=>c.tipologia==="CHIAMATA"&&archivi[c.idContratto]===null)?"Verifica chiamate non disponibile":"Chiamata non coperta per il turno del "+formatData(chiamateMancanti[0].dataTurno));
 
  // La copertura del contratto padre non conferma l'esistenza di una chiamata figlia valida.
  // In assenza di un'API che colleghi le chiamate ai turni, non certificare la regolarità.
@@ -68,7 +68,8 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
    ?(!associato?"Incompleto":scadutoAssociato?"Scaduto":unilavRichiesta&&!associato.pathContrattoUnilav?"Incompleto":"Completo")
    :isScaduto?"Scaduto":motivi.length?"Incompleto":"Completo";
  const urgenza=primaScopertura?giorniDaOggi(primaScopertura):null;
- const livello:Livello=urgenza!==null?(urgenza<=7?"Alta":"Media"):chiamateMancanti.length?(priorita<=7?"Alta":"Media"):motivi.length||stato!=="Completo"?"Bassa":"Nessuna";
+ const urgenzaChiamata=chiamateMancanti.length?giorniDaOggi(iso(chiamateMancanti[0].dataTurno)):null;
+ const livello:Livello=urgenza!==null?(urgenza<=7?"Alta":"Media"):urgenzaChiamata!==null?(urgenzaChiamata<=7?"Alta":"Media"):motivi.length||stato!=="Completo"?"Bassa":"Nessuna";
  return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,livello,stato,motivi};
 }
 export default function ModuloHR(){
@@ -100,7 +101,7 @@ export default function ModuloHR(){
  const praticaCorrente=(x:Riga)=>assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0];
  const periodoVisualizzato=(x:Riga)=>{
   const p=praticaCorrente(x),draft=dateContratto[x.operatore.id];
-  return {inizio:draft?.inizio||iso(p?.dataInizio)||(tipoSelezionato(x)==="CHIAMATA"?iso(x.turni[0]?.dataTurno):""),fine:draft?.fine||iso(p?.dataFine)||(tipoSelezionato(x)==="CHIAMATA"?iso(x.turni[x.turni.length-1]?.dataTurno):"")};
+  return {inizio:draft?.inizio||iso(p?.dataInizio)||"",fine:draft?.fine||iso(p?.dataFine)||""};
  };
  const bloccaPeriodo=async(x:Riga)=>{
   const id=x.operatore.id,periodo=periodoVisualizzato(x),pratica=praticaCorrente(x);
