@@ -1814,7 +1814,12 @@ const DettaglioOperatore = () => {
                       </div>
                       :<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                         <p className="text-sm font-semibold text-[#273b35]">Crea {praticaHR.tipologia.replace(/_/g," ").toLowerCase()}</p>
-                        {praticaHR.tipologia!=="FATTURA"&&window.location.pathname.startsWith("/hr/")&&<button type="button" onClick={()=>setFormContrattoOpen(true)} className="rounded-md bg-[#a75d00] px-3 py-2 text-xs font-semibold text-white">Apri form</button>}
+                        {praticaHR.tipologia!=="FATTURA"&&window.location.pathname.startsWith("/hr/")&&<div className="w-full space-y-3 rounded-lg border bg-white p-4">
+                          <p className="text-xs text-gray-500">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"senza scadenza"}</p>
+                          {tipoContratto==="OCCASIONALE"&&<label className="block text-sm">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoOccasionale.dataFirmaContratto?format(formContrattoOccasionale.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoOccasionale(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>}
+                          {tipoContratto==="CONSGNA_BENI_FORMAZIONE"&&<ConsegnaBeniFormazioneComponent formConsegnaBeniFormazione={formConsegnaBeniFormazione} handleChangeConsegnaBeniFormazione={handleChangeConsegnaBeniFormazione}/>}
+                          <button type="button" disabled={loading||!praticaHR.dataInizio} onClick={()=>void (tipoContratto==="OCCASIONALE"?generaContrattoOccasionale():tipoContratto==="CONTRATTO_TEMPO_DETERMINATO"?generaContrattoTempoDeterminato():tipoContratto==="CONTRATTO_TEMPO_INDETERMINATO"?generaContrattoTempoIndeterminato():tipoContratto==="CONSGNA_BENI_FORMAZIONE"?generaContrattoConsegnaBeniFormazione():Promise.resolve())} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto"}</button>
+                        </div>}
                       </div>
                     ):null}
                     archivioChiamate={praticaHR?.tipologia==="CHIAMATA"&&id?(
