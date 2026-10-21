@@ -30,7 +30,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,datiMancanti=
  const [codice,setCodice]=useState("");
  const [codiceSalvato,setCodiceSalvato]=useState("");
  const [codiceBusy,setCodiceBusy]=useState(false);
- useEffect(()=>{if(!pratica||canonical(pratica.tipologia)!=="CHIAMATA")return;let active=true;void hrLeggiCodiceComunicazione(pratica.id).then(v=>{if(active){setCodice(v.codice);setCodiceSalvato(v.codice)}}).catch(()=>{});return ()=>{active=false}},[pratica?.id]);
+ useEffect(()=>{if(!pratica||pratica.id<=0||canonical(pratica.tipologia)!=="CHIAMATA")return;let active=true;void hrLeggiCodiceComunicazione(pratica.id).then(v=>{if(active){setCodice(v.codice);setCodiceSalvato(v.codice)}}).catch(()=>{});return ()=>{active=false}},[pratica?.id]);
  useEffect(()=>{setInizio(iso(pratica?.dataInizio));setFine(iso(pratica?.dataFine));setError("");setSaved(false)},[pratica?.id,pratica?.dataInizio,pratica?.dataFine]);
  const matches=pratica?contratti.filter(c=>canonical(c.tipologia)===canonical(pratica.tipologia)).sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))):[];
  // A document created before this assignment must not be shown as generated for the current case.
