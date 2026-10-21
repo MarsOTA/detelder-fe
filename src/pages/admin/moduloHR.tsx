@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, AlertCircle, CheckCircle2, X, Eye, LockKeyhole, LockKeyholeOpen } from "lucide-react";
+import { Sparkles, AlertCircle, CheckCircle2, X, Eye } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
+import { hrAssegna,hrPratiche } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import type { DatoreIntermittenti } from "@/utils/chiamateHR";
@@ -63,10 +63,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  // not a different future shift. HR task progress remains in the separate action column.
  const associato=pratica&&contratti.find(c=>c.tipologia.replace(/^CONTRATTO_/,"")===pratica.tipologia&&iso(c.dataInizio)===iso(pratica.dataInizio));
  const scadutoAssociato=!!associato?.dataFine&&iso(associato.dataFine)<oggi();
- const unilavRichiesta=!!pratica&&["CHIAMATA","TEMPO_DETERMINATO","TEMPO_INDETERMINATO"].includes(pratica.tipologia);
- const stato:Stato=pratica
-   ?(!associato?"Incompleto":scadutoAssociato?"Scaduto":unilavRichiesta&&!associato.pathContrattoUnilav?"Incompleto":"Completo")
-   :isScaduto?"Scaduto":motivi.length?"Incompleto":"Completo";
+ const stato:Stato=isScaduto||scadutoAssociato?"Scaduto":(!altri||motivi.length>0||(pratica&&!associato))?"Incompleto":"Completo";
  const urgenza=primaScopertura?giorniDaOggi(primaScopertura):null;
  const urgenzaChiamata=chiamateMancanti.length?giorniDaOggi(iso(chiamateMancanti[0].dataTurno)):null;
  const livello:Livello=urgenza!==null?(urgenza<=7?"Alta":"Media"):urgenzaChiamata!==null?(urgenzaChiamata<=7?"Alta":"Media"):motivi.length||stato!=="Completo"?"Bassa":"Nessuna";
@@ -88,40 +85,10 @@ export default function ModuloHR(){
  const [dateModificate,setDateModificate]=useState<Record<number,{inizio:string;fine:string}>>({});
  const [progress,setProgress]=useState("");
  const [inlineHR,setInlineHR]=useState<Record<number,{datore:string;tipo:string}>>({});
- const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>(()=>{
-  try{return JSON.parse(localStorage.getItem("detelder_admin_date_contratto_v1")||"{}") as Record<number,{inizio:string;fine:string}>}catch{return {}}
- });
- const [periodiBloccati,setPeriodiBloccati]=useState<Record<number,boolean>>(()=>{
-   try{return JSON.parse(localStorage.getItem("detelder_admin_periodi_bloccati_v1")||"{}") as Record<number,boolean>}catch{return {}}
- });
- useEffect(()=>{localStorage.setItem("detelder_admin_periodi_bloccati_v1",JSON.stringify(periodiBloccati))},[periodiBloccati]);
- const [salvataggioPeriodo,setSalvataggioPeriodo]=useState<number|null>(null);
- useEffect(()=>{localStorage.setItem("detelder_admin_date_contratto_v1",JSON.stringify(dateContratto))},[dateContratto]);
- const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia.replace(/^CONTRATTO_/,"")||"";
+ const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>({});
+ const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||"";
  const praticaCorrente=(x:Riga)=>assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0];
- const periodoVisualizzato=(x:Riga)=>{
-  const p=praticaCorrente(x),draft=dateContratto[x.operatore.id];
-  return {inizio:draft?.inizio||iso(p?.dataInizio)||"",fine:draft?.fine||iso(p?.dataFine)||""};
- };
- const bloccaPeriodo=async(x:Riga)=>{
-  const id=x.operatore.id,periodo=periodoVisualizzato(x),pratica=praticaCorrente(x);
-  if(periodiBloccati[id]){setPeriodiBloccati(v=>({...v,[id]:false}));return;}
-  if(!periodo.inizio){setErrore("Indica la data di inizio per "+x.operatore.cognome);return;}
-  const fine=tipoSelezionato(x)==="TEMPO_INDETERMINATO"?null:periodo.fine||null;
-  if(!fine&&tipoSelezionato(x)!=="TEMPO_INDETERMINATO"){setErrore("Indica la data di fine per "+x.operatore.cognome);return;}
-  if(fine&&fine<periodo.inizio){setErrore("Periodo contrattuale non valido");return;}
-  setSalvataggioPeriodo(id);setErrore("");
-  try{
-   if(pratica&&pratica.stato!=="COMPLETATO"){
-    await hrAggiornaPeriodo(pratica.id,periodo.inizio,fine);
-    setAssegnate(await hrPratiche());
-   }
-   setDateContratto(v=>({...v,[id]:{inizio:periodo.inizio,fine:fine||""}}));
-   setPeriodiBloccati(v=>({...v,[id]:true}));
-  }catch(e){setErrore(e instanceof Error?e.message:"Salvataggio periodo non riuscito")}
-  finally{setSalvataggioPeriodo(null)}
- };
-
+ const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??{inizio:"",fine:""};
  const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>({...prev,[id]:{...(prev[id]??{datore:"DETELDER",tipo:""}),[k]:value}}));
  const carica=async()=>{
   setLoading(true);setErrore("");setProgress("Caricamento operatori e turni…");
@@ -157,13 +124,13 @@ export default function ModuloHR(){
  const nomiOperatori=useMemo(()=>righe.map(r=>r.operatore.cognome+" "+r.operatore.nome),[righe]);
  const nomiEventi=useMemo(()=>[...new Set(righe.flatMap(r=>r.turni.map(t=>t.nomeEvento||"").filter(Boolean)))].sort(),[righe]);
  const inoltra=async(x:Riga)=>{
-  const tipoOrigine=inlineHR[x.operatore.id]?.tipo || x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia || "";
+  const tipoOrigine=inlineHR[x.operatore.id]?.tipo || "";
   const tipo=tipoOrigine==="CONTRATTO_TEMPO_DETERMINATO"?"TEMPO_DETERMINATO":tipoOrigine==="CONTRATTO_TEMPO_INDETERMINATO"?"TEMPO_INDETERMINATO":tipoOrigine;
   const datore=inlineHR[x.operatore.id]?.datore || "DETELDER";
   if(!tipo){setErrore("Seleziona l'inquadramento per "+x.operatore.cognome);return;}
   const selected=dateContratto[x.operatore.id];
-  const start=selected?.inizio||(tipo==="CHIAMATA"?iso(x.turni[0]?.dataTurno):"");
-  const finish=tipo==="TEMPO_INDETERMINATO"?null:selected?.fine||(tipo==="CHIAMATA"?iso(x.turni[x.turni.length-1]?.dataTurno):null);
+  const start=selected?.inizio||"";
+  const finish=tipo==="TEMPO_INDETERMINATO"?null:selected?.fine||null;
   if(!start||(tipo!=="TEMPO_INDETERMINATO"&&!finish)){setErrore("Inserisci data inizio e fine prima di assegnare il contratto");return;}
   if(finish&&finish<start){setErrore("La data fine non può precedere quella di inizio");return;}
   if(x.contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===tipo&&iso(c.dataInizio)===start)){setErrore("Esiste già un contratto di questo tipo con la stessa data di inizio");return;}
@@ -175,6 +142,7 @@ export default function ModuloHR(){
        dataInizio:start,
        dataFine:finish});
     setAssegnate(await hrPratiche());
+    setDateContratto(v=>{const next={...v};delete next[x.operatore.id];return next});
   }catch(e){setErrore(e instanceof Error?e.message:"Assegnazione fallita");}
   finally{setAssegnando(null);}
  };
@@ -212,15 +180,15 @@ export default function ModuloHR(){
    <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead><tr className="bg-[#ecf3f1] text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Periodo contratto</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
     {visibili.map(x=><Fragment key={x.operatore.id}><tr className="border-b">
       <td className="p-3 font-semibold"><button type="button" aria-expanded={espanso===x.operatore.id} aria-label="Dettagli turni" className="mr-2 text-[#007a55]" onClick={()=>setEspanso(v=>v===x.operatore.id?null:x.operatore.id)}>{espanso===x.operatore.id?"▾":"▸"}</button>{x.operatore.cognome} {x.operatore.nome}</td>
-      <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Inquadramento" value={inlineHR[x.operatore.id]?.tipo??x.contratti.find(c=>copre(c,x.prossimoTurno||oggi()))?.tipologia??""} onChange={e=>aggiorna(x.operatore.id,"tipo",e.target.value)}><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</option><option value="FATTURA">Fattura (senza generatore)</option></select></td>
+      <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Inquadramento" value={inlineHR[x.operatore.id]?.tipo??""} onChange={e=>aggiorna(x.operatore.id,"tipo",e.target.value)}><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</option><option value="FATTURA">Fattura (senza generatore)</option></select></td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Datore di lavoro" value={inlineHR[x.operatore.id]?.datore??"DETELDER"} onChange={e=>aggiorna(x.operatore.id,"datore",e.target.value)}><option value="DETELDER">DETELDER</option><option value="SOCIETA_APPALTO">Società in appalto</option><option value="AUTONOMO_PIVA">Autonomo - P.IVA</option></select></td>
-      <td className="p-3"><div className="flex min-w-[210px] items-center gap-2"><div className="flex min-w-0 flex-1 flex-col gap-1">
-<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs disabled:bg-gray-100" disabled={periodiBloccati[x.operatore.id]||praticaCorrente(x)?.stato==="COMPLETATO"} value={periodoVisualizzato(x).inizio} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??iso(praticaCorrente(x)?.dataFine)}}))}/>
-{tipoSelezionato(x)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border px-1 py-1 text-xs disabled:bg-gray-100" disabled={periodiBloccati[x.operatore.id]||praticaCorrente(x)?.stato==="COMPLETATO"} min={dateContratto[x.operatore.id]?.inizio||undefined} value={periodoVisualizzato(x).fine} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??iso(praticaCorrente(x)?.dataInizio),fine:e.target.value}}))}/>}
-<span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span></div>
-<button type="button" title={periodiBloccati[x.operatore.id]?"Sblocca date":"Salva e blocca le date"} disabled={salvataggioPeriodo!==null||praticaCorrente(x)?.stato==="COMPLETATO"} onClick={()=>void bloccaPeriodo(x)} className="rounded-md border border-[#cfe2dc] p-2 text-[#007a55] disabled:opacity-40">{periodiBloccati[x.operatore.id]?<LockKeyhole className="h-4 w-4"/>:<LockKeyholeOpen className="h-4 w-4"/>}</button></div></td>
+      <td className="p-3"><div className="flex min-w-[210px] flex-col gap-1">
+<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={!!praticaCorrente(x)} value={periodoVisualizzato(x).inizio} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??""}}))}/>
+{tipoSelezionato(x)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={!!praticaCorrente(x)} min={periodoVisualizzato(x).inizio||undefined} value={periodoVisualizzato(x).fine} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??"",fine:e.target.value}}))}/>}
+<span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span>
+</div></td>
       <td className="p-3"><span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":x.stato==="Incompleto"?"bg-amber-50 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span></td>
-      <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span>{x.motivi.length>0&&<p className="mt-1 max-w-[230px] text-xs text-gray-500">{x.motivi.join(" · ")}</p>}</td>
+      <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span></td>
       <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||!!praticaCorrente(x)} onClick={()=>void inoltra(x)} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"?(praticaCorrente(x)?.simulazioneTest?"Elaborato (test)":"Elaborato"):praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?"Assegnata HR":"Da elaborare"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
