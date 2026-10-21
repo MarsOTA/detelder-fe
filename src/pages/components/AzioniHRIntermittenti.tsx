@@ -28,8 +28,8 @@ const ricevutaDemo=(c:ChiamataHR, tipo:"invio"|"annullamento")=>{
  saveText(testo.join("\\n"),"EMAIL_DEMO_"+tipo+"_"+c.id+".txt");
 };
 const plus=(date:string,days:number)=>{const d=new Date(date+"T12:00:00");d.setDate(d.getDate()+days);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
-type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;createFields?:ReactNode;onProgressUpdated?:()=>void;mode?:"tasks"|"archive";readOnly?:boolean};
-export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,createFields,onProgressUpdated,mode="tasks",readOnly=false}:Props){
+type Props={idOperatore:number;pratica:HRPratica;contratti:ContrattoPadreAzione[];codiceFiscale:string;onCreateContract:()=>void;createFields?:ReactNode;missingPrerequisites?:boolean;onProgressUpdated?:()=>void;mode?:"tasks"|"archive";readOnly?:boolean};
+export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,codiceFiscale,onCreateContract,createFields,missingPrerequisites=false,onProgressUpdated,mode="tasks",readOnly=false}:Props){
  const [turni,setTurni]=useState<ProssimaAzioneTurno[]>([]);
  const [chiamate,setChiamate]=useState<Record<number,ChiamataHR[]|null>>({});
  const [datore,setDatore]=useState<DatoreIntermittenti|null>(null);
@@ -139,14 +139,14 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  {avviso&&<p role="status" className="mt-2 text-xs text-emerald-700">{avviso}</p>}
  </section>;
  return <section className="contents">
-  <div className="absolute right-0 top-0 flex items-center gap-2">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)>0&&<p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)} DA COMPLETARE</p>}
+  <div className="absolute right-0 top-0 flex items-center gap-2">{!missingPrerequisites&&(Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)>0)&&<p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)} DA COMPLETARE</p>}
    <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
   </div>
-  {!padre?<div className="order-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div>{createFields||<button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" disabled={readOnly} onClick={onCreateContract}>Crea contratto</button>}</div>:
+  {!missingPrerequisites&&!padre?<div className="order-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div>{createFields||<button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" disabled={readOnly} onClick={onCreateContract}>Crea contratto</button>}</div>:
   null}
   {errore&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{errore}</p>}
   {avviso&&<p role="status" className="rounded bg-emerald-50 p-2 text-xs text-emerald-800">{avviso}</p>}
-  {!!padre&&pending.length>0&&<div className="order-3 rounded-xl border border-red-200 bg-red-50/50 px-4 py-4">
+  {!missingPrerequisites&&!!padre&&pending.length>0&&<div className="order-3 rounded-xl border border-red-200 bg-red-50/50 px-4 py-4">
    <div className="mb-3 flex items-center justify-between"><h4 className="flex items-center gap-2 text-sm font-bold text-red-900"><AlertCircle className="h-5 w-5 text-red-600"/>Nuova chiamata da effettuare</h4><span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800">DA INVIARE</span></div><div className="flex items-center justify-between"><h4 className="text-xs font-semibold text-[#007a55]">Turni non ancora coperti · prossimi 7 giorni</h4><button type="button" title="Dettaglio turni" aria-label="Espandi dettaglio turni" aria-expanded={showTurni} onClick={()=>setShowTurni(v=>!v)} className="rounded-full border p-1.5 text-[#007a55]"><Info className="h-4 w-4"/></button></div>
    {loading?<p className="mt-2 text-xs text-gray-500">Caricamento turni…</p>:pending.length===0?<p className="mt-2 text-xs text-gray-500">Nessun turno da comunicare.</p>:
     <div className="mt-2 flex flex-wrap gap-1.5">{pending.map(g=><div key={g.data} className="rounded-md border border-red-100 bg-white px-3 py-2 text-xs"><strong>{fmt(g.data)} · {g.items.length} turno/i</strong>{showTurni&&<div className="mt-1 space-y-0.5 text-gray-700">{g.items.map(t=><div key={t.idTurno}>{t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}{t.oraInizio?" · "+String(t.oraInizio).slice(0,5):""}{t.oraFine?"–"+String(t.oraFine).slice(0,5):""}</div>)}</div>}</div>)}</div>}
