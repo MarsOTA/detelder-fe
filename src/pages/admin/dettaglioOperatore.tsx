@@ -238,7 +238,7 @@ const DettaglioOperatore = () => {
 
     const [dipendente, setDipendente] = useState<Dipendente>();
     const [contratti, setContratti] = useState<Contratto[]>([]);
-    const datiMancantiHR=window.location.pathname.startsWith("/hr/")?datiContrattoMancanti(dipendente):[];
+    const datiMancantiHR=datiContrattoMancanti(dipendente);
     const [formContrattoOpen,setFormContrattoOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
@@ -1871,7 +1871,7 @@ const DettaglioOperatore = () => {
                     }}
 
                   />
-                  {window.location.pathname.startsWith("/hr/")&&contrattiPrecedenti.length>0&&
+                  {contrattiPrecedenti.length>0&&
                     <section className="space-y-4"><h3 className="text-lg font-bold text-[#007a55]">Archivio contratti</h3>
                       {contrattiPrecedenti.map(c=><div key={c.idContratto} className="space-y-3">
                         <ContrattoAttivoHR
@@ -1887,7 +1887,7 @@ const DettaglioOperatore = () => {
                         />
                       </div>)}
                     </section>}
-                  {!window.location.pathname.startsWith("/hr/")&&contrattiPrecedenti.length>0&&
+                  {false&&contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 text-lg font-bold text-[#007a55]">
                         <span>Archivio contratti</span>
