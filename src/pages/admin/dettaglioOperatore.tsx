@@ -417,6 +417,14 @@ const DettaglioOperatore = () => {
     });
 
     // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
+    // Legacy contracts are presented through the same modern card as newly assigned HR contracts.
+    // These view-only records must not create or update HR workflow practices.
+    const praticaStorica=(c:Contratto):HRPratica=>({
+      id:0,idOperatore:Number(id),nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",
+      tipologia:c.tipologia.replace(/^CONTRATTO_/,""),datore:"DETELDER",
+      dataInizio:c.dataInizio,dataFine:c.dataFine,stato:"COMPLETATO",
+      note:null,assegnatoDa:0,presoInCaricoDa:null,creatoIl:""
+    });
     const contrattiPrecedenti=contratti.filter(c=>{
       if(!praticaHR)return true;
       const norm=(v:string)=>v.replace(/^CONTRATTO_/,"");
@@ -1808,6 +1816,7 @@ const DettaglioOperatore = () => {
                         contratti={contratti}
                         codiceFiscale={dipendente?.codiceFiscale||""}
                         onCreateContract={()=>setFormContrattoOpen(true)}
+                        missingPrerequisites={datiMancantiHR.length>0}
                         createFields={window.location.pathname.startsWith("/hr/")?<div className="w-full space-y-3 rounded-lg border bg-white p-3">
                           <p className="text-xs text-gray-600">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"—"}</p>
                           <label className="block text-xs">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata.dataFirmaContratto?format(formContrattoChiamata.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoChiamata(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>
@@ -1862,7 +1871,23 @@ const DettaglioOperatore = () => {
                     }}
 
                   />
-                  {contrattiPrecedenti.length>0&&
+                  {window.location.pathname.startsWith("/hr/")&&contrattiPrecedenti.length>0&&
+                    <section className="space-y-4"><h3 className="text-lg font-bold text-[#007a55]">Archivio contratti</h3>
+                      {contrattiPrecedenti.map(c=><div key={c.idContratto} className="space-y-3">
+                        <ContrattoAttivoHR
+                          contratti={[c]} idOperatore={id} pratica={praticaStorica(c)}
+                          codiceFiscale={dipendente?.codiceFiscale}
+                          datiMancanti={datiMancantiHR}
+                          isHR={false}
+                          onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
+                          archivioChiamate={c.tipologia==="CHIAMATA"&&id?<AzioniHRIntermittenti
+                            mode="archive" readOnly idOperatore={Number(id)} pratica={praticaStorica(c)}
+                            contratti={[c]} codiceFiscale={dipendente?.codiceFiscale||""}
+                            onCreateContract={()=>{}}/>:undefined}
+                        />
+                      </div>)}
+                    </section>}
+                  {!window.location.pathname.startsWith("/hr/")&&contrattiPrecedenti.length>0&&
                     <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 text-lg font-bold text-[#007a55]">
                         <span>Archivio contratti</span>
