@@ -10,6 +10,7 @@ import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrPrendiInCarico } f
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import type { Dipendente } from "@/entity";
+import {datiContrattoMancanti} from "@/utils/hrCompliance";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FileText, UserRound, Paperclip } from "lucide-react";
@@ -237,6 +238,7 @@ const DettaglioOperatore = () => {
 
     const [dipendente, setDipendente] = useState<Dipendente>();
     const [contratti, setContratti] = useState<Contratto[]>([]);
+    const datiMancantiHR=window.location.pathname.startsWith("/hr/")?datiContrattoMancanti(dipendente):[];
     const [formContrattoOpen,setFormContrattoOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
@@ -1046,6 +1048,7 @@ const DettaglioOperatore = () => {
     */
 
     const inviaContratto = async (contrattoFinale: ContrattoPayload, generazionePdf: boolean) => {
+        if(datiMancantiHR.length){window.alert("Impossibile generare il contratto. Completa: "+datiMancantiHR.join(", "));return;}
         try {
             const endpoint = generazionePdf ? "operatori/creaContratto" : "operatori/creaContrattoSenzaGenerazionePdf";
 
@@ -1794,6 +1797,7 @@ const DettaglioOperatore = () => {
                     idOperatore={id}
                     pratica={praticaHR}
                     codiceFiscale={dipendente?.codiceFiscale}
+                    datiMancanti={datiMancantiHR}
                     isHR={window.location.pathname.startsWith("/hr/")}
                     azioni={praticaHR?.tipologia==="CHIAMATA"&&id?(
                       <AzioniHRIntermittenti
@@ -1808,7 +1812,7 @@ const DettaglioOperatore = () => {
                           <p className="text-xs text-gray-600">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"—"}</p>
                           <label className="block text-xs">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata.dataFirmaContratto?format(formContrattoChiamata.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoChiamata(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>
                           <div className="grid gap-2 md:grid-cols-2">{(["cittaPredefinita","indirizzoPredefinito","cittaAlternativa","indirizzoAlternativo"] as const).map(k=><label key={k} className="block text-xs">{({cittaPredefinita:"Città sede",indirizzoPredefinito:"Indirizzo sede",cittaAlternativa:"Città alternativa",indirizzoAlternativo:"Indirizzo alternativo"})[k]}<input className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata[k]} onChange={e=>setFormContrattoChiamata(v=>({...v,[k]:e.target.value}))}/></label>)}</div>
-                          <button type="button" disabled={loading||!praticaHR.dataInizio||!praticaHR.dataFine} onClick={()=>void generaContrattoChiamata()} className="rounded bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto a chiamata"}</button>
+                          <button type="button" disabled={loading||datiMancantiHR.length>0||!praticaHR.dataInizio||!praticaHR.dataFine} onClick={()=>void generaContrattoChiamata()} className="rounded bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto a chiamata"}</button>
                         </div>:null}
                         onProgressUpdated={()=>setAggiornamentoAzioniHR(x=>x+1)}
                       />
@@ -1821,7 +1825,7 @@ const DettaglioOperatore = () => {
                           <p className="text-xs text-gray-500">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"senza scadenza"}</p>
                           {tipoContratto==="OCCASIONALE"&&<label className="block text-sm">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoOccasionale.dataFirmaContratto?format(formContrattoOccasionale.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoOccasionale(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>}
                           {tipoContratto==="CONSGNA_BENI_FORMAZIONE"&&<ConsegnaBeniFormazioneComponent formConsegnaBeniFormazione={formConsegnaBeniFormazione} handleChangeConsegnaBeniFormazione={handleChangeConsegnaBeniFormazione}/>}
-                          <button type="button" disabled={loading||!praticaHR.dataInizio} onClick={()=>void (tipoContratto==="OCCASIONALE"?generaContrattoOccasionale():tipoContratto==="CONTRATTO_TEMPO_DETERMINATO"?generaContrattoTempoDeterminato():tipoContratto==="CONTRATTO_TEMPO_INDETERMINATO"?generaContrattoTempoIndeterminato():tipoContratto==="CONSGNA_BENI_FORMAZIONE"?generaContrattoConsegnaBeniFormazione():Promise.resolve())} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto"}</button>
+                          <button type="button" disabled={loading||datiMancantiHR.length>0||!praticaHR.dataInizio} onClick={()=>void (tipoContratto==="OCCASIONALE"?generaContrattoOccasionale():tipoContratto==="CONTRATTO_TEMPO_DETERMINATO"?generaContrattoTempoDeterminato():tipoContratto==="CONTRATTO_TEMPO_INDETERMINATO"?generaContrattoTempoIndeterminato():tipoContratto==="CONSGNA_BENI_FORMAZIONE"?generaContrattoConsegnaBeniFormazione():Promise.resolve())} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{loading?"Generazione…":"Genera contratto"}</button>
                         </div>}
                       </div>
                     ):null}
