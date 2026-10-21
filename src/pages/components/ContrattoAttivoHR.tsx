@@ -30,7 +30,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
  const [codice,setCodice]=useState("");
  const [codiceSalvato,setCodiceSalvato]=useState("");
  const [codiceBusy,setCodiceBusy]=useState(false);
- useEffect(()=>{if(!pratica)return;let active=true;void hrLeggiCodiceComunicazione(pratica.id).then(v=>{if(active){setCodice(v.codice);setCodiceSalvato(v.codice)}}).catch(()=>{});return ()=>{active=false}},[pratica?.id]);
+ useEffect(()=>{if(!pratica||canonical(pratica.tipologia)!=="CHIAMATA")return;let active=true;void hrLeggiCodiceComunicazione(pratica.id).then(v=>{if(active){setCodice(v.codice);setCodiceSalvato(v.codice)}}).catch(()=>{});return ()=>{active=false}},[pratica?.id]);
  useEffect(()=>{setInizio(iso(pratica?.dataInizio));setFine(iso(pratica?.dataFine));setError("");setSaved(false)},[pratica?.id,pratica?.dataInizio,pratica?.dataFine]);
  const matches=pratica?contratti.filter(c=>canonical(c.tipologia)===canonical(pratica.tipologia)).sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))):[];
  // A document created before this assignment must not be shown as generated for the current case.
@@ -60,9 +60,9 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     <div><p className="text-xs font-semibold uppercase tracking-wider text-[#007a55]">Contratto assegnato</p><h2 className="mt-1 text-2xl font-bold text-[#007a55]">{nice[pratica.tipologia]||pratica.tipologia}</h2></div>
     <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${pratica.stato==="COMPLETATO"?"bg-emerald-100 text-emerald-800":pratica.stato==="IN_LAVORAZIONE"?"bg-blue-100 text-blue-800":"bg-amber-100 text-amber-800"}`}>{pratica.stato==="COMPLETATO"?(pratica.simulazioneTest?"Elaborato (test)":"Elaborato"):pratica.stato==="IN_LAVORAZIONE"?"In lavorazione":"Da elaborare"}</span>
    </div>
-   <div className="grid gap-3 rounded-lg border border-[#e2ebe7] bg-[#f8fbfa] p-3 md:grid-cols-[minmax(120px,1fr)_minmax(190px,1.2fr)_minmax(155px,1fr)_minmax(155px,1fr)]">
+   <div className="grid gap-3 rounded-lg border border-[#e2ebe7] bg-[#f8fbfa] p-3 md:grid-cols-3">
      <div className="min-w-0"><p className="mb-1 text-xs text-gray-500">Datore di lavoro</p><p className="text-sm font-semibold text-[#163d30]">{employers[pratica.datore]||pratica.datore}</p></div>
-     {hasUnilav&&<div className="min-w-0"><label className="text-xs text-gray-500">Codice comunicazione UNILAV<input value={codice} disabled={!isHR||codiceBusy} onChange={e=>setCodice(e.target.value)} className="mt-1 block w-full rounded-md border bg-white px-2 py-1.5 text-sm text-[#273b35]" placeholder="Codice UNILAV"/></label>{isHR&&codice!==codiceSalvato&&<button type="button" disabled={codiceBusy} className="mt-1 text-xs font-semibold text-[#007a55]" onClick={()=>void (async()=>{setCodiceBusy(true);try{const v=await hrSalvaCodiceComunicazione(pratica.id,codice);setCodice(v.codice);setCodiceSalvato(v.codice)}catch(e){setError(e instanceof Error?e.message:"Errore salvataggio codice")}finally{setCodiceBusy(false)}})()}>Salva codice</button>}</div>}
+
      <label className="min-w-0 text-xs text-gray-500">Dal<input type="date" className="mt-1 block w-full rounded-md border bg-white px-2 py-1.5 text-sm text-[#273b35]" value={inizio} disabled onChange={e=>{setInizio(e.target.value);setSaved(false)}}/></label>
      <label className="min-w-0 text-xs text-gray-500">Al (se previsto)<input type="date" className="mt-1 block w-full rounded-md border bg-white px-2 py-1.5 text-sm text-[#273b35]" value={fine} min={inizio||undefined} disabled onChange={e=>{setFine(e.target.value);setSaved(false)}}/></label>
    </div>
@@ -90,6 +90,11 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
     {doc.ok&&creato&&onDelete&&(isHR||doc.kind==="downloadContratto")&&<button type="button" title={"Elimina "+doc.title} aria-label={"Elimina "+doc.title} className="inline-flex items-center justify-center rounded border border-red-200 p-2 text-xs text-red-700" onClick={()=>{if(window.confirm("Eliminare "+doc.title+"? L'operazione è irreversibile."))void onDelete(creato.idContratto,doc.kind==="downloadContratto"?"contratto":doc.kind as DocKind).catch(e=>setError(e instanceof Error?e.message:"Cancellazione fallita"))}}><Trash2 className="h-4 w-4"/></button>}
     {doc.upload&&doc.kind!=="contrattoUnilav"&&creato&&isHR&&onUpload&&<label title={"Carica "+doc.title} className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] p-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/><input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
+   {canonical(pratica.tipologia)==="CHIAMATA"&&creato?.pathContrattoUnilav&&<div className="mt-4 rounded-lg border border-[#cfe2dc] bg-[#f8fbfa] p-3">
+      <p className="mb-2 text-xs font-semibold text-[#007a55]">Step successivo · Codice comunicazione UNILAV</p>
+      <label className="block text-xs text-gray-600">Codice comunicazione<input value={codice} disabled={!isHR||codiceBusy} onChange={e=>setCodice(e.target.value)} className="mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm" placeholder="Inserisci il codice UNILAV"/></label>
+      {isHR&&codice!==codiceSalvato&&<button type="button" disabled={codiceBusy} className="mt-2 rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" onClick={()=>void (async()=>{setCodiceBusy(true);try{const v=await hrSalvaCodiceComunicazione(pratica.id,codice);setCodice(v.codice);setCodiceSalvato(v.codice)}catch(e){setError(e instanceof Error?e.message:"Errore salvataggio codice")}finally{setCodiceBusy(false)}})()}>Salva codice</button>}
+     </div>}
    <p className="mt-3 text-xs text-gray-500">I documenti vengono associati al contratto effettivamente registrato. L'UNILAV è distinta dalle comunicazioni delle singole chiamate intermittenti.</p>
   </div></div></div>{archivioChiamate&&<div className="mt-5 w-full">{archivioChiamate}</div>}
   </section>
