@@ -40,6 +40,7 @@ export default function HRCoda(){
   setCriticita(issues);setRows(pratiche);setPianificati(pianificati);
  }catch(e){setError(e instanceof Error?e.message:"Impossibile caricare le pratiche");setPianificati(null)}finally{setBusy(false)}};
  useEffect(()=>{void carica()},[]);
+ const livelloPriorita=(p:HRPratica)=>{const issues=criticita[p.idOperatore]||[];if(!issues.length)return "Nessuna";const days=p.dataInizio?Math.ceil((new Date(String(p.dataInizio).slice(0,10)+"T12:00:00").getTime()-new Date().getTime())/86400000):999;return days<=7?"Alta":days<=30?"Media":"Bassa"};
  const visibili=rows.filter(p=>(p.stato!=="COMPLETATO"||(criticita[p.idOperatore]?.length||0)>0)&&pianificati?.has(p.idOperatore)&&(p.nome+" "+p.cognome+" "+p.tipologia).toLowerCase().includes(search.toLowerCase()));
  return <main className="m-6 space-y-5">
   <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-bold text-[#007a55]">HR · Pratiche assegnate</h1><p className="text-sm text-gray-500">Stesso riepilogo dell'ADMIN, in sola lettura. Lo stato viene aggiornato automaticamente in base a contratti, documenti e comunicazioni.</p></div>
@@ -48,16 +49,17 @@ export default function HRCoda(){
   <div className="grid gap-3 sm:grid-cols-4">{(["DA_ELABORARE","IN_LAVORAZIONE","COMPLETATO"] as HRStato[]).map(st=><div key={st} className="rounded-xl border bg-white p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge[st]}`}>{labels[st]}</span><div className="mt-2 text-2xl font-bold">{rows.filter(p=>pianificati?.has(p.idOperatore)&&(st==="IN_LAVORAZIONE"?["IN_LAVORAZIONE","DOCUMENTI_MANCANTI"].includes(p.stato):st==="COMPLETATO"?p.stato==="COMPLETATO"&&!(criticita[p.idOperatore]?.length):p.stato===st)).length}</div></div>)}</div>
   <section className="rounded-xl border bg-white p-4 shadow-sm">
    <div className="mb-3"><input className="w-full max-w-sm rounded-md border px-3 py-2 text-sm" placeholder="Cerca operatore o contratto" aria-label="Cerca pratiche" value={search} onChange={e=>setSearch(e.target.value)}/></div>
-   <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-sm">
-    <thead><tr className="bg-[#ecf3f1] text-left text-[#315e51]"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Periodo</th><th className="p-3">Stato</th><th className="p-3">Azioni</th></tr></thead>
+   <div className="overflow-x-auto"><table className="w-full min-w-[950px] text-sm">
+    <thead><tr className="bg-[#ecf3f1] text-left text-[#315e51]"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Periodo</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead>
     <tbody>{visibili.map(p=><tr key={p.id} className="border-b hover:bg-[#f8fbfa]">
      <td className="p-3 font-semibold">{p.cognome} {p.nome}</td>
      <td className="p-3">{p.tipologia.replace(/_/g," ")}</td>
      <td className="p-3">{p.datore.replace(/_/g," ")}</td>
      <td className="p-3 whitespace-nowrap">{date(p.dataInizio)} – {date(p.dataFine)}</td>
      <td className="p-3"><div className="group relative inline-flex" tabIndex={criticita[p.idOperatore]?.length?0:undefined}><span title={criticita[p.idOperatore]?.join(" · ")||undefined} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${criticita[p.idOperatore]?.length?"cursor-help bg-amber-100 text-amber-900":badge[p.stato]}`}>{criticita[p.idOperatore]?.length?<><AlertCircle className="h-4 w-4"/>Incompleto</>:p.stato==="COMPLETATO"&&p.simulazioneTest?"Elaborato (test)":labels[p.stato]}</span>{!!criticita[p.idOperatore]?.length&&<div role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 hidden w-72 rounded-lg border border-amber-200 bg-white p-3 text-xs shadow-lg group-hover:block group-focus-within:block"><strong className="text-amber-800">Cosa manca</strong><ul className="mt-1 list-inside list-disc space-y-1">{criticita[p.idOperatore].map((v,i)=><li key={i}>{v}</li>)}</ul></div>}</div></td>
+     <td className="p-3"><span className={`font-semibold ${livelloPriorita(p)==="Alta"?"text-red-700":livelloPriorita(p)==="Media"?"text-amber-700":"text-emerald-700"}`}>{livelloPriorita(p)}</span></td>
      <td className="p-3"><Link title="Visualizza e lavora contratto" aria-label={"Apri contratto di "+p.cognome+" "+p.nome} to={`/hr/operatore/${p.idOperatore}?tab=contratti&pratica=${p.id}`} className="inline-flex rounded-md border border-[#b7d7cc] p-2 text-[#007a55] hover:bg-[#ecf3f1]"><Eye className="h-5 w-5"/></Link></td>
-    </tr>)}{!visibili.length&&<tr><td colSpan={6} className="p-6 text-center text-gray-500">{busy?"Caricamento…":"Nessuna pratica trovata"}</td></tr>}</tbody>
+    </tr>)}{!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{busy?"Caricamento…":"Nessuna pratica trovata"}</td></tr>}</tbody>
    </table></div>
   </section>
  </main>;
