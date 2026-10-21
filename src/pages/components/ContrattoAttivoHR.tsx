@@ -11,7 +11,7 @@ export type ContrattoSintesiHR = {
 type DocKind="contrattoFirmato"|"contrattoUnilav";
 type Props={
  contratti:ContrattoSintesiHR[];idOperatore:string|undefined;pratica?:HRPratica|null;
- codiceFiscale?:string|null;isHR?:boolean;azioni?:ReactNode;archivioChiamate?:ReactNode;onCreate?:()=>void;onPeriodSave?:(inizio:string,fine:string|null)=>Promise<void>;
+ codiceFiscale?:string|null;datiMancanti?:string[];isHR?:boolean;azioni?:ReactNode;archivioChiamate?:ReactNode;onCreate?:()=>void;onPeriodSave?:(inizio:string,fine:string|null)=>Promise<void>;
  onDownload?:(contractId:number,kind:string)=>void;
  onUpload?:(event:ChangeEvent<HTMLInputElement>,contractId:number,kind:DocKind)=>void;
  onDelete?:(contractId:number,kind:"contratto"|"contrattoFirmato"|"contrattoUnilav")=>Promise<void>;
@@ -21,7 +21,7 @@ const employers:Record<string,string>={DETELDER:"DETELDER",SOCIETA_APPALTO:"Soci
 const iso=(v:string|null|undefined)=>v?String(v).slice(0,10):"";
 const isValid=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T12:00:00Z"));
 const canonical=(v:string)=>v.replace(/^CONTRATTO_/,"");
-export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,azioni,archivioChiamate,onCreate,onPeriodSave,onDownload,onUpload,onDelete}:Props){
+export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,datiMancanti=[],isHR=false,azioni,archivioChiamate,onCreate,onPeriodSave,onDownload,onUpload,onDelete}:Props){
  const [inizio,setInizio]=useState("");
  const [fine,setFine]=useState("");
  const [saving,setSaving]=useState(false);
@@ -43,7 +43,7 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
   {label:"Data inizio",ok:isValid(inizio)},
   {label:"Periodo valido",ok:isValid(inizio)&&(!fine||(isValid(fine)&&fine>=inizio))}
  ];
- const ready=req.every(x=>x.ok);
+ const ready=req.every(x=>x.ok)&&datiMancanti.length===0;
  const hasUnilav=!!pratica&&["CHIAMATA","TEMPO_DETERMINATO","TEMPO_INDETERMINATO"].includes(canonical(pratica.tipologia));
  const save=async()=>{if(!onPeriodSave||!ready)return;setSaving(true);setError("");setSaved(false);
   try{await onPeriodSave(inizio,fine||null);setSaved(true)}catch(e){setError(e instanceof Error?e.message:"Salvataggio non riuscito")}finally{setSaving(false)}
@@ -70,11 +70,12 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,isHR=false,az
    {saved&&<p role="status" className="mt-2 text-sm text-emerald-700">Periodo salvato sulla pratica.</p>}
    {error&&<p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
    <div className="mt-4 grid items-start gap-4 lg:grid-cols-2"><div className="relative flex min-w-0 flex-col gap-3"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><ClipboardList className="h-5 w-5"/>Attività da fare</h3>{pratica.stato==="COMPLETATO"&&<span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800"><CheckCircle2 className="h-4 w-4 fill-emerald-600 text-white"/>Tutte le attività svolte</span>}</div>
-   {((creato&&hasUnilav&&!creato.pathContrattoUnilav?null:azioni)||(!creato&&!azioni?<div className={`rounded-xl border px-4 py-4 ${creato?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}>
+   {datiMancanti.length>0&&<div className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-4 text-sm"><div className="flex items-center gap-2 font-semibold text-red-800"><AlertCircle className="h-4 w-4"/>Completa i dati anagrafici prima di generare il contratto</div><ul className="mt-2 list-inside list-disc space-y-1 text-xs text-red-800">{datiMancanti.map(v=><li key={v}>{v}</li>)}</ul><p className="mt-2 text-xs text-red-700">Aggiorna la scheda anagrafica e ricarica i dati.</p></div>}
+   {datiMancanti.length===0&&((creato&&hasUnilav&&!creato.pathContrattoUnilav?null:azioni)||(!creato&&!azioni?<div className={`rounded-xl border px-4 py-4 ${creato?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold text-[#102e4d]">{creato?"Contratto generato":"Crea "+(nice[pratica.tipologia]||pratica.tipologia)}</p>{isHR&&!creato&&pratica.tipologia!=="FATTURA"&&<button type="button" onClick={onCreate} disabled={!ready||changed} className="rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Crea contratto</button>}</div>
       <p className="mt-1 text-xs text-gray-600">Requisiti: {req.filter(x=>!x.ok).map(x=>x.label).join(" · ")||"Soddisfatti"}</p>
    </div>:null))}
-   {hasUnilav&&creato&&!creato.pathContrattoUnilav&&<div className={`order-2 rounded-xl border px-4 py-4 ${creato?.pathContrattoUnilav?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><div className="flex flex-wrap items-center justify-between gap-2"><p className="flex items-center gap-2 text-sm font-bold text-[#102e4d]">{creato?.pathContrattoUnilav?<CheckCircle2 className="h-5 w-5 text-emerald-700"/>:<AlertCircle className="h-5 w-5 text-amber-600"/>}{creato?.pathContrattoUnilav?"UNILAV caricata":"Carica UNILAV di assunzione"}</p>{creato?.pathContrattoUnilav&&<span className="ml-auto rounded-full bg-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">COMPLETATO</span>}{!creato?.pathContrattoUnilav&&creato&&isHR&&onUpload&&<label className="cursor-pointer rounded-md bg-[#007a55] px-4 py-2 text-xs font-semibold text-white">Carica documento<input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,"contrattoUnilav")}/></label>}</div><p className="mt-1 text-xs text-gray-600">Requisiti: {creato?"contratto generato disponibile":"genera prima il contratto"} · documento UNILAV {creato?.pathContrattoUnilav?"presente":"da caricare"}</p></div>}
+   {datiMancanti.length===0&&hasUnilav&&creato&&!creato.pathContrattoUnilav&&<div className={`order-2 rounded-xl border px-4 py-4 ${creato?.pathContrattoUnilav?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><div className="flex flex-wrap items-center justify-between gap-2"><p className="flex items-center gap-2 text-sm font-bold text-[#102e4d]">{creato?.pathContrattoUnilav?<CheckCircle2 className="h-5 w-5 text-emerald-700"/>:<AlertCircle className="h-5 w-5 text-amber-600"/>}{creato?.pathContrattoUnilav?"UNILAV caricata":"Carica UNILAV di assunzione"}</p>{creato?.pathContrattoUnilav&&<span className="ml-auto rounded-full bg-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">COMPLETATO</span>}{!creato?.pathContrattoUnilav&&creato&&isHR&&onUpload&&<label className="cursor-pointer rounded-md bg-[#007a55] px-4 py-2 text-xs font-semibold text-white">Carica documento<input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,"contrattoUnilav")}/></label>}</div><p className="mt-1 text-xs text-gray-600">Requisiti: {creato?"contratto generato disponibile":"genera prima il contratto"} · documento UNILAV {creato?.pathContrattoUnilav?"presente":"da caricare"}</p></div>}
    </div>
   <div className="min-w-0 space-y-3"><div className="rounded-xl border border-[#cfe2dc] bg-white p-4">
    <div className="mb-3 flex items-center justify-between gap-2"><h3 className="flex items-center gap-2 text-lg font-bold text-[#007a55]"><Files className="h-5 w-5"/>Documenti</h3><span className="text-xs text-gray-500">{[!!creato,...(hasUnilav?[!!creato?.pathContrattoUnilav]:[])].filter(Boolean).length} / {hasUnilav?2:1} obbligatori disponibili</span></div>
