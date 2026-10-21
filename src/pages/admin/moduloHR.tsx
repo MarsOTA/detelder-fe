@@ -27,7 +27,7 @@ async function api<T>(path:string):Promise<T>{
  if(!response.ok)throw new Error(`Errore API ${response.status}: ${path}`);
  return response.json() as Promise<T>;
 }
-function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:ArchivioChiamate,pratica?:HRPratica):Riga {
+function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:ArchivioChiamate):Riga {
  const futuri=turni.filter(t=>iso(t.dataTurno)>=oggi()&&!!t.dataTurno).sort((a,b)=>iso(a.dataTurno).localeCompare(iso(b.dataTurno)));
  const prossimoTurno=futuri.length?iso(futuri[0].dataTurno):null;
  const priorita=prossimoTurno?Math.max(0,Math.round((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000)):999999;
@@ -110,7 +110,7 @@ export default function ModuloHR(){
       risultati.forEach((ris,k)=>{perOperatore[padri[k].idContratto]=ris.status==="fulfilled"?ris.value:null;});
       return perOperatore;
     }));
-    batch.forEach((o,j)=>dati.push(valuta(o,Array.isArray(contratti[j])?contratti[j]:[],turni.filter(t=>Number(t.idOperatore)===Number(o.id)),archivi[j],pratiche.filter(p=>p.idOperatore===o.id).sort((a,b)=>b.id-a.id)[0])));
+    batch.forEach((o,j)=>dati.push(valuta(o,Array.isArray(contratti[j])?contratti[j]:[],turni.filter(t=>Number(t.idOperatore)===Number(o.id)),archivi[j])));
     setProgress(`Operatori analizzati ${Math.min(i+4,persone.length)}/${persone.length}`);
    }
    setRighe(dati);
