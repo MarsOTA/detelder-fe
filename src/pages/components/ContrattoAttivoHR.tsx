@@ -92,7 +92,8 @@ export function ContrattoAttivoHR({contratti,pratica,codiceFiscale,datiMancanti=
     {doc.upload&&doc.kind!=="contrattoUnilav"&&creato&&isHR&&onUpload&&<label title={"Carica "+doc.title} className="inline-flex cursor-pointer items-center gap-1 rounded border border-[#b7d7cc] p-2 text-xs font-medium text-[#007a55]"><UploadCloud className="h-4 w-4"/><input type="file" className="sr-only" onChange={e=>onUpload(e,creato.idContratto,doc.upload as DocKind)}/></label>}
    </div>)}
    {canonical(pratica.tipologia)==="CHIAMATA"&&creato?.pathContrattoUnilav&&<div className="mt-4 rounded-lg border border-[#cfe2dc] bg-[#f8fbfa] p-3">
-      <p className="mb-2 text-xs font-semibold text-[#007a55]">Step successivo · Codice comunicazione UNILAV</p>
+      <p className="mb-2 text-xs font-semibold text-[#007a55]">Codice comunicazione UNILAV</p>
+      <p className="mb-2 text-xs text-gray-500">Riferimento della comunicazione di assunzione, da inserire dopo il caricamento dell’UNILAV.</p>
       <label className="block text-xs text-gray-600">Codice comunicazione<input value={codice} disabled={!isHR||codiceBusy} onChange={e=>setCodice(e.target.value)} className="mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm" placeholder="Inserisci il codice UNILAV"/></label>
       {isHR&&codice!==codiceSalvato&&<button type="button" disabled={codiceBusy} className="mt-2 rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" onClick={()=>void (async()=>{setCodiceBusy(true);try{const v=await hrSalvaCodiceComunicazione(pratica.id,codice);setCodice(v.codice);setCodiceSalvato(v.codice)}catch(e){setError(e instanceof Error?e.message:"Errore salvataggio codice")}finally{setCodiceBusy(false)}})()}>Salva codice</button>}
      </div>}
