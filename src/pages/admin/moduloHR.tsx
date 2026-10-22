@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, AlertCircle, CheckCircle2, X, Eye } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import { hrAssegna,hrPratiche } from "@/utils/hrWorkflow";
@@ -72,6 +72,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
 }
 export default function ModuloHR(){
  const navigate=useNavigate();
+ const [searchParams,setSearchParams]=useSearchParams();
  const [righe,setRighe]=useState<Riga[]>([]);
  const [assegnate,setAssegnate]=useState<HRPratica[]>([]);
  const [assegnando,setAssegnando]=useState<number|null>(null);
@@ -160,6 +161,19 @@ export default function ModuloHR(){
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile assegnare il nuovo contratto padre. Verificare se il backend consente una seconda pratica per l'operatore.")}
   finally{setAssegnando(null);}
  };
+ useEffect(()=>{
+  const target=Number(searchParams.get("operatore"));
+  if(!Number.isSafeInteger(target)||target<=0||loading||!righe.length)return;
+  const selected=righe.find(x=>x.operatore.id===target);
+  if(!selected)return;
+  const missing=selected.turni.find(t=>!selected.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
+  const turno=missing||selected.turni[0];
+  const dal=turno?iso(turno.dataTurno):"",fine=turno?fineTurno(turno):"";
+  setDateModificate(v=>({...v,[target]:{inizio:dal,fine}}));
+  setSelezionato(target);
+  setRicerca(selected.operatore.cognome);
+  setSearchParams({}, {replace:true});
+ },[searchParams,righe,loading,setSearchParams]);
  const apriAzione=(x:Riga)=>{
   setErrore("");
   const scoperto=x.turni.find(t=>!x.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
