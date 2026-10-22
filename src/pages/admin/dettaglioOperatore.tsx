@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
@@ -243,13 +243,16 @@ const DettaglioOperatore = () => {
     const [searchParams] = useSearchParams();
     const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
     useEffect(()=>{
+      if(!id)return;
       const praticaId=Number(searchParams.get("pratica"));
-      if(!praticaId||!id)return;
       let active=true;
       void (async()=>{
-        if(window.location.pathname.startsWith("/hr/"))await hrPrendiInCarico(praticaId);
         const rows=await hrPratiche();
-        if(active)setPraticaHR(rows.find(p=>p.id===praticaId&&p.idOperatore===Number(id))||null);
+        const all=rows.filter(p=>p.idOperatore===Number(id)).sort((a,b)=>b.id-a.id);
+        const selected=praticaId?all.find(p=>p.id===praticaId):all[0];
+        if(!selected){if(active)setPraticaHR(null);return}
+        if(window.location.pathname.startsWith("/hr/")&&selected.stato!=="COMPLETATO")await hrPrendiInCarico(selected.id);
+        if(active)setPraticaHR(selected);
       })().catch(()=>{if(active)setPraticaHR(null)});
       return ()=>{active=false};
     },[id,searchParams]);
@@ -1800,6 +1803,11 @@ const DettaglioOperatore = () => {
                 </TabsContent>
 
                 <TabsContent value="contratti" className="space-y-5">
+                  {!window.location.pathname.startsWith("/hr/")&&id&&<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div><p className="font-semibold text-amber-900">Nuovo contratto padre o chiamata per un turno scoperto?</p><p className="text-sm text-amber-800">Il contratto storico non si rinnova da questa scheda. Apri l'assegnazione Admin: verrà proposta la prima data del turno non coperto e potrai assegnare un nuovo contratto all'HR.</p></div>
+                    <Link to={`/admin/modulo-hr?operatore=${id}`} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white">Gestisci nuova assegnazione</Link>
+                  </div>}
+
                   <ContrattoAttivoHR
                     contratti={contratti}
                     idOperatore={id}
