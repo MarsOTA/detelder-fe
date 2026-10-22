@@ -21,7 +21,9 @@ export default function TooltipStatoHR({motivi,stato="Incompleto"}:Props){
   const r=el.getBoundingClientRect();
   // Render via portal, outside the table overflow container and above adjacent rows.
   const width=280;
-  setAncora({top:Math.min(window.innerHeight-16,r.bottom+10),left:Math.min(Math.max(12,r.left),Math.max(12,window.innerWidth-width-12))});
+  const estimatedHeight=Math.min(228,66+Math.max(1,items.length)*28);
+  const top=r.bottom+10+estimatedHeight<=window.innerHeight-12?r.bottom+10:Math.max(12,r.top-estimatedHeight-10);
+  setAncora({top,left:Math.min(Math.max(12,r.left),Math.max(12,window.innerWidth-width-12))});
  };
  const items=riepilogoCriticitaHR(motivi);
  return <>
