@@ -3,7 +3,8 @@ import {Link} from "react-router-dom";
 import {hrPratiche} from "@/utils/hrWorkflow";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 import type {HRPratica,HRStato} from "@/utils/hrWorkflow";
-import {Eye,RefreshCw,AlertCircle} from "lucide-react";
+import {Eye,RefreshCw} from "lucide-react";
+import TooltipStatoHR from "../components/TooltipStatoHR";
 import {caricaAnagraficaHR,caricaContrattiHR,verificaRegolaritaHR} from "@/utils/hrCompliance";
 import type {HRTurno} from "@/utils/hrCompliance";
 
@@ -56,7 +57,7 @@ export default function HRCoda(){
      <td className="p-3">{p.tipologia.replace(/_/g," ")}</td>
      <td className="p-3">{p.datore.replace(/_/g," ")}</td>
      <td className="p-3 whitespace-nowrap">{date(p.dataInizio)} – {date(p.dataFine)}</td>
-     <td className="p-3"><div className="group relative inline-flex" tabIndex={criticita[p.idOperatore]?.length?0:undefined}><span title={criticita[p.idOperatore]?.join(" · ")||undefined} className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${criticita[p.idOperatore]?.length?"cursor-help bg-amber-100 text-amber-900":badge[p.stato]}`}>{criticita[p.idOperatore]?.length?<><AlertCircle className="h-4 w-4"/>Incompleto</>:p.stato==="COMPLETATO"&&p.simulazioneTest?"Elaborato (test)":labels[p.stato]}</span>{!!criticita[p.idOperatore]?.length&&<div role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 hidden w-72 rounded-lg border border-amber-200 bg-white p-3 text-xs shadow-lg group-hover:block group-focus-within:block"><strong className="text-amber-800">Cosa manca</strong><ul className="mt-1 list-inside list-disc space-y-1">{criticita[p.idOperatore].map((v,i)=><li key={i}>{v}</li>)}</ul></div>}</div></td>
+     <td className="p-3">{criticita[p.idOperatore]?.length?<TooltipStatoHR motivi={criticita[p.idOperatore]}/>:<span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badge[p.stato]}`}>{p.stato==="COMPLETATO"&&p.simulazioneTest?"Elaborato (test)":labels[p.stato]}</span>}</td>
      <td className="p-3"><span className={`font-semibold ${livelloPriorita(p)==="Alta"?"text-red-700":livelloPriorita(p)==="Media"?"text-amber-700":"text-emerald-700"}`}>{livelloPriorita(p)}</span></td>
      <td className="p-3"><Link title="Visualizza e lavora contratto" aria-label={"Apri contratto di "+p.cognome+" "+p.nome} to={`/hr/operatore/${p.idOperatore}?tab=contratti&pratica=${p.id}`} className="inline-flex rounded-md border border-[#b7d7cc] p-2 text-[#007a55] hover:bg-[#ecf3f1]"><Eye className="h-5 w-5"/></Link></td>
     </tr>)}{!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{busy?"Caricamento…":"Nessuna pratica trovata"}</td></tr>}</tbody>
