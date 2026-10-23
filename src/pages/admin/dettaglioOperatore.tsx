@@ -9,6 +9,7 @@ import { listaChiamateHR } from "@/utils/chiamateHR";
 import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrPrendiInCarico } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
+import {messaggioBloccoContratto} from "@/utils/hrContrattoRestrittivo";
 import type { Dipendente } from "@/entity";
 import {datiContrattoMancanti} from "@/utils/hrCompliance";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -278,6 +279,8 @@ const DettaglioOperatore = () => {
       const requested=Number(searchParams.get("contratto"));
       const c=contratti.find(item=>item.idContratto===requested&&item.tipologia==="CHIAMATA");
       if(!c||!c.dataInizio||!c.dataFine)return;
+      const current=new Date();const today=[current.getFullYear(),String(current.getMonth()+1).padStart(2,"0"),String(current.getDate()).padStart(2,"0")].join("-");
+      if(c.dataInizio.slice(0,10)>today||c.dataFine.slice(0,10)<today)return;
       const inizio=searchParams.get("inizio")||"";
       const fine=searchParams.get("fine")||inizio;
       const dal=c.dataInizio.slice(0,10),al=c.dataFine.slice(0,10);
@@ -1053,6 +1056,10 @@ const DettaglioOperatore = () => {
     */
 
     const inviaContratto = async (contrattoFinale: ContrattoPayload, generazionePdf: boolean) => {
+        if(contrattoFinale.tipologia!=="CONSGNA_BENI_FORMAZIONE"){
+            const blocco=messaggioBloccoContratto(contratti);
+            if(blocco){window.alert(blocco);return;}
+        }
         if(datiMancantiHR.length){window.alert("Impossibile generare il contratto. Completa: "+datiMancantiHR.join(", "));return;}
         try {
             // Tempo determinato/indeterminato: il backend prevede un inserimento manuale,
