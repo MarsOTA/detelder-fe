@@ -1103,10 +1103,10 @@ const DettaglioOperatore = () => {
                 const aggiornati=await caricaListaContratti();
                 const norma=(v:string)=>v.replace(/^CONTRATTO_/,"");
                 const dataRichiesta="dataInizio" in contrattoFinale?String(contrattoFinale.dataInizio||"").slice(0,10):"";
-                registrato=Array.isArray(aggiornati)&&aggiornati.some(c=>norma(c.tipologia)===norma(contrattoFinale.tipologia)&&!!dataRichiesta&&String(c.dataInizio||"").slice(0,10)===dataRichiesta&&!c.pathContratto);
+                registrato=Array.isArray(aggiornati)&&aggiornati.some(c=>norma(c.tipologia)===norma(contrattoFinale.tipologia)&&!!dataRichiesta&&String(c.dataInizio||"").slice(0,10)===dataRichiesta);
             }catch(e){console.warn("Impossibile verificare il record contratto dopo il fallimento:",e)}
             const detail=error instanceof Error?error.message:"Errore sconosciuto";
-            alert(detail+"\\n"+(registrato?"Attenzione: il contratto risulta registrato senza PDF. Non ripetere la creazione; occorre rigenerare il documento.":"Verifica l'elenco contratti prima di riprovare: il backend potrebbe aver salvato il record anche se la generazione PDF è fallita."));
+            alert(detail+"\\n"+(registrato?"Attenzione: esiste un record per il contratto richiesto, ma il PDF potrebbe non essere stato creato. Non ripetere la creazione: verifica e completa il documento.":"Verifica l'elenco contratti prima di riprovare: il backend potrebbe aver salvato il record anche se la generazione PDF è fallita."));
         }
     };
 
