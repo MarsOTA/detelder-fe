@@ -232,7 +232,7 @@ export default function ModuloHR(){
  const pronti=!!r&&!richiedePadre&&requisiti.length===0&&dateValide&&dentroContratto;
  const vaiContratti=(id:number,prepara=false)=>{
   const p=new URLSearchParams({tab:"contratti"});
-  if(prepara&&padre&&periodo&&pronti){p.set("azione","chiamata");p.set("contratto",String(padre.idContratto));p.set("inizio",periodo.inizio);p.set("fine",periodo.fine);}
+  if(prepara&&padre&&periodo&&dateValide&&dentroContratto){p.set("azione","chiamata");p.set("contratto",String(padre.idContratto));p.set("inizio",periodo.inizio);p.set("fine",periodo.fine);}
   navigate(`/admin/dettaglio-operatore/${id}?${p.toString()}`);
  };
  return <main className="m-6 space-y-5">
