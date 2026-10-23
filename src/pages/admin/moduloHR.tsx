@@ -3,7 +3,7 @@ import TooltipStatoHR from "../components/TooltipStatoHR";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, AlertCircle, CheckCircle2, X, Eye } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { hrAssegna,hrPratiche } from "@/utils/hrWorkflow";
+import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
 import type { DatoreIntermittenti } from "@/utils/chiamateHR";
@@ -90,7 +90,7 @@ export default function ModuloHR(){
  const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>({});
  const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||"";
  const praticaCorrente=(x:Riga)=>assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0];
- const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??{inizio:"",fine:""};
+ const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??(praticaCorrente(x)?{inizio:iso(praticaCorrente(x)?.dataInizio),fine:iso(praticaCorrente(x)?.dataFine)}:{inizio:"",fine:""});
  const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>({...prev,[id]:{...(prev[id]??{datore:"DETELDER",tipo:""}),[k]:value}}));
  const carica=async()=>{
   setLoading(true);setErrore("");setProgress("Caricamento operatori e turni…");
@@ -147,6 +147,35 @@ export default function ModuloHR(){
     setDateContratto(v=>{const next={...v};delete next[x.operatore.id];return next});
   }catch(e){setErrore(e instanceof Error?e.message:"Assegnazione fallita");}
   finally{setAssegnando(null);}
+ };
+ const salvaPeriodo=async(x:Riga)=>{
+  const p=praticaCorrente(x);
+  if(!p||p.stato==="COMPLETATO"){setErrore("Per un contratto già elaborato occorre una nuova assegnazione, non modificare il documento precedente.");return;}
+  const date=periodoVisualizzato(x);
+  if(!date.inizio||(p.tipologia!=="TEMPO_INDETERMINATO"&&!date.fine)||!!date.fine&&date.fine<date.inizio){setErrore("Controlla le date di inizio e fine del contratto.");return;}
+  setAssegnando(x.operatore.id);setErrore("");
+  try{
+   await hrAggiornaPeriodo(p.id,date.inizio,p.tipologia==="TEMPO_INDETERMINATO"?null:date.fine);
+   setAssegnate(await hrPratiche());
+   setDateContratto(old=>{const n={...old};delete n[x.operatore.id];return n});
+  }catch(e){setErrore(e instanceof Error?e.message:"Impossibile salvare il nuovo periodo.");}
+  finally{setAssegnando(null)}
+ };
+ const assegnaNuovoPeriodo=async(x:Riga)=>{
+  const corrente=praticaCorrente(x);
+  if(!corrente||corrente.stato!=="COMPLETATO")return;
+  const date=periodoVisualizzato(x);
+  if(!date.inizio||(corrente.tipologia!=="TEMPO_INDETERMINATO"&&!date.fine)||(date.fine&&date.fine<date.inizio)){setErrore("Inserisci un nuovo periodo valido prima dell'assegnazione.");return;}
+  const tipo=corrente.tipologia.replace(/^CONTRATTO_/,"");
+  if(x.contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===tipo&&iso(c.dataInizio)===date.inizio)){setErrore("Esiste già un contratto dello stesso tipo con questa data di inizio.");return;}
+  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.tipologia===tipo&&iso(p.dataInizio)===date.inizio)){setErrore("Esiste già una pratica per queste date.");return;}
+  setAssegnando(x.operatore.id);setErrore("");
+  try{
+   await hrAssegna({idOperatore:x.operatore.id,tipologia:tipo,datore:corrente.datore,dataInizio:date.inizio,dataFine:tipo==="TEMPO_INDETERMINATO"?null:date.fine});
+   await carica();
+   setDateContratto(old=>{const n={...old};delete n[x.operatore.id];return n});
+  }catch(e){setErrore(e instanceof Error?e.message:"Impossibile assegnare il nuovo contratto.");}
+  finally{setAssegnando(null)}
  };
  const assegnaNuovoPadre=async(x:Riga,dal:string,al:string)=>{
   if(!dal||!al||al<dal){setErrore("Seleziona un periodo valido per il nuovo contratto padre.");return;}
@@ -225,14 +254,17 @@ export default function ModuloHR(){
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Inquadramento" value={inlineHR[x.operatore.id]?.tipo??praticaCorrente(x)?.tipologia??""} disabled={!!praticaCorrente(x)} onChange={e=>aggiorna(x.operatore.id,"tipo",e.target.value)}><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</option><option value="FATTURA">Fattura (senza generatore)</option></select></td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Datore di lavoro" value={inlineHR[x.operatore.id]?.datore??praticaCorrente(x)?.datore??"DETELDER"} disabled={!!praticaCorrente(x)} onChange={e=>aggiorna(x.operatore.id,"datore",e.target.value)}><option value="DETELDER">DETELDER</option><option value="SOCIETA_APPALTO">Società in appalto</option><option value="AUTONOMO_PIVA">Autonomo - P.IVA</option></select></td>
       <td className="p-3"><div className="flex min-w-[210px] flex-col gap-1">
-{praticaCorrente(x)?.tipologia==="CHIAMATA" ? <>
-<label className="text-[11px] font-medium text-[#315e51]">Nuova chiamata · Dal<input type="date" aria-label={"Inizio nuova chiamata per "+x.operatore.cognome} className="mt-1 w-full rounded border bg-white px-1 py-1 text-xs" value={dateModificate[x.operatore.id]?.inizio??""} onChange={e=>setDateModificate(old=>({...old,[x.operatore.id]:{inizio:e.target.value,fine:old[x.operatore.id]?.fine??""}}))}/></label>
-<label className="text-[11px] font-medium text-[#315e51]">Al<input type="date" aria-label={"Fine nuova chiamata per "+x.operatore.cognome} min={dateModificate[x.operatore.id]?.inizio||undefined} className="mt-1 w-full rounded border bg-white px-1 py-1 text-xs" value={dateModificate[x.operatore.id]?.fine??""} onChange={e=>setDateModificate(old=>({...old,[x.operatore.id]:{inizio:old[x.operatore.id]?.inizio??"",fine:e.target.value}}))}/></label>
-<span className="text-[10px] text-gray-500">Contratto: {formatData(praticaCorrente(x)?.dataInizio)} – {formatData(praticaCorrente(x)?.dataFine)}</span>
-</> : <>
-<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={!!praticaCorrente(x)} value={periodoVisualizzato(x).inizio} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??""}}))}/>
-{tipoSelezionato(x)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={!!praticaCorrente(x)} min={periodoVisualizzato(x).inizio||undefined} value={periodoVisualizzato(x).fine} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??"",fine:e.target.value}}))}/>}
-</>}
+{praticaCorrente(x)?.tipologia==="CHIAMATA"&&praticaCorrente(x)?.stato==="COMPLETATO"?<>
+ <span className="text-[11px] text-gray-500">Contratto concluso: {formatData(praticaCorrente(x)?.dataInizio)} – {formatData(praticaCorrente(x)?.dataFine)}</span>
+ <span className="text-[11px] font-semibold text-[#315e51]">Nuovo contratto · periodo</span>
+</>:praticaCorrente(x)?.stato==="COMPLETATO"?<>
+ <span className="text-[11px] text-gray-500">Precedente: {formatData(praticaCorrente(x)?.dataInizio)} – {formatData(praticaCorrente(x)?.dataFine)}</span>
+ <span className="text-[11px] font-semibold text-[#315e51]">Nuovo contratto · periodo</span>
+</>:<span className="text-[11px] font-semibold text-[#315e51]">Periodo contratto</span>}
+<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" value={dateContratto[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).inizio)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).fine)}}))}/>
+{(praticaCorrente(x)?.tipologia??tipoSelezionato(x))!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" min={dateContratto[x.operatore.id]?.inizio||(praticaCorrente(x)?.stato==="COMPLETATO"?undefined:periodoVisualizzato(x).inizio)} value={dateContratto[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).fine)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).inizio),fine:e.target.value}}))}/>}
+{praticaCorrente(x)?.stato!=="COMPLETATO"&&praticaCorrente(x)&&dateContratto[x.operatore.id]&&<button type="button" disabled={assegnando!==null} onClick={()=>void salvaPeriodo(x)} className="rounded border border-[#007a55] px-2 py-1 text-xs font-semibold text-[#007a55]">Salva date</button>}
+{praticaCorrente(x)?.stato==="COMPLETATO"&&dateContratto[x.operatore.id]?.inizio&&<button type="button" disabled={assegnando!==null} onClick={()=>void assegnaNuovoPeriodo(x)} className="rounded bg-[#007a55] px-2 py-1 text-xs font-semibold text-white">Assegna nuovo periodo a HR</button>}
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span>
 </div></td>
       <td className="p-3">{x.stato==="Incompleto"?<TooltipStatoHR motivi={x.motivi}/>:<span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span>}</td>
