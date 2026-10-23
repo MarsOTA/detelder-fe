@@ -36,14 +36,15 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const riferimento=prossimoTurno||oggi();
  const altri=contratti.find(c=>copre(c,riferimento));
  const scaduti=contratti.filter(c=>tipoLavoro(c.tipologia)&&!!c.dataFine&&iso(c.dataFine)<riferimento);
- const scoperti=futuri.filter(t=>!contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
+ const attivo=contrattoInVigore(contratti);
+ const scoperti=futuri.filter(t=>(!!attivo?.dataFine&&iso(t.dataTurno)>iso(attivo.dataFine))||!contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
  const primaScopertura=scoperti.length?iso(scoperti[0].dataTurno):null;
  const isScaduto=!!prossimoTurno&&!altri&&scaduti.length>0;
  const cf=o.codiceFiscale||o.codice_fiscale;
  const motivi:string[]=[];
  if(!cf?.trim())motivi.push("Codice fiscale");
  if(!altri&&prossimoTurno)motivi.push(isScaduto?"Contratto scaduto":"Contratto padre / inquadramento");
- if(primaScopertura)motivi.push("Turno del "+formatData(primaScopertura)+" senza copertura contrattuale completa");
+ if(primaScopertura)motivi.push(attivo?.dataFine&&primaScopertura>iso(attivo.dataFine)?"Turno del "+formatData(primaScopertura)+" oltre scadenza contratto in vigore: sola segnalazione":"Turno del "+formatData(primaScopertura)+" senza copertura contrattuale completa");
 
  if(altri&&["CHIAMATA","CONTRATTO_TEMPO_DETERMINATO","CONTRATTO_TEMPO_INDETERMINATO","TEMPO_DETERMINATO","TEMPO_INDETERMINATO"].includes(altri.tipologia)&&!altri.pathContrattoUnilav)motivi.push("Documento UNILAV");
  // La chiamata figlia deve coprire la data del turno ed essere dichiarata INVIATA:
@@ -52,7 +53,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const chiamateMancanti=futuri.filter(t=>{
   const data=iso(t.dataTurno);
   const padreTurno=contratti.find(c=>c.tipologia==="CHIAMATA"&&copre(c,data));
-  if(!padreTurno)return false;
+  if(!padreTurno||iso(padreTurno.dataInizio)>oggi()||!!padreTurno.dataFine&&iso(padreTurno.dataFine)<oggi())return false;
   const lista=archivi[padreTurno.idContratto];
   if(!lista)return true; // errore API: non dichiarare regolare la posizione
   return !lista.some(ch=>ch.stato==="INVIATA"&&!ch.annullamentoTest&&iso(ch.dataInizio)<=data&&iso(ch.dataFine)>=fineTurno(t));
