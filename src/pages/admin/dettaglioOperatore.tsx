@@ -20,6 +20,7 @@ import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
 import { NascitaResidenzaComponent } from "../components/NascitaResidenzaComponent";
 import { ContrattoChiamataComponent } from "../components/ContrattoChiamataComponent";
 import { ContrattoAttivoHR } from "../components/ContrattoAttivoHR";
+import ArchivioContrattiHR from "../components/ArchivioContrattiHR";
 import AzioniHRIntermittenti from "../components/AzioniHRIntermittenti";
 import { ContrattoOccasionaleComponent } from "../components/ContrattoOccasionaleComponent";
 import { ConsegnaBeniFormazioneComponent } from "../components/ConsegnaBeniFormazioneComponent";
@@ -422,12 +423,6 @@ const DettaglioOperatore = () => {
     // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
     // Legacy contracts are presented through the same modern card as newly assigned HR contracts.
     // These view-only records must not create or update HR workflow practices.
-    const praticaStorica=(c:Contratto):HRPratica=>({
-      id:0,idOperatore:Number(id),nome:dipendente?.nome||"",cognome:dipendente?.cognome||"",
-      tipologia:c.tipologia.replace(/^CONTRATTO_/,""),datore:"DETELDER",
-      dataInizio:c.dataInizio,dataFine:c.dataFine,stato:"COMPLETATO",
-      note:null,assegnatoDa:0,presoInCaricoDa:null,creatoIl:""
-    });
     const contrattiPrecedenti=contratti.filter(c=>{
       if(!praticaHR)return true;
       const norm=(v:string)=>v.replace(/^CONTRATTO_/,"");
@@ -1879,130 +1874,7 @@ const DettaglioOperatore = () => {
                     }}
 
                   />
-                  {contrattiPrecedenti.length>0&&
-                    <section className="space-y-4"><h3 className="text-lg font-bold text-[#007a55]">Archivio contratti</h3>
-                      {contrattiPrecedenti.map(c=><div key={c.idContratto} className="space-y-3">
-                        <ContrattoAttivoHR
-                          contratti={[c]} idOperatore={id} pratica={praticaStorica(c)}
-                          codiceFiscale={dipendente?.codiceFiscale}
-                          datiMancanti={datiMancantiHR}
-                          isHR={false}
-                          onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}
-                          archivioChiamate={c.tipologia==="CHIAMATA"&&id?<AzioniHRIntermittenti
-                            mode="archive" readOnly idOperatore={Number(id)} pratica={praticaStorica(c)}
-                            contratti={[c]} codiceFiscale={dipendente?.codiceFiscale||""}
-                            onCreateContract={()=>{}}/>:undefined}
-                        />
-                      </div>)}
-                    </section>}
-                  {false&&contrattiPrecedenti.length>0&&
-                    <details className="overflow-hidden rounded-xl border border-[#cfe2dc] bg-white shadow-sm">
-                      <summary className="flex cursor-pointer items-center justify-between gap-3 bg-[#f5faf8] px-5 py-4 text-lg font-bold text-[#007a55]">
-                        <span>Archivio contratti</span>
-                        <span className="rounded-full bg-white px-2.5 py-1 text-xs text-gray-600">{contrattiPrecedenti.length} contratti precedenti</span>
-                      </summary>
-                      <div className="overflow-x-auto p-4">
-                        
-                        
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-[#ecf3f1] text-[16px] font-bold text-[#5e5d5d]">
-                                    <TableHead>Tipo Contratto</TableHead>
-                                    <TableHead>Data Inizio</TableHead>
-                                    <TableHead>Data Fine</TableHead>
-                                    <TableHead>Compenso </TableHead>
-                                    <TableHead>Contratto firmato</TableHead>
-                                    <TableHead>Unilav</TableHead>
-                                    <TableHead>Azioni </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {contrattiPrecedenti.map((contratto) => (
-                                    <TableRow className="text-[16px] font-normal text-[#2e2e2e]">
-                                        <TableCell><div>{contratto.tipologia}</div>{contratto.tipologia === "CHIAMATA" && <span title="Conteggio disponibile dopo attivazione archivio chiamate su Aiven" className="mt-1 inline-flex rounded-full border border-[#b7d7cc] bg-[#f5faf8] px-2.5 py-0.5 text-xs font-semibold text-[#007a55]">Chiamate: {chiamateCounts[contratto.idContratto] ?? "—"}</span>}</TableCell>
-                                        <TableCell>{contratto.dataInizio ? format(contratto.dataInizio, "dd/MM/yyyy") : ""}</TableCell>
-                                        <TableCell>{contratto.dataFine ? format(contratto.dataFine, "dd/MM/yyyy") : ""}</TableCell>
-                                        <TableCell>{contratto.compensoTotaleLordo}</TableCell>
-                                        <TableCell>
-                                            {contratto.pathContrattoFirmato ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoFirmato")}
-                                                        className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]"
-                                                        title="Scarica contratto firmato"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoFirmato")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </>
-
-                                            ) : (
-                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
-                                                    Carica
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept=".pdf"
-                                                        onChange={(e) =>
-                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoFirmato")
-                                                        }
-                                                    />
-                                                </label>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {contratto.pathContrattoUnilav ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "contrattoUnilav")}
-                                                        className="cursor-pointer text-[#007a55]"
-                                                        title="Scarica unilav"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteContratto(contratto.idContratto, "contrattoUnilav")} className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </>
-
-                                            ) : (
-                                                <label className="cursor-pointer text-[#007a55] font-semibold hover:underline">
-                                                    Carica
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept=".pdf"
-                                                        onChange={(e) =>
-                                                            caricaContrattoFirmato(e, contratto.idContratto, "contrattoUnilav")
-                                                        }
-                                                    />
-                                                </label>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="align-middle">
-                                            <div className="flex flex-nowrap items-center justify-start gap-2">
-                                            {contratto.tipologia === "CHIAMATA" && <span className="inline-flex shrink-0 items-center gap-2"><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Nuova chiamata intermittente (solo generazione XML)" onClick={() => { if(!contratto.dataInizio || !contratto.dataFine) return; setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine.slice(0,10)});setNuovaChiamataOpen(true); }}><Plus className="h-4 w-4"/></button><button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]" title="Archivio chiamate intermittenti" onClick={() => {if(!contratto.dataInizio)return;setContrattoPadre({idContratto:contratto.idContratto,tipologia:"CHIAMATA",dataInizio:contratto.dataInizio.slice(0,10),dataFine:contratto.dataFine?.slice(0,10)||"9999-12-31"});setArchivioChiamateOpen(true);}}><Archive className="h-4 w-4"/></button></span>}
-                                            {contratto.tipologia !== "CONTRATTO_TEMPO_INDETERMINATO" &&
-                                                contratto.tipologia !== "CONTRATTO_TEMPO_DETERMINATO" && (
-                                                    <button
-                                                        onClick={() => dowloadPdf(contratto.idContratto, "downloadContratto")} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                )}
-                                            <button onClick={() => handleDeleteTuttiContratti(contratto.idContratto)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#b7d7cc] bg-white text-[#315e51] hover:bg-[#ecf3f1]">
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-
-                      </div>
-                    </details>}
+                  <ArchivioContrattiHR contratti={contrattiPrecedenti} idOperatore={Number(id)} codiceFiscale={dipendente?.codiceFiscale||""} onDownload={(contractId,kind)=>{void dowloadPdf(contractId,kind)}}/>
                   <Dialog open={formContrattoOpen} onOpenChange={setFormContrattoOpen}>
                     <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[780px]">
                       <DialogHeader>
