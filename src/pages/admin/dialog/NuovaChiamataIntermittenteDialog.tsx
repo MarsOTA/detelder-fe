@@ -7,6 +7,7 @@ import {leggiDatoreIntermittenti} from "@/utils/chiamateHR";
 import type {DatoreIntermittenti} from "@/utils/chiamateHR";
 import {salvaChiamataHR} from "@/utils/chiamateHR";
 import {hrPratiche,hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
+import {puoPreparareChiamata} from "@/utils/hrContrattoRestrittivo";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
 import type {ContrattoChiamataPadre,OperatoreIntermittente} from "./IntermittentiDialog";
 
@@ -45,16 +46,17 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
   return ()=>{active=false};
  },[open,idOperatore,contrattoPadre?.idContratto,dataInizioProposta,dataFineProposta]);
  const changed=(start:string,end:string)=>{setInizio(start);setFine(end);setXml("");setSalvato(null);setErrore("")};
- const valido=!!contrattoPadre&&!!inizio&&!!fine&&fine>=inizio&&inizio>=contrattoPadre.dataInizio&&fine<=contrattoPadre.dataFine;
+ const valido=puoPreparareChiamata(contrattoPadre,inizio,fine);
  const generate=()=>{
   setErrore("");
-  if(!valido){setErrore("Seleziona un periodo all'interno del contratto padre.");return}
+  if(!valido){setErrore("Il contratto padre deve essere in vigore e il turno entro la scadenza.");return}
   if(!datore||!loaded){setErrore("Dati della comunicazione non disponibili. Riapri la scheda o verifica la configurazione.");return}
   try{setXml(generaUniIntermittentiXml({cfDatore:datore.codiceFiscale,emailDatore:datore.email,lavoratori:[{cfLavoratore:operatore.codiceFiscale,codiceComunicazione:codice,dataInizio:inizio,dataFine:fine}]}));}
   catch(e){setErrore(e instanceof Error?e.message:"Impossibile generare XML")}
  };
  const save=async()=>{
   if(!contrattoPadre||!xml||salvato||saving)return;
+  if(!puoPreparareChiamata(contrattoPadre,inizio,fine)){setErrore("Contratto padre non in vigore o turno oltre scadenza: la chiamata non può essere salvata.");return;}
   setSaving(true);setErrore("");
   try{const result=await salvaChiamataHR(idOperatore,contrattoPadre.idContratto,inizio,fine,xml);setSalvato(result.id);onSaved?.();}
   catch(e){setErrore(e instanceof Error?e.message:"Impossibile salvare la bozza")}
