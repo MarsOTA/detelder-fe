@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
+import { AlertCircle, Eye } from "lucide-react";
 import { decidiRegolarizzazione } from "@/utils/hrRegolarizzazione";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
