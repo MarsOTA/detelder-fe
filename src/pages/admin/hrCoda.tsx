@@ -42,12 +42,19 @@ export default function HRCoda(){
  }catch(e){setError(e instanceof Error?e.message:"Impossibile caricare le pratiche");setPianificati(null)}finally{setBusy(false)}};
  useEffect(()=>{void carica()},[]);
  const livelloPriorita=(p:HRPratica)=>{const issues=criticita[p.idOperatore]||[];if(!issues.length)return "Nessuna";const days=p.dataInizio?Math.ceil((new Date(String(p.dataInizio).slice(0,10)+"T12:00:00").getTime()-new Date().getTime())/86400000):999;return days<=7?"Alta":days<=30?"Media":"Bassa"};
- const visibili=rows.filter(p=>(p.stato!=="COMPLETATO"||(criticita[p.idOperatore]?.length||0)>0)&&pianificati?.has(p.idOperatore)&&(p.nome+" "+p.cognome+" "+p.tipologia).toLowerCase().includes(search.toLowerCase()));
+ // La coda HR è una lista di operatori, non di pratiche storiche: una riga per operatore.
+ // Conserviamo tutte le pratiche nel backend; nella coda prevale l'assegnazione più recente.
+ const praticheCorrenti=[...rows.reduce((acc,p)=>{
+  const precedente=acc.get(p.idOperatore);
+  if(!precedente||p.id>precedente.id)acc.set(p.idOperatore,p);
+  return acc;
+ },new Map<number,HRPratica>()).values()];
+ const visibili=praticheCorrenti.filter(p=>(p.stato!=="COMPLETATO"||(criticita[p.idOperatore]?.length||0)>0)&&pianificati?.has(p.idOperatore)&&(p.nome+" "+p.cognome+" "+p.tipologia).toLowerCase().includes(search.toLowerCase()));
  return <main className="m-6 space-y-5">
   <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-bold text-[#007a55]">HR · Pratiche assegnate</h1><p className="text-sm text-gray-500">Stesso riepilogo dell'ADMIN, in sola lettura. Lo stato viene aggiornato automaticamente in base a contratti, documenti e comunicazioni.</p></div>
     <button disabled={busy} onClick={()=>void carica()} className="inline-flex items-center gap-2 rounded-md bg-[#007a55] px-4 py-2 text-sm text-white"><RefreshCw className="h-4 w-4"/>Aggiorna</button></div>
   {error&&<p role="alert" className="rounded bg-red-50 p-3 text-sm text-red-800">{error}</p>}
-  <div className="grid gap-3 sm:grid-cols-4">{(["DA_ELABORARE","IN_LAVORAZIONE","COMPLETATO"] as HRStato[]).map(st=><div key={st} className="rounded-xl border bg-white p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge[st]}`}>{labels[st]}</span><div className="mt-2 text-2xl font-bold">{rows.filter(p=>pianificati?.has(p.idOperatore)&&(st==="IN_LAVORAZIONE"?["IN_LAVORAZIONE","DOCUMENTI_MANCANTI"].includes(p.stato):st==="COMPLETATO"?p.stato==="COMPLETATO"&&!(criticita[p.idOperatore]?.length):p.stato===st)).length}</div></div>)}</div>
+  <div className="grid gap-3 sm:grid-cols-4">{(["DA_ELABORARE","IN_LAVORAZIONE","COMPLETATO"] as HRStato[]).map(st=><div key={st} className="rounded-xl border bg-white p-4"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge[st]}`}>{labels[st]}</span><div className="mt-2 text-2xl font-bold">{praticheCorrenti.filter(p=>pianificati?.has(p.idOperatore)&&(st==="IN_LAVORAZIONE"?["IN_LAVORAZIONE","DOCUMENTI_MANCANTI"].includes(p.stato):st==="COMPLETATO"?p.stato==="COMPLETATO"&&!(criticita[p.idOperatore]?.length):p.stato===st)).length}</div></div>)}</div>
   <section className="rounded-xl border bg-white p-4 shadow-sm">
    <div className="mb-3"><input className="w-full max-w-sm rounded-md border px-3 py-2 text-sm" placeholder="Cerca operatore o contratto" aria-label="Cerca pratiche" value={search} onChange={e=>setSearch(e.target.value)}/></div>
    <div className="overflow-x-auto"><table className="w-full min-w-[950px] text-sm">
