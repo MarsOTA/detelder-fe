@@ -1055,8 +1055,18 @@ const DettaglioOperatore = () => {
     const inviaContratto = async (contrattoFinale: ContrattoPayload, generazionePdf: boolean) => {
         if(datiMancantiHR.length){window.alert("Impossibile generare il contratto. Completa: "+datiMancantiHR.join(", "));return;}
         try {
-            const endpoint = generazionePdf ? "operatori/creaContratto" : "operatori/creaContrattoSenzaGenerazionePdf";
-
+            // Tempo determinato/indeterminato: il backend prevede un inserimento manuale,
+            // senza generatore PDF. Non inviare la richiesta a una rotta inesistente.
+            const endpoint = generazionePdf ? "operatori/creaContratto" : "operatori/creaContrattoManuale";
+            const payload = generazionePdf ? contrattoFinale : {
+                idOperatore: contrattoFinale.idOperatore,
+                tipologia: contrattoFinale.tipologia.replace(/^CONTRATTO_/, ""),
+                dataInizio: "dataInizio" in contrattoFinale ? contrattoFinale.dataInizio : null,
+                dataFine: "dataFine" in contrattoFinale ? contrattoFinale.dataFine : null
+            };
+            if(!generazionePdf && payload.tipologia==="TEMPO_INDETERMINATO"&&!payload.dataFine){
+                throw new Error("Il backend test richiede erroneamente una data fine anche per il tempo indeterminato. Creazione bloccata per evitare un contratto con scadenza fittizia.");
+            }
             const url = new URL(ezystaffBEUrl + endpoint);
 
             const resp = await fetch(url.toString(), {
@@ -1067,7 +1077,7 @@ const DettaglioOperatore = () => {
                 },
                 method: "POST",
                 credentials: "include",
-                body: JSON.stringify(contrattoFinale),
+                body: JSON.stringify(payload),
             });
 
             if (!resp.ok) {
