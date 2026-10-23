@@ -1071,9 +1071,10 @@ const DettaglioOperatore = () => {
             });
 
             if (!resp.ok) {
-                throw new Error(
-                    `Errore nella generazione del contratto: ${resp.status}`
-                );
+                const raw=await resp.text().catch(()=>"");
+                let detail=raw;
+                try {const parsed=JSON.parse(raw);detail=parsed.message||parsed.error||raw;}catch{}
+                throw new Error(`Generazione non completata (HTTP ${resp.status})${detail?": "+String(detail).slice(0,300):""}`);
             }
 
             const data = await resp.json();
@@ -1095,7 +1096,17 @@ const DettaglioOperatore = () => {
             }
         } catch (error) {
             console.error("Errore generazione contratto:", error);
-            alert("Errore durante la generazione del contratto");
+            // Il backend può avere salvato il record prima del fallimento PDF.
+            // Aggiornare l'elenco permette di verificare lo stato ed evitare doppi inserimenti.
+            let registrato=false;
+            try {
+                const aggiornati=await caricaListaContratti();
+                const norma=(v:string)=>v.replace(/^CONTRATTO_/,"");
+                const dataRichiesta="dataInizio" in contrattoFinale?String(contrattoFinale.dataInizio||"").slice(0,10):"";
+                registrato=Array.isArray(aggiornati)&&aggiornati.some(c=>norma(c.tipologia)===norma(contrattoFinale.tipologia)&&!!dataRichiesta&&String(c.dataInizio||"").slice(0,10)===dataRichiesta&&!c.pathContratto);
+            }catch(e){console.warn("Impossibile verificare il record contratto dopo il fallimento:",e)}
+            const detail=error instanceof Error?error.message:"Errore sconosciuto";
+            alert(detail+"\\n"+(registrato?"Attenzione: il contratto risulta registrato senza PDF. Non ripetere la creazione; occorre rigenerare il documento.":"Verifica l'elenco contratti prima di riprovare: il backend potrebbe aver salvato il record anche se la generazione PDF è fallita."));
         }
     };
 
