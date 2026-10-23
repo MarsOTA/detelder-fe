@@ -14,7 +14,7 @@ type Contratto = {idContratto:number;tipologia:string;dataInizio:string|null;dat
 type Turno = {idTurno?:number;idOperatore?:number|null;dataTurno?:string;oraInizio?:string;oraFine?:string;nomeEvento?:string;via?:string};
 type Stato = "Completo" | "Incompleto" | "Scaduto";
 type Livello = "Alta" | "Media" | "Bassa" | "Nessuna";
-type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;livello:Livello;stato:Stato;motivi:string[]};
+type Riga = {operatore:Operatore;contratti:Contratto[];turni:Turno[];prossimoTurno:string|null;priorita:number;livello:Livello;stato:Stato;motivi:string[];chiamateDaComunicare:Turno[];verificaChiamateNonDisponibile:boolean};
 type ArchivioChiamate = Record<number,ChiamataHR[] | null>;
 const oggi=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
 const iso=(v?:string|null)=>v?String(v).slice(0,10):"";
@@ -47,6 +47,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  if(altri&&["CHIAMATA","CONTRATTO_TEMPO_DETERMINATO","CONTRATTO_TEMPO_INDETERMINATO","TEMPO_DETERMINATO","TEMPO_INDETERMINATO"].includes(altri.tipologia)&&!altri.pathContrattoUnilav)motivi.push("Documento UNILAV");
  // La chiamata figlia deve coprire la data del turno ed essere dichiarata INVIATA:
  // BOZZA e PEC_PREPARATA non sono conferme dell'invio.
+ const verificaChiamateNonDisponibile=contratti.some(c=>c.tipologia==="CHIAMATA"&&archivi[c.idContratto]===null);
  const chiamateMancanti=futuri.filter(t=>{
   const data=iso(t.dataTurno);
   const padreTurno=contratti.find(c=>c.tipologia==="CHIAMATA"&&copre(c,data));
@@ -68,7 +69,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const urgenza=primaScopertura?giorniDaOggi(primaScopertura):null;
  const urgenzaChiamata=chiamateMancanti.length?giorniDaOggi(iso(chiamateMancanti[0].dataTurno)):null;
  const livello:Livello=urgenza!==null?(urgenza<=7?"Alta":"Media"):urgenzaChiamata!==null?(urgenzaChiamata<=7?"Alta":"Media"):motivi.length||stato!=="Completo"?"Bassa":"Nessuna";
- return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,livello,stato,motivi};
+ return {operatore:o,contratti,turni:futuri,prossimoTurno,priorita,livello,stato,motivi,chiamateDaComunicare:chiamateMancanti,verificaChiamateNonDisponibile};
 }
 export default function ModuloHR(){
  const navigate=useNavigate();
@@ -195,8 +196,9 @@ export default function ModuloHR(){
   if(!Number.isSafeInteger(target)||target<=0||loading||!righe.length)return;
   const selected=righe.find(x=>x.operatore.id===target);
   if(!selected)return;
+  const chiamata=selected.chiamateDaComunicare.find(t=>selected.contratti.some(c=>c.tipologia==="CHIAMATA"&&copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
   const missing=selected.turni.find(t=>!selected.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
-  const turno=missing||selected.turni[0];
+  const turno=chiamata||missing||selected.turni[0];
   const dal=turno?iso(turno.dataTurno):"",fine=turno?fineTurno(turno):"";
   setDateModificate(v=>({...v,[target]:{inizio:dal,fine}}));
   setSelezionato(target);
@@ -205,11 +207,11 @@ export default function ModuloHR(){
  },[searchParams,righe,loading,setSearchParams]);
  const apriAzione=(x:Riga)=>{
   setErrore("");
+  const chiamata=x.chiamateDaComunicare.find(t=>x.contratti.some(c=>c.tipologia==="CHIAMATA"&&copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
   const scoperto=x.turni.find(t=>!x.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
-  const target=scoperto||x.turni[0];
-  const dal=target?iso(target.dataTurno):"";
-  const fine=target?fineTurno(target):dal;
-  setDateModificate(old=>({...old,[x.operatore.id]:old[x.operatore.id]?.inizio?old[x.operatore.id]:{inizio:dal,fine}}));
+  const target=chiamata||scoperto||x.turni[0];
+  const dal=target?iso(target.dataTurno):"",fine=target?fineTurno(target):"";
+  setDateModificate(old=>({...old,[x.operatore.id]:{inizio:dal,fine}}));
   setSelezionato(x.operatore.id);
  };
  const r=selezionato===null?null:righe.find(x=>x.operatore.id===selezionato)||null;
@@ -274,7 +276,41 @@ export default function ModuloHR(){
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
    </tbody></table></div>
   </div>
-  {r&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Azione proposta" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
+  {r&&padre&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}>
+   <section role="dialog" aria-modal="true" aria-label="Gestione chiamata intermittente" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
+    <div className="flex items-start justify-between gap-4">
+     <div><h2 className="text-xl font-bold text-[#007a55]">Chiamata intermittente</h2><p className="mt-1 text-sm text-gray-600">{r.operatore.nome} {r.operatore.cognome}</p></div>
+     <button type="button" aria-label="Chiudi" onClick={()=>setSelezionato(null)} className="rounded-md p-1 text-gray-500 hover:bg-gray-100"><X className="h-5 w-5"/></button>
+    </div>
+    <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-3 text-sm">
+      <div className="font-semibold text-[#007a55]">Contratto padre già presente</div>
+      <div className="mt-1 text-xs text-gray-600">{formatData(padre.dataInizio)} – {padre.dataFine?formatData(padre.dataFine):"senza scadenza"}</div>
+    </div>
+    <div className="space-y-2">
+     <h3 className="text-sm font-semibold text-gray-800">Turni da comunicare</h3>
+     {r.verificaChiamateNonDisponibile?<p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Non è stato possibile verificare tutte le comunicazioni già registrate. Controlla l'archivio prima di procedere.</p>:null}
+     {r.chiamateDaComunicare.filter(t=>copre(padre,iso(t.dataTurno))&&copre(padre,fineTurno(t))).length?
+      <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">{r.chiamateDaComunicare.filter(t=>copre(padre,iso(t.dataTurno))&&copre(padre,fineTurno(t))).map((t,i)=><div key={t.idTurno??i} className="flex justify-between gap-3 rounded-md bg-[#f8fbfa] px-3 py-2 text-xs"><span className="font-semibold">{formatData(t.dataTurno)}{t.oraInizio?" · "+t.oraInizio.slice(0,5):""}{t.oraFine?"–"+t.oraFine.slice(0,5):""}</span><span className="text-gray-600">{t.nomeEvento||"Turno"}</span></div>)}</div>:
+      <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">Non risultano chiamate mancanti per questo contratto nel periodo verificato.</p>}
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+     <label className="text-xs font-medium text-gray-700">Chiamata dal
+      <input type="date" className="mt-1 w-full rounded-md border bg-white px-2 py-2" min={iso(padre.dataInizio)} max={padre.dataFine?iso(padre.dataFine):undefined} value={periodo?.inizio||""} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:e.target.value,fine:periodo?.fine||""}}))}/>
+     </label>
+     <label className="text-xs font-medium text-gray-700">Al
+      <input type="date" className="mt-1 w-full rounded-md border bg-white px-2 py-2" min={periodo?.inizio||iso(padre.dataInizio)} max={padre.dataFine?iso(padre.dataFine):undefined} value={periodo?.fine||""} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:periodo?.inizio||"",fine:e.target.value}}))}/>
+     </label>
+    </div>
+    {!dateValide||!dentroContratto?<p className="text-xs text-amber-800">Indica un periodo valido entro le date del contratto padre.</p>:null}
+    {!padre.pathContrattoUnilav?<p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">UNILAV non caricata: completa il documento nella scheda operatore prima di preparare la chiamata.</p>:null}
+    <div className="flex gap-2">
+      <button type="button" onClick={()=>setSelezionato(null)} className="rounded-md border px-4 py-2 text-sm">Chiudi</button>
+      <button type="button" disabled={!dateValide||!dentroContratto||!padre.pathContrattoUnilav||r.verificaChiamateNonDisponibile} onClick={()=>vaiContratti(r.operatore.id,true)} className="flex-1 rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Apri gestione chiamata</button>
+    </div>
+    <p className="text-xs text-gray-500">Il periodo è una proposta da verificare nella scheda operatore. Questo pulsante non approva né invia alcuna comunicazione.</p>
+   </section>
+  </div>}
+  {r&&!padre&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Azione proposta" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
    {errore&&<div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">{errore}</div>}
    <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold">Azione proposta</h2><p className="text-sm text-gray-500">{r.operatore.nome} {r.operatore.cognome}</p></div><button aria-label="Chiudi" onClick={()=>setSelezionato(null)}><X className="h-5 w-5"/></button></div>
    <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-4"><div className="flex items-center gap-2 font-semibold text-[#007a55]"><Sparkles className="h-5 w-5"/>{richiedePadre?"Crea contratto a chiamata padre":"Crea chiamata intermittente"}</div><p className="mt-1 text-sm text-gray-600">{richiedePadre?"Occorre creare o aggiornare il contratto padre prima di comunicare una chiamata.":"Contratto padre individuato. La chiamata va verificata, generata e inviata tramite email ordinaria."}</p></div>
