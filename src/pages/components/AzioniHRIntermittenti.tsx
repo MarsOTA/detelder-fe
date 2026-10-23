@@ -2,6 +2,7 @@ import {useEffect,useMemo,useState} from "react";
 import type {ReactNode} from "react";
 import {FilePlus2,RefreshCw,Send,Info,Archive,AlertCircle,Ban,Trash2,FileDown,FileCode2} from "lucide-react";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
+import {puoPreparareChiamata} from "@/utils/hrContrattoRestrittivo";
 import {aggiornaEsitoChiamataHR,leggiDatoreIntermittenti,listaChiamateHR,salvaChiamataHR,simulaInvioChiamataHR,simulaAnnullamentoChiamataHR,resetSimulazioniChiamataHR,eliminaVecchieChiamate18Ottobre} from "@/utils/chiamateHR";
 import type {ChiamataHR,DatoreIntermittenti} from "@/utils/chiamateHR";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
@@ -73,14 +74,15 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   });
  },[turni,contratti,chiamate]);
  const archivi=padre?(chiamate[padre.idContratto]||[]):[];
- const pending=giorni.filter(g=>!!padre&&g.parent?.idContratto===padre.idContratto&&!g.submitted);
+ const pending=giorni.filter(g=>!!padre&&g.parent?.idContratto===padre.idContratto&&puoPreparareChiamata(padre,g.data,g.data)&&!g.submitted);
  const from=periodo.da||pending[0]?.data||"";
  const to=periodo.a||from;
- const valido=!!padre&&!!padre.pathContrattoUnilav&&!!from&&!!to&&from<=to&&from>=day(padre.dataInizio)&&(!padre.dataFine||to<=day(padre.dataFine));
+ const valido=!!padre&&!!padre.pathContrattoUnilav&&puoPreparareChiamata(padre,from,to);
  const coperturaEsistente=archivi.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&day(c.dataInizio)<=from&&day(c.dataFine)>=to);
  const prepara=async(data:string,parent:ContrattoPadreAzione,draft?:ChiamataHR)=>{
   setWorking(data);setErrore("");setAvviso("");
   try{
+   if(!puoPreparareChiamata(parent,data,to))throw new Error("La chiamata può essere preparata soltanto con contratto padre attualmente in vigore e per turni entro la scadenza.");
    if(archivi.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&day(c.dataInizio)<=data&&day(c.dataFine)>=to))throw new Error("Chiamata già inviata o simulata per questo periodo: consulta l’archivio.");
    if(!codiceFiscale?.trim())throw new Error("Codice fiscale del lavoratore mancante nell'anagrafica");
    if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare l'email.");
