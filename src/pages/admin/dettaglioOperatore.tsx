@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, LockKeyhole, LockKeyholeOpen, Plus, Archive } from "lucide-react";
+import { Trash2, LockKeyhole, LockKeyholeOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
@@ -15,7 +15,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FileText, UserRound, Paperclip } from "lucide-react";
 import { format } from "date-fns"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatiAnagraficiComponent } from "../components/DatiAnagraficiComponent";
 import { NascitaResidenzaComponent } from "../components/NascitaResidenzaComponent";
 import { ContrattoChiamataComponent } from "../components/ContrattoChiamataComponent";
@@ -288,7 +287,7 @@ const DettaglioOperatore = () => {
       setNuovaChiamataOpen(true);
     },[id,contratti,searchParams]);
 
-    const [chiamateCounts,setChiamateCounts] = useState<Record<number,number>>({});
+    const [,setChiamateCounts] = useState<Record<number,number>>({});
     const aggiornaChiamate = async () => {
       if(!id)return;
       const padri=contratti.filter(c=>c.tipologia==="CHIAMATA");
@@ -1302,16 +1301,6 @@ const DettaglioOperatore = () => {
         setAllegati(data);
         console.info("**CARICAMENTO ALLEGATI FINE**");
     }
-
-    const handleDeleteTuttiContratti = async (idContratto: number) => {
-        await getsioneCancellazioneTuttiContratti(idContratto);
-        await caricaListaContratti();
-    };
-
-    const handleDeleteContratto = async (idContratto: number, tipoContratto: String) => {
-        await getsioneCancellazioneSingoloContratto(idContratto, tipoContratto);
-        await caricaListaContratti();
-    };
 
 
 
