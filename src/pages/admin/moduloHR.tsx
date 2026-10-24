@@ -137,6 +137,7 @@ export default function ModuloHR(){
   if(!tipo){setErrore("Seleziona l'inquadramento per "+x.operatore.cognome);return;}
   const selected=dateContratto[x.operatore.id];
   const start=selected?.inizio||"";
+  if(start>oggi()){setErrore("Non gestiamo contratti futuri: la data di inizio non può essere successiva a oggi.");return;}
   const finish=tipo==="TEMPO_INDETERMINATO"?null:selected?.fine||null;
   if(!start||(tipo!=="TEMPO_INDETERMINATO"&&!finish)){setErrore("Inserisci data inizio e fine prima di assegnare il contratto");return;}
   if(finish&&finish<start){setErrore("La data fine non può precedere quella di inizio");return;}
@@ -173,6 +174,7 @@ export default function ModuloHR(){
   const corrente=praticaCorrente(x);
   if(!corrente||corrente.stato!=="COMPLETATO")return;
   const date=periodoVisualizzato(x);
+  if(date.inizio>oggi()){setErrore("Non è consentito assegnare un contratto con decorrenza futura.");return;}
   if(!date.inizio||(corrente.tipologia!=="TEMPO_INDETERMINATO"&&!date.fine)||(date.fine&&date.fine<date.inizio)){setErrore("Inserisci un nuovo periodo valido prima dell'assegnazione.");return;}
   const tipo=corrente.tipologia.replace(/^CONTRATTO_/,"");
   if(x.contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===tipo&&iso(c.dataInizio)===date.inizio)){setErrore("Esiste già un contratto dello stesso tipo con questa data di inizio.");return;}
@@ -188,6 +190,7 @@ export default function ModuloHR(){
  const assegnaNuovoPadre=async(x:Riga,dal:string,al:string)=>{
   const blocco=messaggioBloccoContratto(x.contratti);
   if(blocco){setErrore(x.operatore.cognome+": "+blocco);return;}
+  if(dal>oggi()){setErrore("Contratto padre futuro non previsto: attendere la scadenza del contratto attuale.");return;}
   if(!dal||!al||al<dal){setErrore("Seleziona un periodo valido per il nuovo contratto padre.");return;}
   if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO"&&p.dataInizio&&(!p.dataFine||iso(p.dataFine)>=dal))){setErrore("Esiste una pratica aperta per questo periodo. Occorre completarla prima di crearne un’altra.");return;}
   if(x.contratti.some(c=>c.tipologia==="CHIAMATA"&&iso(c.dataInizio)===dal)){setErrore("Esiste già un contratto a chiamata che inizia in questa data.");return;}
