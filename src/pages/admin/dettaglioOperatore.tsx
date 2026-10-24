@@ -1061,6 +1061,11 @@ const DettaglioOperatore = () => {
             if(blocco){window.alert(blocco);return;}
         }
         if(datiMancantiHR.length){window.alert("Impossibile generare il contratto. Completa: "+datiMancantiHR.join(", "));return;}
+        if(contrattoFinale.tipologia!=="CONSGNA_BENI_FORMAZIONE"){
+            const start="dataInizio" in contrattoFinale?String(contrattoFinale.dataInizio||"").slice(0,10):"";
+            const now=new Date();const today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+            if(start>today){window.alert("Contratti futuri non gestiti: attendere la data di decorrenza prima di generare il contratto.");return;}
+        }
         try {
             // Tempo determinato/indeterminato: il backend prevede un inserimento manuale,
             // senza generatore PDF. Non inviare la richiesta a una rotta inesistente.
