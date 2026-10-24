@@ -34,10 +34,11 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const prossimoTurno=futuri.length?iso(futuri[0].dataTurno):null;
  const priorita=prossimoTurno?Math.max(0,Math.round((Date.parse(prossimoTurno+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000)):999999;
  const riferimento=prossimoTurno||oggi();
- const altri=contratti.find(c=>copre(c,riferimento));
+ const contrattiUtilizzabili=contratti.filter(c=>!!c.dataInizio&&iso(c.dataInizio)<=oggi());
+ const altri=contrattiUtilizzabili.find(c=>copre(c,riferimento));
  const scaduti=contratti.filter(c=>tipoLavoro(c.tipologia)&&!!c.dataFine&&iso(c.dataFine)<riferimento);
  const attivo=contrattoInVigore(contratti);
- const scoperti=futuri.filter(t=>(!!attivo?.dataFine&&iso(t.dataTurno)>iso(attivo.dataFine))||!contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
+ const scoperti=futuri.filter(t=>(!!attivo?.dataFine&&iso(t.dataTurno)>iso(attivo.dataFine))||!contrattiUtilizzabili.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
  const primaScopertura=scoperti.length?iso(scoperti[0].dataTurno):null;
  const isScaduto=!!prossimoTurno&&!altri&&scaduti.length>0;
  const cf=o.codiceFiscale||o.codice_fiscale;
@@ -52,7 +53,7 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
  const verificaChiamateNonDisponibile=contratti.some(c=>c.tipologia==="CHIAMATA"&&archivi[c.idContratto]===null);
  const chiamateMancanti=futuri.filter(t=>{
   const data=iso(t.dataTurno);
-  const padreTurno=contratti.find(c=>c.tipologia==="CHIAMATA"&&copre(c,data));
+  const padreTurno=contrattiUtilizzabili.find(c=>c.tipologia==="CHIAMATA"&&copre(c,data));
   if(!padreTurno||iso(padreTurno.dataInizio)>oggi()||!!padreTurno.dataFine&&iso(padreTurno.dataFine)<oggi())return false;
   const lista=archivi[padreTurno.idContratto];
   if(!lista)return true; // errore API: non dichiarare regolare la posizione
