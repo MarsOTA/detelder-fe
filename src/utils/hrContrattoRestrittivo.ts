@@ -10,4 +10,6 @@ export const messaggioBloccoContratto=(contratti:PeriodoContratto[],oggi=oggiISO
  const attivo=contrattoInVigore(contratti,oggi);
  return attivo?"Contratto in vigore fino al "+(attivo.dataFine?giornoISO(attivo.dataFine).split("-").reverse().join("/"):"tempo indeterminato")+". I turni successivi alla scadenza sono soltanto segnalati. Potrai assegnare un nuovo contratto dopo la scadenza del precedente.":null;
 };
-export const puoPreparareChiamata=(padre:PeriodoContratto|null|undefined,inizio:string,fine:string,oggi=oggiISO())=>!!padre&&padre.tipologia==="CHIAMATA"&&!!giornoISO(padre.dataInizio)&&giornoISO(padre.dataInizio)<=oggi&&(!padre.dataFine||giornoISO(padre.dataFine)>=oggi)&&inizio>=giornoISO(padre.dataInizio)&&fine>=inizio&&(!padre.dataFine||fine<=giornoISO(padre.dataFine));
+// La chiamata futura può essere preparata su un padre già creato (anche con decorrenza futura),
+// purché la prestazione ricada interamente nel contratto e non sia nel passato.
+export const puoPreparareChiamata=(padre:PeriodoContratto|null|undefined,inizio:string,fine:string,oggi=oggiISO())=>!!padre&&padre.tipologia==="CHIAMATA"&&!!giornoISO(padre.dataInizio)&&!!inizio&&!!fine&&inizio>=oggi&&inizio>=giornoISO(padre.dataInizio)&&fine>=inizio&&(!padre.dataFine||fine<=giornoISO(padre.dataFine));
