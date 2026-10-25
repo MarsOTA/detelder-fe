@@ -82,7 +82,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  const prepara=async(data:string,parent:ContrattoPadreAzione,draft?:ChiamataHR)=>{
   setWorking(data);setErrore("");setAvviso("");
   try{
-   if(!puoPreparareChiamata(parent,data,to))throw new Error("La chiamata può essere preparata soltanto con contratto padre attualmente in vigore e per turni entro la scadenza.");
+   if(!puoPreparareChiamata(parent,data,to))throw new Error("La chiamata deve riferirsi a un turno futuro coperto dal periodo del contratto padre già generato.");
    if(archivi.some(c=>c.id!==draft?.id&&day(c.dataInizio)<=to&&day(c.dataFine)>=data))throw new Error("Chiamata già presente per uno dei giorni selezionati: consulta l’archivio.");
    if(!codiceFiscale?.trim())throw new Error("Codice fiscale del lavoratore mancante nell'anagrafica");
    if(pratica.datore!=="DETELDER")throw new Error("CF datore configurato soltanto per DETELDER. Per il datore selezionato occorre configurare i dati prima di preparare l'email.");
