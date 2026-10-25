@@ -18,6 +18,7 @@ import { InviaNotificaOperatoreDialog } from "./dialog/inviaNotificaOperatoreDia
 import { AssegnaOperatoreDialog } from "./dialog/assegnaOperatoreDialog";
 import { calcolaTotaleOreTurnoEvento, calcolaTotaleOreLavorateTurnoEvento, calcolaOreRimanenti } from "./utils/calcoloOre";
 import { CopiaTurnoDialog } from "./dialog/copiaTurnoDialog";
+import {TurnoHRWarning,useTurniHRWarnings} from "@/pages/components/TurnoHRWarning";
 
 type CreaTurniForm = {
     dataTurnoInizo: Date | undefined
@@ -158,6 +159,7 @@ const getsioneTurni = () => {
 
     const [creaTurniForm, setCreaTurniForm] = useState<CreaTurniForm>();
     const [turni, setTurni] = useState<TurnoEvento[]>([]);
+    const statoHR=useTurniHRWarnings(turni);
     const [turniRaggruppati, setTurniRaggruppati] = useState<Record<string, TurnoEvento[]>>({});
     const [indirizzi, setIndirizzi] = useState<IndirizzoBrand[]>([]);
     const [evento, setEvento] = useState<Evento>();
@@ -1718,6 +1720,7 @@ const getsioneTurni = () => {
                             <TableHead>TIPOLOGIA</TableHead>
                             <TableHead>MANSIONE</TableHead>
                             <TableHead>OPERATORE</TableHead>
+                            <TableHead className="w-12 text-center">HR</TableHead>
                             <TableHead>ORE PAUSA</TableHead>
                             <TableHead>TL</TableHead>
                             <TableHead>NOTE</TableHead>
@@ -1769,7 +1772,7 @@ const getsioneTurni = () => {
                                     {isNewDate && (
                                         <TableRow>
                                             <TableCell
-                                                colSpan={12}
+                                                colSpan={13}
                                                 className="bg-[#d9d8d8]"
                                             >
                                                 <div className="flex justify-center items-center  gap-4">
@@ -2033,6 +2036,7 @@ const getsioneTurni = () => {
                                                 )}
 
                                             </TableCell>
+                                            <TableCell className="text-center"><TurnoHRWarning turno={{...turno,...turnoEdit,idOperatore:turnoEdit?.idOperatore??turno.idOperatore}} stato={statoHR(turno)}/></TableCell>
 
                                             <TableCell>
                                                 <Input
@@ -2148,6 +2152,7 @@ const getsioneTurni = () => {
                                                     </span>
                                                 )}
                                             </TableCell>
+                                            <TableCell className="text-center"><TurnoHRWarning turno={turno} stato={statoHR(turno)}/></TableCell>
 
                                             <TableCell>
                                                 {turno.orePausa ?? 0}
