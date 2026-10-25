@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Circle } from "lucide-react";
+import {TurnoHRWarning,useTurniHRWarnings} from "@/pages/components/TurnoHRWarning";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import * as XLSX from "xlsx";
 import { format } from 'date-fns';
@@ -18,6 +19,7 @@ type FiltriRicerca = {
 
 type TurnoCompleto = {
     idTurno: number
+    idOperatore?: number | null
     idEvento: number
     idCheckInCheckOut: number
     dataTurno: Date | undefined
@@ -38,6 +40,7 @@ const turni = () => {
 
     const [filtriRicerca, setFiltriRicerca] = useState<FiltriRicerca>();
     const [turni, setTurni] = useState<TurnoCompleto[]>([]);
+    const statoHR=useTurniHRWarnings(turni);
 
     useEffect(() => {
         const now = new Date();
@@ -345,6 +348,7 @@ const turni = () => {
                             <TableHead>
                                 Operatore
                             </TableHead>
+                            <TableHead className="w-12 text-center">HR</TableHead>
                             <TableHead>
                                 Mansione
                             </TableHead>
@@ -382,7 +386,7 @@ const turni = () => {
                                     {isNewDate && (
                                         <TableRow >
 
-                                            <TableCell colSpan={6} className="bg-[#007a55] text-white">
+                                            <TableCell colSpan={7} className="bg-[#007a55] text-white">
                                                 <div className="flex justify-between">
                                                     <span className="w-[10%] font-bold">
                                                         {turno.dataTurno
@@ -407,7 +411,7 @@ const turni = () => {
                                     {/* separatore cambio evento stessa data */}
                                     {!isNewDate && isNewEvento && (
                                         <TableRow >
-                                            <TableCell colSpan={6} className="bg-[#8f8f8f] text-white">
+                                            <TableCell colSpan={7} className="bg-[#8f8f8f] text-white">
                                                 <div className="flex justify-between">
                                                     <span className="w-[10%] font-bold">
                                                         {turno.dataTurno
@@ -459,6 +463,8 @@ const turni = () => {
                                             </span>
 
                                         </TableCell>
+
+                                        <TableCell className="text-center" onClick={e=>e.stopPropagation()}><TurnoHRWarning turno={turno} stato={statoHR(turno)}/></TableCell>
 
                                         <TableCell>{turno.tipoMansione}</TableCell>
 
