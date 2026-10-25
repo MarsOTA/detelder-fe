@@ -3,7 +3,7 @@ import TooltipStatoHR from "../components/TooltipStatoHR";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import {contrattoInVigore,messaggioBloccoContratto,padreInVigore} from "@/utils/hrContrattoRestrittivo";
+import {contrattoInVigore,messaggioBloccoContratto} from "@/utils/hrContrattoRestrittivo";
 import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR } from "@/utils/chiamateHR";
@@ -225,7 +225,7 @@ export default function ModuloHR(){
 {praticaCorrente(x)?.stato!=="COMPLETATO"&&praticaCorrente(x)&&dateContratto[x.operatore.id]&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void salvaPeriodo(x)} className="rounded border border-[#007a55] px-2 py-1 text-xs font-semibold text-[#007a55]">Salva date</button>}
 {praticaCorrente(x)?.stato==="COMPLETATO"&&dateContratto[x.operatore.id]?.inizio&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void assegnaNuovoPeriodo(x)} className="rounded bg-[#007a55] px-2 py-1 text-xs font-semibold text-white">Assegna nuovo periodo a HR</button>}
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span>
-{praticaCorrente(x)&&<span className="text-xs text-blue-700">Pratica HR #{praticaCorrente(x)!.id} · {praticaCorrente(x)!.stato.replaceAll("_"," ").toLowerCase()}</span>}
+{praticaCorrente(x)&&<span className="text-xs text-blue-700">Pratica HR #{praticaCorrente(x)!.id} · {praticaCorrente(x)!.stato.replace(/_/g," ").toLowerCase()}</span>}
 {x.contratti.filter(c=>c.tipologia==="CHIAMATA").sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))).slice(0,1).map(c=><span key={c.idContratto} className="text-xs font-medium text-[#007a55]">Contratto padre #{c.idContratto}: {formatData(c.dataInizio)} – {formatData(c.dataFine)}{iso(c.dataInizio)>oggi()?" · decorrenza futura":""}</span>)}
 {contrattoInVigore(x.contratti)&&x.turni.some(t=>contrattoInVigore(x.contratti)?.dataFine&&iso(t.dataTurno)>iso(contrattoInVigore(x.contratti)?.dataFine))&&<span className="text-xs font-semibold text-amber-800">Turno oltre scadenza: sola segnalazione fino alla scadenza del contratto attuale</span>}
 </div></td>
