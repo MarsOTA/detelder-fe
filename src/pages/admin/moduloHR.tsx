@@ -1,13 +1,12 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Sparkles, AlertCircle, CheckCircle2, X, Eye } from "lucide-react";
+import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-import {contrattoInVigore,messaggioBloccoContratto,padreInVigore,puoPreparareChiamata} from "@/utils/hrContrattoRestrittivo";
+import {contrattoInVigore,messaggioBloccoContratto,padreInVigore} from "@/utils/hrContrattoRestrittivo";
 import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
-import { listaChiamateHR, leggiDatoreIntermittenti, DATORE_DETELDER_DEFAULT } from "@/utils/chiamateHR";
-import type { DatoreIntermittenti } from "@/utils/chiamateHR";
+import { listaChiamateHR } from "@/utils/chiamateHR";
 import type { ChiamataHR } from "@/utils/chiamateHR";
 
 type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFiscale?:string;codice_fiscale?:string };
@@ -84,15 +83,12 @@ export default function ModuloHR(){
  const [righe,setRighe]=useState<Riga[]>([]);
  const [assegnate,setAssegnate]=useState<HRPratica[]>([]);
  const [assegnando,setAssegnando]=useState<number|null>(null);
- const [datoreHR,setDatoreHR]=useState<DatoreIntermittenti>(DATORE_DETELDER_DEFAULT);
  const [loading,setLoading]=useState(false);
  const [errore,setErrore]=useState("");
  const [ricerca,setRicerca]=useState("");
  const [ricercaEvento,setRicercaEvento]=useState("");
  const [filtroPriorita,setFiltroPriorita]=useState<Livello|"Tutte">("Tutte");
  const [espanso,setEspanso]=useState<number|null>(null);
- const [selezionato,setSelezionato]=useState<number|null>(null);
- const [dateModificate,setDateModificate]=useState<Record<number,{inizio:string;fine:string}>>({});
  const [progress,setProgress]=useState("");
  const [inlineHR,setInlineHR]=useState<Record<number,{datore:string;tipo:string}>>({});
  const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>({});
@@ -106,8 +102,6 @@ export default function ModuloHR(){
    const inizio=oggi(),fine=new Date();fine.setDate(fine.getDate()+90);
    const dataFine=[fine.getFullYear(),String(fine.getMonth()+1).padStart(2,"0"),String(fine.getDate()).padStart(2,"0")].join("-");
    const [operatori,turni,pratiche]=await Promise.all([api<Operatore[]>("operatori"),api<Turno[]>(`turni?dataInizio=${inizio}&dataFine=${dataFine}`),hrPratiche()]);
-   const datore=await leggiDatoreIntermittenti().catch(()=>DATORE_DETELDER_DEFAULT);
-   setDatoreHR(datore);
    if(!Array.isArray(operatori)||!Array.isArray(turni))throw new Error("Risposta API non valida");
    const persone=operatori.filter(o=>!o.ruolo||o.ruolo==="OPERATORE"),dati:Riga[]=[];
    for(let i=0;i<persone.length;i+=4){
@@ -190,79 +184,14 @@ export default function ModuloHR(){
   }catch(e){setErrore(e instanceof Error?e.message:"Impossibile assegnare il nuovo contratto.");}
   finally{setAssegnando(null)}
  };
- const assegnaNuovoPadre=async(x:Riga,dal:string,al:string)=>{
-  const blocco=messaggioBloccoContratto(x.contratti);
-  if(blocco){setErrore(x.operatore.cognome+": "+blocco);return;}
-  if(!dal||!al||al<dal){setErrore("Seleziona un periodo valido per il nuovo contratto padre.");return;}
-  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO"&&p.dataInizio&&(!p.dataFine||iso(p.dataFine)>=dal))){setErrore("Esiste una pratica aperta per questo periodo. Occorre completarla prima di crearne un’altra.");return;}
-  if(x.contratti.some(c=>c.tipologia==="CHIAMATA"&&iso(c.dataInizio)===dal)){setErrore("Esiste già un contratto a chiamata che inizia in questa data.");return;}
-  setAssegnando(x.operatore.id);setErrore("");
-  try{
-   await hrAssegna({idOperatore:x.operatore.id,tipologia:"CHIAMATA",datore:praticaCorrente(x)?.datore||"DETELDER",dataInizio:dal,dataFine:al});
-   await carica();
-   setDateModificate(old=>{const next={...old};delete next[x.operatore.id];return next});
-   setSelezionato(null);
-  }catch(e){setErrore(e instanceof Error?e.message:"Impossibile assegnare il nuovo contratto padre. Verificare se il backend consente una seconda pratica per l'operatore.")}
-  finally{setAssegnando(null);}
- };
  useEffect(()=>{
   const target=Number(searchParams.get("operatore"));
   if(!Number.isSafeInteger(target)||target<=0||loading||!righe.length)return;
-  const selected=righe.find(x=>x.operatore.id===target);
-  if(!selected)return;
-  const padreAttuale=padreInVigore(selected.contratti);
-  const chiamata=selected.chiamateDaComunicare.find(t=>!!padreAttuale&&copre(padreAttuale,iso(t.dataTurno))&&copre(padreAttuale,fineTurno(t)));
-  const missing=selected.turni.find(t=>!selected.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
-  const turno=chiamata||missing||selected.turni[0];
-  const dal=turno?iso(turno.dataTurno):"",fine=turno?fineTurno(turno):"";
-  setDateModificate(v=>({...v,[target]:{inizio:dal,fine}}));
-  setSelezionato(target);
-  setRicerca(selected.operatore.cognome);
+  const found=righe.find(x=>x.operatore.id===target);
+  if(found)setRicerca(found.operatore.cognome);
   setSearchParams({}, {replace:true});
  },[searchParams,righe,loading,setSearchParams]);
- const apriAzione=(x:Riga)=>{
-  setErrore("");
-  if(x.chiamateGiaPresenti.length){
-   navigate(`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti`);
-   return;
-  }
-  const padreAttuale=padreInVigore(x.contratti);
-  const chiamata=x.chiamateDaComunicare.find(t=>!!padreAttuale&&copre(padreAttuale,iso(t.dataTurno))&&copre(padreAttuale,fineTurno(t)));
-  const scoperto=x.turni.find(t=>!x.contratti.some(c=>copre(c,iso(t.dataTurno))&&copre(c,fineTurno(t))));
-  if(!chiamata&&scoperto&&contrattoInVigore(x.contratti)){
-   const attivo=contrattoInVigore(x.contratti)!;
-   setErrore(x.operatore.cognome+": turno del "+formatData(scoperto.dataTurno)+" oltre la scadenza "+formatData(attivo.dataFine)+". Solo segnalazione: nessun nuovo contratto o chiamata finché il contratto attuale è in vigore.");
-   setSelezionato(null);
-   return;
-  }
-  const target=chiamata||scoperto||x.turni[0];
-  const dal=target?iso(target.dataTurno):"",fine=target?fineTurno(target):"";
-  setDateModificate(old=>({...old,[x.operatore.id]:{inizio:dal,fine}}));
-  setSelezionato(x.operatore.id);
- };
- const r=selezionato===null?null:righe.find(x=>x.operatore.id===selezionato)||null;
- const dateTurni=r?.turni.length?{inizio:iso(r.turni[0].dataTurno),fine:iso(r.turni[r.turni.length-1].dataTurno)}:null;
- const periodo=r?(dateModificate[r.operatore.id]??dateTurni):null;
- const padre=r?padreInVigore(r.contratti):null;
- const contrattoAttivo=r?contrattoInVigore(r.contratti):null;
- const turnoFuoriScadenza=!!contrattoAttivo&&!!periodo&&!!contrattoAttivo.dataFine&&periodo.inizio>iso(contrattoAttivo.dataFine);
- const richiedePadre=!padre;
- const dateValide=!!periodo&&Boolean(periodo.inizio)&&Boolean(periodo.fine)&&periodo.inizio<=periodo.fine;
- const dentroContratto=!!padre&&!!periodo&&puoPreparareChiamata(padre,periodo.inizio,periodo.fine);
- const requisiti=r?[
-  ...(!(r.operatore.codiceFiscale||r.operatore.codice_fiscale)?.trim()?["Codice fiscale"]:[]),
-  ...(richiedePadre?["Contratto a chiamata padre valido"]:[]),
-  ...(padre&&!padre.pathContrattoUnilav?["Documento UNILAV"]:[]),
-  ...(padre&&!datoreHR.codiceFiscale?["Codice fiscale datore di lavoro"]:[]),
-  ...(padre&&!datoreHR.email?["Email datore di lavoro"]:[]),
-  ...(!periodo?["Turni futuri da programmare"]:[])
- ]:[];
- const pronti=!!r&&!richiedePadre&&requisiti.length===0&&dateValide&&dentroContratto;
- const vaiContratti=(id:number,prepara=false)=>{
-  const p=new URLSearchParams({tab:"contratti"});
-  if(prepara&&padre&&periodo&&dateValide&&dentroContratto){p.set("azione","chiamata");p.set("contratto",String(padre.idContratto));p.set("inizio",periodo.inizio);p.set("fine",periodo.fine);}
-  navigate(`/admin/dettaglio-operatore/${id}?${p.toString()}`);
- };
+ const apriSchedaHR=(x:Riga)=>navigate(`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${praticaCorrente(x)?"&pratica="+praticaCorrente(x)!.id:""}`);
  return <main className="m-6 space-y-5">
   <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-extrabold text-[#007a55]">ADMIN · Assegnazione contratti</h1><p className="text-sm text-gray-500">Scegli tipologia e datore, poi assegna la pratica alla coda HR.</p></div><button className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50" onClick={()=>void carica()} disabled={loading}>{loading?"Caricamento…":"Aggiorna dati"}</button></div>
   {errore&&<div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-red-800">{errore}</div>}
@@ -296,60 +225,24 @@ export default function ModuloHR(){
 {praticaCorrente(x)?.stato!=="COMPLETATO"&&praticaCorrente(x)&&dateContratto[x.operatore.id]&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void salvaPeriodo(x)} className="rounded border border-[#007a55] px-2 py-1 text-xs font-semibold text-[#007a55]">Salva date</button>}
 {praticaCorrente(x)?.stato==="COMPLETATO"&&dateContratto[x.operatore.id]?.inizio&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void assegnaNuovoPeriodo(x)} className="rounded bg-[#007a55] px-2 py-1 text-xs font-semibold text-white">Assegna nuovo periodo a HR</button>}
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span>
+{praticaCorrente(x)&&<span className="text-xs text-blue-700">Pratica HR #{praticaCorrente(x)!.id} · {praticaCorrente(x)!.stato.replaceAll("_"," ").toLowerCase()}</span>}
+{x.contratti.filter(c=>c.tipologia==="CHIAMATA").sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))).slice(0,1).map(c=><span key={c.idContratto} className="text-xs font-medium text-[#007a55]">Contratto padre #{c.idContratto}: {formatData(c.dataInizio)} – {formatData(c.dataFine)}{iso(c.dataInizio)>oggi()?" · decorrenza futura":""}</span>)}
 {contrattoInVigore(x.contratti)&&x.turni.some(t=>contrattoInVigore(x.contratti)?.dataFine&&iso(t.dataTurno)>iso(contrattoInVigore(x.contratti)?.dataFine))&&<span className="text-xs font-semibold text-amber-800">Turno oltre scadenza: sola segnalazione fino alla scadenza del contratto attuale</span>}
 </div></td>
       <td className="p-3">{x.stato==="Incompleto"?<TooltipStatoHR motivi={x.motivi}/>:<span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span>}</td>
       <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span></td>
-      <td className="p-3"><div className="flex items-center gap-2"><button type="button" disabled={assegnando!==null||(!!praticaCorrente(x)&&praticaCorrente(x)?.tipologia!=="CHIAMATA")||(!praticaCorrente(x)&&!!contrattoInVigore(x.contratti))} onClick={()=>{if(praticaCorrente(x)?.tipologia==="CHIAMATA"){apriAzione(x);return;}void inoltra(x)}} className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-90 ${praticaCorrente(x)?.stato==="COMPLETATO"?"bg-emerald-600":praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"bg-blue-600":praticaCorrente(x)?"bg-amber-600":"bg-[#007a55]"}`}>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?.stato==="COMPLETATO"&&praticaCorrente(x)?.tipologia==="CHIAMATA"?(contrattoInVigore(x.contratti)&&x.chiamateDaComunicare.every(t=>!padreInVigore(x.contratti)||!copre(padreInVigore(x.contratti)!,iso(t.dataTurno)))?"Turno oltre scadenza":x.chiamateGiaPresenti.length?"Apri chiamata esistente":"Verifica chiamata"):praticaCorrente(x)?.stato==="COMPLETATO"?(praticaCorrente(x)?.simulazioneTest?"Elaborato (test)":"Elaborato"):praticaCorrente(x)?.stato==="IN_LAVORAZIONE"?"In lavorazione":praticaCorrente(x)?.tipologia==="CHIAMATA"?"Prepara chiamata":praticaCorrente(x)?"Assegnata HR":"Assegna ad HR"}</button><Link title="Vai ai contratti" aria-label={"Vai ai contratti di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${assegnate.find(p=>p.idOperatore===x.operatore.id)?`&pratica=${assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0].id}`:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link></div></td>
+      <td className="p-3"><div className="flex items-center gap-2">
+{praticaCorrente(x)?<>
+ <button type="button" onClick={()=>apriSchedaHR(x)} className="whitespace-nowrap rounded-md border border-[#007a55] bg-white px-3 py-2 text-xs font-semibold text-[#007a55]">Visualizza pratica HR</button>
+</>:contrattoInVigore(x.contratti)?<span className="text-xs font-semibold text-amber-800">Contratto in vigore · sola segnalazione</span>:<>
+ <button type="button" disabled={assegnando!==null} onClick={()=>void inoltra(x)} className="whitespace-nowrap rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{assegnando===x.operatore.id?"Assegnazione…":"Assegna ad HR"}</button>
+</>}
+<Link title="Vai alla scheda operatore" aria-label={"Vai alla scheda di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${praticaCorrente(x)?"&pratica="+praticaCorrente(x)!.id:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link>
+</div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
    </tbody></table></div>
   </div>
-  {r&&padre&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}>
-   <section role="dialog" aria-modal="true" aria-label="Gestione chiamata intermittente" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
-    <div className="flex items-start justify-between gap-4">
-     <div><h2 className="text-xl font-bold text-[#007a55]">Chiamata intermittente</h2><p className="mt-1 text-sm text-gray-600">{r.operatore.nome} {r.operatore.cognome}</p></div>
-     <button type="button" aria-label="Chiudi" onClick={()=>setSelezionato(null)} className="rounded-md p-1 text-gray-500 hover:bg-gray-100"><X className="h-5 w-5"/></button>
-    </div>
-    <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-3 text-sm">
-      <div className="font-semibold text-[#007a55]">Contratto padre già presente</div>
-      <div className="mt-1 text-xs text-gray-600">{formatData(padre.dataInizio)} – {padre.dataFine?formatData(padre.dataFine):"senza scadenza"}</div>
-    </div>
-    <div className="space-y-2">
-     <h3 className="text-sm font-semibold text-gray-800">Turni da comunicare</h3>
-     {r.verificaChiamateNonDisponibile?<p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Non è stato possibile verificare tutte le comunicazioni già registrate. Controlla l'archivio prima di procedere.</p>:null}
-     {r.chiamateDaComunicare.filter(t=>copre(padre,iso(t.dataTurno))&&copre(padre,fineTurno(t))).length?
-      <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">{r.chiamateDaComunicare.filter(t=>copre(padre,iso(t.dataTurno))&&copre(padre,fineTurno(t))).map((t,i)=><div key={t.idTurno??i} className="flex justify-between gap-3 rounded-md bg-[#f8fbfa] px-3 py-2 text-xs"><span className="font-semibold">{formatData(t.dataTurno)}{t.oraInizio?" · "+t.oraInizio.slice(0,5):""}{t.oraFine?"–"+t.oraFine.slice(0,5):""}</span><span className="text-gray-600">{t.nomeEvento||"Turno"}</span></div>)}</div>:
-      <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">Non risultano chiamate mancanti per questo contratto nel periodo verificato.</p>}
-    </div>
-    <div className="grid grid-cols-2 gap-3">
-     <label className="text-xs font-medium text-gray-700">Chiamata dal
-      <input type="date" className="mt-1 w-full rounded-md border bg-white px-2 py-2" min={iso(padre.dataInizio)} max={padre.dataFine?iso(padre.dataFine):undefined} value={periodo?.inizio||""} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:e.target.value,fine:periodo?.fine||""}}))}/>
-     </label>
-     <label className="text-xs font-medium text-gray-700">Al
-      <input type="date" className="mt-1 w-full rounded-md border bg-white px-2 py-2" min={periodo?.inizio||iso(padre.dataInizio)} max={padre.dataFine?iso(padre.dataFine):undefined} value={periodo?.fine||""} onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:periodo?.inizio||"",fine:e.target.value}}))}/>
-     </label>
-    </div>
-    {!dateValide||!dentroContratto?<p className="text-xs text-amber-800">Indica un periodo valido entro le date del contratto padre.</p>:null}
-    {!padre.pathContrattoUnilav?<p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">UNILAV non caricata: completa il documento nella scheda operatore prima di preparare la chiamata.</p>:null}
-    <div className="flex gap-2">
-      <button type="button" onClick={()=>setSelezionato(null)} className="rounded-md border px-4 py-2 text-sm">Chiudi</button>
-      <button type="button" disabled={!dateValide||!dentroContratto||!padre.pathContrattoUnilav||r.verificaChiamateNonDisponibile} onClick={()=>vaiContratti(r.operatore.id,true)} className="flex-1 rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Apri gestione chiamata</button>
-    </div>
-    <p className="text-xs text-gray-500">Il periodo è una proposta da verificare nella scheda operatore. Questo pulsante non approva né invia alcuna comunicazione.</p>
-   </section>
-  </div>}
-  {r&&!padre&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={()=>setSelezionato(null)}><section role="dialog" aria-modal="true" aria-label="Regolarizzazione contratto" className="w-full max-w-lg space-y-4 rounded-xl bg-white p-6 shadow-xl" onClick={e=>e.stopPropagation()}>
-   {errore&&<div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">{errore}</div>}
-   <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold">Azione proposta</h2><p className="text-sm text-gray-500">{r.operatore.nome} {r.operatore.cognome}</p></div><button aria-label="Chiudi" onClick={()=>setSelezionato(null)}><X className="h-5 w-5"/></button></div>
-   <div className="rounded-lg border border-[#cfe2dc] bg-[#f5faf8] p-4"><div className="flex items-center gap-2 font-semibold text-[#007a55]"><Sparkles className="h-5 w-5"/>{turnoFuoriScadenza?"Turno oltre la scadenza":"Nuovo contratto a chiamata"}</div><p className="mt-1 text-sm text-gray-600">{contrattoAttivo?"Il contratto attuale è ancora in vigore. Il turno oltre scadenza viene soltanto segnalato: nessun nuovo contratto o chiamata prima della scadenza.":"Il contratto precedente è scaduto: puoi assegnare un nuovo contratto padre a HR."}</p></div>
-   <div><div className="mb-2 text-sm font-semibold">Requisiti: {pronti?"soddisfatti":"incompleti"}</div>{requisiti.length?<div className="flex flex-wrap gap-2">{requisiti.map(x=><span key={x} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">{x}</span>)}</div>:<span className="inline-flex items-center gap-1 text-sm text-emerald-700"><CheckCircle2 className="h-4 w-4"/>Dati necessari presenti</span>}</div>
-   {r&&<div className="grid grid-cols-2 gap-3 rounded-lg border p-3 text-sm"><label><span className="text-gray-500">Data inizio proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo?.inizio||""}   onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:e.target.value,fine:periodo?.fine||""}}))}/></label><label><span className="text-gray-500">Data fine proposta</span><input type="date" className="mt-2 w-full rounded-md border p-2" value={periodo?.fine||""}   onChange={e=>setDateModificate(old=>({...old,[r.operatore.id]:{inizio:periodo?.inizio||"",fine:e.target.value}}))}/></label></div>}
-   {periodo&&r?.contratti.some(c=>c.tipologia==="CHIAMATA"&&!!c.dataFine&&iso(c.dataFine)<periodo.inizio)&&!padre&&<p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800">Il contratto a chiamata esistente è scaduto per il periodo indicato: occorre prima assegnare un nuovo contratto padre. Non è possibile comunicare un turno oltre la scadenza contrattuale.</p>}
-   {richiedePadre&&!contrattoAttivo&&dateValide&&r&&<button type="button" disabled={assegnando!==null} onClick={()=>void assegnaNuovoPadre(r,periodo!.inizio,periodo!.fine)} className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white disabled:opacity-50">{assegnando===r.operatore.id?"Assegnazione…":"Assegna nuovo contratto padre a HR"}</button>}
-   {contrattoAttivo?<p className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">Nessuna azione operativa disponibile finché il contratto attuale non è scaduto.</p>:pronti?<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,true)} disabled={!dateValide||!dentroContratto}>PREPARA EMAIL</button>:<button className="w-full rounded-md bg-[#007a55] px-4 py-3 font-semibold text-white" onClick={()=>vaiContratti(r.operatore.id,false)}>{richiedePadre?"Consulta contratti esistenti":"Regolarizza documentazione"}</button>}
-   <p className="text-xs text-gray-500">PREPARA EMAIL apre il flusso di preparazione e verifica nella tab Contratti; non effettua l'invio automaticamente. Le date sono proposte sulla base dei turni, da verificare prima della comunicazione.</p>
-  </section></div>}
   <p className="text-xs text-amber-700">Le scelte inline vengono salvate nella pratica soltanto dopo «Da elaborare → HR». Nessun contratto viene creato automaticamente.</p>
  </main>;
 }
