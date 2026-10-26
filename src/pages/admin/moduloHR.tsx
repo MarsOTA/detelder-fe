@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertCircle, CheckCircle2, Eye } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AlertCircle, CheckCircle2, ClipboardList, UserRoundCheck } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import {contrattoInVigore,messaggioBloccoContratto} from "@/utils/hrContrattoRestrittivo";
 import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
@@ -210,7 +210,13 @@ export default function ModuloHR(){
   <div className="rounded-xl border bg-white p-4">
    <div className="mb-3 space-y-3"><div className="flex flex-wrap gap-2"><input list="hr-nomi-operatori" aria-label="Cerca operatore" placeholder="Cerca operatore o codice fiscale" value={ricerca} onChange={e=>setRicerca(e.target.value)} className="min-w-[230px] flex-1 rounded-md border px-3 py-2 text-sm"/><datalist id="hr-nomi-operatori">{nomiOperatori.map(n=><option key={n} value={n}/>)}</datalist><input list="hr-nomi-eventi" aria-label="Cerca evento" placeholder="Cerca evento" value={ricercaEvento} onChange={e=>setRicercaEvento(e.target.value)} className="min-w-[230px] flex-1 rounded-md border px-3 py-2 text-sm"/><datalist id="hr-nomi-eventi">{nomiEventi.map(n=><option key={n} value={n}/>)}</datalist></div><div className="flex flex-wrap items-center gap-2">{(["Tutte","Alta","Media","Bassa","Nessuna"] as const).map(v=><button key={v} type="button" aria-pressed={filtroPriorita===v} onClick={()=>setFiltroPriorita(v)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filtroPriorita===v?"border-[#007a55] bg-[#007a55] text-white":"bg-white text-gray-700"}`}>{v} ({v==="Tutte"?irregolari.length:irregolari.filter(r=>r.livello===v).length})</button>)}<button type="button" onClick={()=>{setRicerca("");setRicercaEvento("");setFiltroPriorita("Tutte");}} className="ml-auto text-xs text-[#007a55] underline">Azzera filtri</button></div></div>
    <div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead><tr className="bg-[#ecf3f1] text-left"><th className="p-3">Operatore</th><th className="p-3">Inquadramento</th><th className="p-3">Datore di lavoro</th><th className="p-3">Periodo contratto</th><th className="p-3">Stato</th><th className="p-3">Priorità</th><th className="p-3">Azioni</th></tr></thead><tbody>
-    {visibili.map(x=><Fragment key={x.operatore.id}><tr className="border-b">
+    {visibili.map(x=><Fragment key={x.operatore.id}><tr
+ className="cursor-pointer border-b transition-colors hover:bg-[#f1f8f5] focus-within:bg-[#f1f8f5]"
+ tabIndex={0}
+ aria-label={"Apri pratica HR di "+x.operatore.cognome+" "+x.operatore.nome}
+ onClick={e=>{if((e.target as HTMLElement).closest("button,input,select,a,textarea,[role=button]"))return;apriSchedaHR(x)}}
+ onKeyDown={e=>{if((e.target as HTMLElement)!==e.currentTarget)return;if(e.key==="Enter"||e.key===" "){e.preventDefault();apriSchedaHR(x)}}}
+>
       <td className="p-3 font-semibold"><button type="button" aria-expanded={espanso===x.operatore.id} aria-label="Dettagli turni" className="mr-2 text-[#007a55]" onClick={()=>setEspanso(v=>v===x.operatore.id?null:x.operatore.id)}>{espanso===x.operatore.id?"▾":"▸"}</button>{x.operatore.cognome} {x.operatore.nome}</td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Inquadramento" value={inlineHR[x.operatore.id]?.tipo??praticaCorrente(x)?.tipologia??""} disabled={!!praticaCorrente(x)} onChange={e=>aggiorna(x.operatore.id,"tipo",e.target.value)}><option value="">Da assegnare</option><option value="CHIAMATA">Chiamata</option><option value="TEMPO_DETERMINATO">Determinato</option><option value="TEMPO_INDETERMINATO">Indeterminato</option><option value="OCCASIONALE">Occasionale</option><option value="CONSGNA_BENI_FORMAZIONE">Consegna beni e formazione</option><option value="FATTURA">Fattura (senza generatore)</option></select></td>
       <td className="p-3"><select className="w-full rounded border bg-white p-2" aria-label="Datore di lavoro" value={inlineHR[x.operatore.id]?.datore??praticaCorrente(x)?.datore??"DETELDER"} disabled={!!praticaCorrente(x)} onChange={e=>aggiorna(x.operatore.id,"datore",e.target.value)}><option value="DETELDER">DETELDER</option><option value="SOCIETA_APPALTO">Società in appalto</option><option value="AUTONOMO_PIVA">Autonomo - P.IVA</option></select></td>
@@ -235,11 +241,11 @@ export default function ModuloHR(){
       <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span></td>
       <td className="p-3"><div className="flex items-center gap-2">
 {praticaCorrente(x)?<>
- <button type="button" onClick={()=>apriSchedaHR(x)} className="whitespace-nowrap rounded-md border border-[#007a55] bg-white px-3 py-2 text-xs font-semibold text-[#007a55]">Visualizza pratica HR</button>
+ <button type="button" onClick={()=>apriSchedaHR(x)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#007a55] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#006647] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a55]"><ClipboardList className="h-4 w-4"/>Apri pratica HR</button>
 </>:contrattoInVigore(x.contratti)?<span className="text-xs font-semibold text-amber-800">Contratto in vigore · sola segnalazione</span>:<>
- <button type="button" disabled={assegnando!==null} onClick={()=>void inoltra(x)} className="whitespace-nowrap rounded-md bg-[#007a55] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{assegnando===x.operatore.id?"Assegnazione…":"Assegna ad HR"}</button>
+ <button type="button" disabled={assegnando!==null} onClick={()=>void inoltra(x)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#007a55] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#006647] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a55] disabled:opacity-50"><UserRoundCheck className="h-4 w-4"/>{assegnando===x.operatore.id?"Assegnazione…":"Assegna ad HR"}</button>
 </>}
-<Link title="Vai alla scheda operatore" aria-label={"Vai alla scheda di "+x.operatore.cognome} to={`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${praticaCorrente(x)?"&pratica="+praticaCorrente(x)!.id:""}`} className="inline-flex rounded-md bg-[#007a55] p-2 text-white"><Eye className="h-4 w-4"/></Link>
+
 </div></td>
     </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
