@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LockKeyhole, LockKeyholeOpen } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
