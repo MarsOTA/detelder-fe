@@ -1815,11 +1815,6 @@ const DettaglioOperatore = () => {
                 </TabsContent>
 
                 <TabsContent value="contratti" className="space-y-5">
-                  {!window.location.pathname.startsWith("/hr/")&&id&&<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                    <div><p className="font-semibold text-amber-900">Nuovo contratto padre o chiamata per un turno scoperto?</p><p className="text-sm text-amber-800">Il contratto storico non si rinnova da questa scheda. Apri l'assegnazione Admin: verrà proposta la prima data del turno non coperto e potrai assegnare un nuovo contratto all'HR.</p></div>
-                    <Link to={`/admin/modulo-hr?operatore=${id}`} className="rounded-md bg-[#007a55] px-4 py-2 text-sm font-semibold text-white">Gestisci nuova assegnazione</Link>
-                  </div>}
-
                   <ContrattoAttivoHR
                     contratti={contratti}
                     idOperatore={id}
