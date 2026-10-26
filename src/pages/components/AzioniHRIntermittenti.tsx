@@ -143,8 +143,9 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
  {avviso&&<p role="status" className="mt-2 text-xs text-emerald-700">{avviso}</p>}
  </section>;
  return <section className="contents">
-  <div className="mb-3 flex flex-wrap items-center justify-end gap-2">{!missingPrerequisites&&(Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)>0)&&<p className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)} DA COMPLETARE</p>}
-   <button type="button" onClick={()=>void refresh()} disabled={loading} className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs"><RefreshCw className="h-3.5 w-3.5"/>Aggiorna</button>
+  <div className="absolute right-0 top-0 z-10 flex items-center gap-2">
+   {!missingPrerequisites&&(Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)>0)&&<span className="whitespace-nowrap rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">{Number(!padre)+Number(!padre?.pathContrattoUnilav)+Number(pending.length>0)} da completare</span>}
+   <button type="button" title="Aggiorna attività HR" aria-label="Aggiorna attività HR" onClick={()=>void refresh()} disabled={loading} className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-[#edf5f1] hover:text-[#007a55] disabled:opacity-40"><RefreshCw className={`h-4 w-4 ${loading?"animate-spin":""}`}/></button>
   </div>
   {!missingPrerequisites&&!padre?<div className="order-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"><div><span className="inline-flex items-center gap-2 text-sm font-semibold"><FilePlus2 className="h-4 w-4"/>Crea contratto a chiamata</span><p className="mt-1 text-xs text-amber-800">Requisiti: contratto assegnato, CF lavoratore {codiceFiscale?"✓":"mancante"}, periodo valido</p></div>{createFields||<button type="button" className="rounded bg-[#a75d00] px-3 py-1.5 text-xs font-semibold text-white" disabled={readOnly} onClick={onCreateContract}>Crea contratto</button>}</div>:
   null}
@@ -163,6 +164,5 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
    <p className="mt-2 text-xs text-gray-600">Requisiti: contratto a chiamata valido, UNILAV caricata, codice comunicazione UNILAV presente, CF lavoratore e datore configurati. L'invio reale tramite email ordinaria richiede l'integrazione del servizio email.</p>
    {!valido&&<p className="mt-2 text-xs text-amber-700">{!padre?.pathContrattoUnilav?"Carica prima l’UNILAV del contratto padre.":"Seleziona un periodo valido all’interno del contratto padre."}</p>}
   </div>}
-  <p className="text-[11px] text-gray-500">Le chiamate sono raggruppate per giornata. Test: genera XML e registra un esito simulato senza inviare email. L’invio reale da info@detelder.com richiederà l’integrazione con il provider.</p>
  </section>;
 }
