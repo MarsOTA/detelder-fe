@@ -7,6 +7,7 @@ import {contrattoInVigore,messaggioBloccoContratto} from "@/utils/hrContrattoRes
 import { hrAssegna,hrPratiche,hrAggiornaPeriodo } from "@/utils/hrWorkflow";
 import type { HRPratica } from "@/utils/hrWorkflow";
 import { listaChiamateHR } from "@/utils/chiamateHR";
+import {coprePeriodoChiamata,intersecaPeriodoChiamata} from "@/utils/intermittentiPrestazioni";
 import type { ChiamataHR } from "@/utils/chiamateHR";
 
 type Operatore = { id:number;nome:string;cognome:string;ruolo?:string;codiceFiscale?:string;codice_fiscale?:string };
@@ -58,11 +59,11 @@ function valuta(o:Operatore,contratti:Contratto[],turni:Turno[],archivi:Archivio
   if(!padreTurno)return false;
   const lista=archivi[padreTurno.idContratto];
   if(!lista)return true; // errore API: non dichiarare regolare la posizione
-  return !lista.some(ch=>ch.stato==="INVIATA"&&!ch.annullamentoTest&&iso(ch.dataInizio)<=data&&iso(ch.dataFine)>=fineTurno(t));
+  return !lista.some(ch=>ch.stato==="INVIATA"&&!ch.annullamentoTest&&coprePeriodoChiamata(ch,data,fineTurno(t)));
  });
  const chiamateGiaPresenti=chiamateMancanti.filter(t=>{
    const giorno=iso(t.dataTurno);
-   return Object.values(archivi).some(lista=>Array.isArray(lista)&&lista.some(ch=>iso(ch.dataInizio)<=fineTurno(t)&&iso(ch.dataFine)>=giorno));
+   return Object.values(archivi).some(lista=>Array.isArray(lista)&&lista.some(ch=>intersecaPeriodoChiamata(ch,giorno,fineTurno(t))));
  });
  if(chiamateMancanti.length)motivi.push(verificaChiamateNonDisponibile?"Verifica chiamate non disponibile":chiamateGiaPresenti.length?"Chiamata già presente per il turno del "+formatData(chiamateGiaPresenti[0].dataTurno)+": completa quella esistente":"Chiamata non coperta per il turno del "+formatData(chiamateMancanti[0].dataTurno));
 
