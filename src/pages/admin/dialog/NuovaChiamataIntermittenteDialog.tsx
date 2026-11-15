@@ -10,6 +10,7 @@ import {hrPratiche,hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
 import {puoPreparareChiamata} from "@/utils/hrContrattoRestrittivo";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
 import {scaricaPdfIntermittenti,visualizzaPdfIntermittenti} from "@/utils/intermittentiPdf";
+import {intersecaPeriodoChiamata} from "@/utils/intermittentiPrestazioni";
 import type {ContrattoChiamataPadre,OperatoreIntermittente} from "./IntermittentiDialog";
 
 interface Props{
@@ -54,7 +55,7 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
   void listaChiamataHRCheck().then(exists=>{if(active)setDuplicates(exists)}).catch(e=>{if(active){setDuplicates(true);setErrore("Verifica delle chiamate esistenti non disponibile: "+(e instanceof Error?e.message:"errore"))}});
   async function listaChiamataHRCheck(){
    const existing=await listaChiamateHR(idOperatore,contrattoPadre!.idContratto);
-   return existing.some(ch=>ch.dataInizio<=fine&&ch.dataFine>=inizio);
+   return existing.some(ch=>intersecaPeriodoChiamata(ch,inizio,fine));
   }
   return ()=>{active=false};
  },[open,contrattoPadre?.idContratto,idOperatore,inizio,fine]);
@@ -64,7 +65,7 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
   if(!valido){setErrore("Il contratto padre deve essere in vigore e il turno entro la scadenza.");return}
   if(duplicates){setErrore("Esiste già una chiamata per almeno uno dei giorni selezionati. Consulta l’archivio.");return}
   if(!datore||!loaded){setErrore("Dati della comunicazione non disponibili. Riapri la scheda o verifica la configurazione.");return}
-  try{setXml(generaUniIntermittentiXml({cfDatore:datore.codiceFiscale,emailDatore:datore.email,lavoratori:[{cfLavoratore:operatore.codiceFiscale,codiceComunicazione:codice,dataInizio:inizio,dataFine:fine}]}));}
+  try{setXml(generaUniIntermittentiXml({cfDatore:datore.codiceFiscale,emailDatore:datore.email,lavoratori:[{cfLavoratore:operatore.codiceFiscale,codiceComunicazione:codice,dataInizio:inizio,dataFine:inizio===fine?undefined:fine}]}));}
   catch(e){setErrore(e instanceof Error?e.message:"Impossibile generare XML")}
  };
  const save=async()=>{
@@ -72,7 +73,7 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
   if(!puoPreparareChiamata(contrattoPadre,inizio,fine)){setErrore("Contratto padre non in vigore o turno oltre scadenza: la chiamata non può essere salvata.");return;}
   if(duplicates){setErrore("Chiamata già presente: non puoi crearne un’altra per lo stesso giorno.");return;}
   setSaving(true);setErrore("");
-  try{const calls=await listaChiamateHR(idOperatore,contrattoPadre.idContratto);if(calls.some(ch=>ch.dataInizio<=fine&&ch.dataFine>=inizio))throw new Error("Chiamata già presente nel periodo selezionato. Non verrà creata una seconda chiamata.");}catch(e){setSaving(false);setErrore(e instanceof Error?e.message:"Impossibile verificare chiamate già esistenti");return;}
+  try{const calls=await listaChiamateHR(idOperatore,contrattoPadre.idContratto);if(calls.some(ch=>intersecaPeriodoChiamata(ch,inizio,fine)))throw new Error("Chiamata già presente nel periodo selezionato. Non verrà creata una seconda chiamata.");}catch(e){setSaving(false);setErrore(e instanceof Error?e.message:"Impossibile verificare chiamate già esistenti");return;}
   try{const result=await salvaChiamataHR(idOperatore,contrattoPadre.idContratto,inizio,fine,xml);setSalvato(result.id);onSaved?.();}
   catch(e){setErrore(e instanceof Error?e.message:"Impossibile salvare la bozza")}
   finally{setSaving(false)}
