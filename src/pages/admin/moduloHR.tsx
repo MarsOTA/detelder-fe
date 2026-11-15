@@ -99,7 +99,7 @@ export default function ModuloHR(){
  const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??(praticaCorrente(x)?{inizio:iso(praticaCorrente(x)?.dataInizio),fine:iso(praticaCorrente(x)?.dataFine)}:{inizio:"",fine:""});
  const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>{
    const precedente=assegnate.filter(p=>p.idOperatore===id).sort((a,b)=>b.id-a.id)[0];
-   return {...prev,[id]:{datore:precedente?.datore??"DETELDER",tipo:precedente?.tipologia??"",...prev[id],[k]:value}};
+   return {...prev,[id]:{datore:prev[id]?.datore??precedente?.datore??"DETELDER",tipo:prev[id]?.tipo??precedente?.tipologia??"",[k]:value}};
   });
  const carica=async()=>{
   setLoading(true);setErrore("");setProgress("Caricamento operatori e turni…");
