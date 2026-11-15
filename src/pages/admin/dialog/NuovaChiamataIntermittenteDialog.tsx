@@ -2,13 +2,14 @@ import {useEffect,useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle} from "@/components/ui/dialog";
-import {CheckCircle2,Download,FileCode2} from "lucide-react";
+import {CheckCircle2,Download,FileCode2,FileText,Eye} from "lucide-react";
 import {leggiDatoreIntermittenti} from "@/utils/chiamateHR";
 import type {DatoreIntermittenti} from "@/utils/chiamateHR";
 import {salvaChiamataHR,listaChiamateHR} from "@/utils/chiamateHR";
 import {hrPratiche,hrLeggiCodiceComunicazione} from "@/utils/hrWorkflow";
 import {puoPreparareChiamata} from "@/utils/hrContrattoRestrittivo";
 import {downloadXml,generaUniIntermittentiXml} from "@/utils/intermittentiXml";
+import {scaricaPdfIntermittenti,visualizzaPdfIntermittenti} from "@/utils/intermittentiPdf";
 import type {ContrattoChiamataPadre,OperatoreIntermittente} from "./IntermittentiDialog";
 
 interface Props{
@@ -93,6 +94,8 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
      <Button variant="outline" type="button" onClick={()=>setOpen(false)}>Chiudi</Button>
      <Button type="button" onClick={generate} disabled={!valido||!loaded||!datore||!!salvato||duplicates}><FileCode2 className="mr-2 h-4 w-4"/>Genera XML</Button>
      {xml&&<><Button variant="outline" type="button" onClick={download}><Download className="mr-2 h-4 w-4"/>Scarica XML</Button>
+      <Button variant="outline" type="button" onClick={()=>visualizzaPdfIntermittenti(xml)}><Eye className="mr-2 h-4 w-4"/>Vedi PDF</Button>
+      <Button variant="outline" type="button" onClick={()=>scaricaPdfIntermittenti(xml,"UNI_Intermittenti_"+inizio+".pdf")}><FileText className="mr-2 h-4 w-4"/>Scarica PDF</Button>
       <Button type="button" disabled={saving||!!salvato} onClick={()=>void save()}><CheckCircle2 className="mr-2 h-4 w-4"/>{saving?"Salvataggio…":salvato?"Bozza salvata":"Salva bozza"}</Button></>}
     </div>
     <p className="text-xs text-gray-500">La comunicazione non viene inviata automaticamente. L'approvazione Admin e l'esito di invio sono passaggi distinti da registrare nel workflow HR.</p>
