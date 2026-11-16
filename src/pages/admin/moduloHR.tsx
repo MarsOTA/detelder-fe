@@ -97,11 +97,12 @@ export default function ModuloHR(){
  const [dateContratto,setDateContratto]=useState<Record<number,{inizio:string;fine:string}>>({});
  const tipoSelezionato=(x:Riga)=>inlineHR[x.operatore.id]?.tipo||"";
  const praticaCorrente=(x:Riga)=>assegnate.filter(p=>p.idOperatore===x.operatore.id).sort((a,b)=>b.id-a.id)[0];
- const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??(praticaCorrente(x)?{inizio:iso(praticaCorrente(x)?.dataInizio),fine:iso(praticaCorrente(x)?.dataFine)}:{inizio:"",fine:""});
- const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>setInlineHR(prev=>{
+ const cambiaTipologia=(x:Riga)=>!!inlineHR[x.operatore.id]?.tipo&&inlineHR[x.operatore.id].tipo.replace(/^CONTRATTO_/,"")!==praticaCorrente(x)?.tipologia.replace(/^CONTRATTO_/,"");
+ const periodoVisualizzato=(x:Riga)=>dateContratto[x.operatore.id]??(cambiaTipologia(x)?{inizio:"",fine:""}:praticaCorrente(x)?{inizio:iso(praticaCorrente(x)?.dataInizio),fine:iso(praticaCorrente(x)?.dataFine)}:{inizio:"",fine:""});
+ const aggiorna=(id:number,k:"datore"|"tipo",value:string)=>{if(k==="tipo")setDateContratto(prev=>{const next={...prev};delete next[id];return next});setInlineHR(prev=>{
    const precedente=assegnate.filter(p=>p.idOperatore===id).sort((a,b)=>b.id-a.id)[0];
    return {...prev,[id]:{datore:prev[id]?.datore??precedente?.datore??"DETELDER",tipo:prev[id]?.tipo??precedente?.tipologia??"",[k]:value}};
-  });
+  });};
  const carica=async()=>{
   setLoading(true);setErrore("");setProgress("Caricamento operatori e turni…");
   try{
@@ -136,7 +137,7 @@ export default function ModuloHR(){
  const inoltra=async(x:Riga)=>{
   const tipoOrigine=inlineHR[x.operatore.id]?.tipo || "";
   const tipo=tipoOrigine==="CONTRATTO_TEMPO_DETERMINATO"?"TEMPO_DETERMINATO":tipoOrigine==="CONTRATTO_TEMPO_INDETERMINATO"?"TEMPO_INDETERMINATO":tipoOrigine;
-  const datore=inlineHR[x.operatore.id]?.datore || "DETELDER";
+  const datore=inlineHR[x.operatore.id]?.datore || praticaCorrente(x)?.datore || "DETELDER";
   const blocco=messaggioBloccoContratto(x.contratti);
   if(blocco){setErrore(x.operatore.cognome+": "+blocco);return;}
   if(!tipo){setErrore("Seleziona l'inquadramento per "+x.operatore.cognome);return;}
@@ -147,7 +148,7 @@ export default function ModuloHR(){
   if(finish&&finish<start){setErrore("La data fine non può precedere quella di inizio");return;}
   if(x.contratti.some(c=>c.tipologia.replace(/^CONTRATTO_/,"")===tipo&&iso(c.dataInizio)===start)){setErrore("Esiste già un contratto di questo tipo con la stessa data di inizio");return;}
   if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.tipologia===tipo&&iso(p.dataInizio)===start)){setErrore("Esiste già una pratica per questa data e tipologia");return;}
-  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.stato!=="COMPLETATO"&&p.dataInizio&&(!p.dataFine||iso(p.dataFine)>=start))){setErrore("È già presente una pratica aperta che copre il periodo richiesto.");return;}
+  if(assegnate.some(p=>p.idOperatore===x.operatore.id&&p.tipologia.replace(/^CONTRATTO_/,"")===tipo&&p.stato!=="COMPLETATO"&&p.dataInizio&&iso(p.dataInizio)<=(finish||start)&&(!p.dataFine||iso(p.dataFine)>=start))){setErrore("Esiste già una pratica aperta dello stesso tipo nel periodo selezionato.");return;}
   setAssegnando(x.operatore.id);setErrore("");
   try{
     await hrAssegna({idOperatore:x.operatore.id,tipologia:tipo,datore,
@@ -228,10 +229,10 @@ export default function ModuloHR(){
  <span className="text-[11px] text-gray-500">Precedente: {formatData(praticaCorrente(x)?.dataInizio)} – {formatData(praticaCorrente(x)?.dataFine)}</span>
  <span className="text-[11px] font-semibold text-[#315e51]">Nuovo contratto · periodo</span>
 </>:<span className="text-[11px] font-semibold text-[#315e51]">Periodo contratto</span>}
-<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={praticaCorrente(x)?.stato==="COMPLETATO"&&!!contrattoInVigore(x.contratti)} value={dateContratto[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).inizio)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).fine)}}))}/>
-{(tipoSelezionato(x)||praticaCorrente(x)?.tipologia)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={praticaCorrente(x)?.stato==="COMPLETATO"&&!!contrattoInVigore(x.contratti)} min={dateContratto[x.operatore.id]?.inizio||(praticaCorrente(x)?.stato==="COMPLETATO"?undefined:periodoVisualizzato(x).inizio)} value={dateContratto[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).fine)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"?"":periodoVisualizzato(x).inizio),fine:e.target.value}}))}/>}
-{praticaCorrente(x)?.stato!=="COMPLETATO"&&praticaCorrente(x)&&dateContratto[x.operatore.id]&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void salvaPeriodo(x)} className="rounded border border-[#007a55] px-2 py-1 text-xs font-semibold text-[#007a55]">Salva date</button>}
-{praticaCorrente(x)?.stato==="COMPLETATO"&&dateContratto[x.operatore.id]?.inizio&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void assegnaNuovoPeriodo(x)} className="rounded bg-[#007a55] px-2 py-1 text-xs font-semibold text-white">Assegna nuovo periodo a HR</button>}
+<input type="date" aria-label={"Data inizio contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={praticaCorrente(x)?.stato==="COMPLETATO"&&!!contrattoInVigore(x.contratti)} value={dateContratto[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"||cambiaTipologia(x)?"":periodoVisualizzato(x).inizio)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:e.target.value,fine:p[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"||cambiaTipologia(x)?"":periodoVisualizzato(x).fine)}}))}/>
+{(tipoSelezionato(x)||praticaCorrente(x)?.tipologia)!=="TEMPO_INDETERMINATO"&&<input type="date" aria-label={"Data fine contratto di "+x.operatore.cognome} className="rounded border bg-white px-1 py-1 text-xs" disabled={praticaCorrente(x)?.stato==="COMPLETATO"&&!!contrattoInVigore(x.contratti)} min={dateContratto[x.operatore.id]?.inizio||(praticaCorrente(x)?.stato==="COMPLETATO"||cambiaTipologia(x)?undefined:periodoVisualizzato(x).inizio)} value={dateContratto[x.operatore.id]?.fine??(praticaCorrente(x)?.stato==="COMPLETATO"||cambiaTipologia(x)?"":periodoVisualizzato(x).fine)} onChange={e=>setDateContratto(p=>({...p,[x.operatore.id]:{inizio:p[x.operatore.id]?.inizio??(praticaCorrente(x)?.stato==="COMPLETATO"||cambiaTipologia(x)?"":periodoVisualizzato(x).inizio),fine:e.target.value}}))}/>}
+{!cambiaTipologia(x)&&praticaCorrente(x)?.stato!=="COMPLETATO"&&praticaCorrente(x)&&dateContratto[x.operatore.id]&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void salvaPeriodo(x)} className="rounded border border-[#007a55] px-2 py-1 text-xs font-semibold text-[#007a55]">Salva date</button>}
+{!cambiaTipologia(x)&&praticaCorrente(x)?.stato==="COMPLETATO"&&dateContratto[x.operatore.id]?.inizio&&<button type="button" disabled={assegnando!==null||!!contrattoInVigore(x.contratti)} onClick={()=>void assegnaNuovoPeriodo(x)} className="rounded bg-[#007a55] px-2 py-1 text-xs font-semibold text-white">Assegna nuovo periodo a HR</button>}
 <span className="text-[10px] text-gray-500">Prossimo turno: {formatData(x.prossimoTurno)}</span>
 
 {x.contratti.filter(c=>c.tipologia==="CHIAMATA").sort((a,b)=>iso(b.dataInizio).localeCompare(iso(a.dataInizio))).slice(0,1).map(c=><span key={c.idContratto} className="text-xs font-medium text-[#007a55]">Contratto padre #{c.idContratto}: {formatData(c.dataInizio)} – {formatData(c.dataFine)}{iso(c.dataInizio)>oggi()?" · decorrenza futura":""}</span>)}
@@ -240,10 +241,10 @@ export default function ModuloHR(){
       <td className="p-3">{x.stato==="Incompleto"?<TooltipStatoHR motivi={x.motivi}/>:<span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${x.stato==="Scaduto"?"bg-red-50 text-red-700":"bg-emerald-50 text-emerald-700"}`}>{x.stato==="Completo"?<CheckCircle2 className="h-4 w-4"/>:<AlertCircle className="h-4 w-4"/>}{x.stato}</span>}</td>
       <td className="p-3"><span className={x.livello==="Alta"?"font-semibold text-red-700":x.livello==="Media"?"font-semibold text-amber-700":x.livello==="Bassa"?"font-semibold text-emerald-700":"text-gray-500"}>{x.livello}</span></td>
       <td className="p-3"><div className="flex items-center gap-2">
-{praticaCorrente(x)?<>
+{contrattoInVigore(x.contratti)&&praticaCorrente(x)?<>
  <button type="button" onClick={()=>apriSchedaHR(x)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#007a55] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#006647] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a55]"><ClipboardList className="h-4 w-4"/>Apri pratica HR</button>
 </>:contrattoInVigore(x.contratti)?<span className="text-xs font-semibold text-amber-800">Contratto in vigore · sola segnalazione</span>:<>
- <button type="button" disabled={assegnando!==null} onClick={()=>void inoltra(x)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#007a55] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#006647] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a55] disabled:opacity-50"><UserRoundCheck className="h-4 w-4"/>{assegnando===x.operatore.id?"Assegnazione…":"Assegna ad HR"}</button>
+ <button type="button" disabled={assegnando!==null} onClick={()=>void inoltra(x)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#007a55] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#006647] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007a55] disabled:opacity-50"><UserRoundCheck className="h-4 w-4"/>{assegnando===x.operatore.id?"Assegnazione…":praticaCorrente(x)?"Assegna nuovo contratto":"Assegna ad HR"}</button>
 </>}
 
 </div></td>
