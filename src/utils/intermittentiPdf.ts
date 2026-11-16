@@ -11,7 +11,7 @@ const parseXml=(xml:string)=>{
     cf:campo("CFlavoratore"+(i+1)),
     codice:campo("CCcodcomunicazione"+(i+1)),
     inizio:campo("DTdatainizio"+(i+1)),
-    fine:campo("DTdatafine"+(i+1)),
+    fine:campo("DTdatafine"+(i+1))||campo("DTdatainizio"+(i+1)),
   }));
   return {cf:campo("CFdatorelavoro"),email:campo("EMmail"),annulla:campo("ANannullamento")==="1",righe};
 };

@@ -48,7 +48,7 @@ export const generaUniIntermittentiXml = (data: IntermittenteXmlData) => {
     parts.push(field("CFlavoratore" + n, p ? p.cfLavoratore.trim().toUpperCase() : ""));
     parts.push(field("CCcodcomunicazione" + n, p ? (p.codiceComunicazione || "").trim() : ""));
     parts.push(field("DTdatainizio" + n, p ? formatMinisteroDate(p.dataInizio) : ""));
-    parts.push(field("DTdatafine" + n, p ? formatMinisteroDate(p.dataFine) : ""));
+    parts.push(field("DTdatafine" + n, p ? formatMinisteroDate(p.dataFine || p.dataInizio) : ""));
   }
   return '<?xml version="1.0" encoding="UTF-8"?>\n<moduloIntermittenti\n><Campi\n>' +
     parts.join("") + "</Campi\n></moduloIntermittenti\n>";

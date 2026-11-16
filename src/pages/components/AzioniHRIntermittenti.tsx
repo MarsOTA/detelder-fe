@@ -103,7 +103,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
     cfDatore:employer.codiceFiscale,emailDatore:employer.email,
     lavoratori:periodi.map(p=>({
      cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),
-     dataInizio:p.inizio,dataFine:p.fine===p.inizio?undefined:p.fine
+     dataInizio:p.inizio,dataFine:p.fine
     }))
    });
    const first=periodi[0].inizio,last=periodi[periodi.length-1].fine;
@@ -124,7 +124,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
   try{
    const employer=datore||await leggiDatoreIntermittenti();
    const {codice}=await hrLeggiCodiceComunicazione(pratica.id);
-   const prestazioni=c.xmlArchiviato?estraiPrestazioniXml(c.xmlArchiviato):[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:day(c.dataInizio),dataFine:day(c.dataFine)===day(c.dataInizio)?undefined:day(c.dataFine)}];
+   const prestazioni=c.xmlArchiviato?estraiPrestazioniXml(c.xmlArchiviato):[{cfLavoratore:codiceFiscale,codiceComunicazione:codice.trim(),dataInizio:day(c.dataInizio),dataFine:day(c.dataFine)}];
    if(!prestazioni.length)throw new Error("Nessuna prestazione da annullare.");
    const xml=generaUniIntermittentiXml({cfDatore:employer.codiceFiscale,emailDatore:employer.email,annullamento:true,lavoratori:prestazioni});
    await simulaAnnullamentoChiamataHR(idOperatore,padre.idContratto,c.id,xml);
@@ -184,7 +184,7 @@ export default function AzioniHRIntermittenti({idOperatore,pratica,contratti,cod
         <td className="p-2"><input type="checkbox" aria-label={"Includi prestazione "+fmt(p.inizio)} checked={checked} disabled={readOnly||working!==null||(!checked&&selezione.length>=10)} onChange={e=>setSelezione(current=>e.target.checked?[...current,p.inizio]:current.filter(k=>k!==p.inizio))}/></td>
         <td className="p-2 font-semibold text-[#315e51]">{i+1}</td>
         <td className="p-2">{fmt(p.inizio)}</td>
-        <td className="p-2">{p.inizio===p.fine?"—":fmt(p.fine)}</td>
+        <td className="p-2">{fmt(p.fine)}</td>
         <td className="p-2">{days.length} {days.length===1?"giorno":"giorni"}
          {showTurni&&<div className="mt-2 space-y-1 text-gray-600">{days.flatMap(g=>g.items.map(t=><div key={g.data+":"+t.idTurno}>{fmt(g.data)} · {t.nomeEvento||t.titoloEvento||"Turno #"+t.idTurno}</div>))}</div>}
         </td>

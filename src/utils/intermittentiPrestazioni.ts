@@ -55,5 +55,5 @@ export const intersecaPeriodoChiamata=(ch:ChiamataHR,inizio:string,fine:string)=
   periodiChiamata(ch).some(p=>p.inizio<=fine&&p.fine>=inizio);
 export const testoPeriodiChiamata=(ch:ChiamataHR)=>{
   const fmt=(d:string)=>d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4);
-  return periodiChiamata(ch).map(p=>p.inizio===p.fine?fmt(p.inizio):fmt(p.inizio)+" – "+fmt(p.fine)).join(" · ");
+  return periodiChiamata(ch).map(p=>fmt(p.inizio)+" – "+fmt(p.fine)).join(" · ");
 };

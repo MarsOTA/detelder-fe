@@ -65,7 +65,7 @@ export const NuovaChiamataIntermittenteDialog=({open,setOpen,contrattoPadre,oper
   if(!valido){setErrore("Il contratto padre deve essere in vigore e il turno entro la scadenza.");return}
   if(duplicates){setErrore("Esiste già una chiamata per almeno uno dei giorni selezionati. Consulta l’archivio.");return}
   if(!datore||!loaded){setErrore("Dati della comunicazione non disponibili. Riapri la scheda o verifica la configurazione.");return}
-  try{setXml(generaUniIntermittentiXml({cfDatore:datore.codiceFiscale,emailDatore:datore.email,lavoratori:[{cfLavoratore:operatore.codiceFiscale,codiceComunicazione:codice,dataInizio:inizio,dataFine:inizio===fine?undefined:fine}]}));}
+  try{setXml(generaUniIntermittentiXml({cfDatore:datore.codiceFiscale,emailDatore:datore.email,lavoratori:[{cfLavoratore:operatore.codiceFiscale,codiceComunicazione:codice,dataInizio:inizio,dataFine:fine}]}));}
   catch(e){setErrore(e instanceof Error?e.message:"Impossibile generare XML")}
  };
  const save=async()=>{
