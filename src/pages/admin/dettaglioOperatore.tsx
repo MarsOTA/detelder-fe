@@ -37,7 +37,7 @@ import AllegatiOperatoreTab from "../components/AllegatiOperatoreTab";
 import type {
   FormDatiAnagrafici,FormNascitaResidenza,FormDatiGenerali,FormContratto,
   FormContrattoOccasionale,FormContrattoTempoIndeterminato,FormContrattoTempoDeterminato,
-  FormHeader,FormAllegati,FormConsegnaBeniFormazione,TipoContratto,Contratto,
+  FormHeader,FormAllegati,FormConsegnaBeniFormazione,TipoContratto,ContrattoBase,Contratto,
   Allegati,ContrattoPayload,ImageData
 } from "./dettaglioOperatore.types";
 export type {TipoContratto} from "./dettaglioOperatore.types";
