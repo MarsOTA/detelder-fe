@@ -1,4 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import {useEffect,useState} from "react";
+import {hrMe} from "@/utils/hrWorkflow";
 import { Button } from "@/components/ui/button";
 import { Users, Building2, LogOut, Calendar, CircleUserRound, ClipboardCheck } from "lucide-react";
 import { ezystaffBEUrl } from "../../utils/baseUrl";
@@ -7,6 +9,8 @@ const Header = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const [adminHR,setAdminHR]=useState(false);
+  useEffect(()=>{let active=true;void hrMe().then(v=>{if(active)setAdminHR(v.role==="ADMIN_HR")}).catch(()=>{});return()=>{active=false}},[]);
 
   const logout = async () => {
     // window.location.reload();
@@ -123,6 +127,12 @@ const Header = () => {
               <ClipboardCheck className="mr-2 h-4 w-4" /> HR
             </Button>
           </Link>
+          <Link to="/admin/hr-ruoli" title="Gestisci le abilitazioni HR">
+            <Button variant="outline" className="cursor-pointer border border-[#a5e8cf] bg-[#313131] text-white hover:bg-[#313131] hover:text-[#a5e8cf]">Ruoli HR</Button>
+          </Link>
+          {adminHR&&<Link to="/hr" title="Apri le pratiche come operatore HR">
+            <Button variant="outline" className="cursor-pointer border border-[#a5e8cf] bg-[#313131] text-white hover:bg-[#313131] hover:text-[#a5e8cf]">Lavora HR</Button>
+          </Link>}
           <Link to="/admin/payroll">
             <Button variant={(location.pathname === "/admin/payroll") ? "default" : "outline"}
               className={`cursor-pointer border border-[#a5e8cf] bg-[#313131] hover:border-[#a5e8cf] hover:bg-[#313131] 
