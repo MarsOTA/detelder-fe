@@ -1,0 +1,41 @@
+name: HR isolated frontend browser smoke
+
+on:
+  push:
+    branches:
+      - refactor/modulohr-20261117
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "package.json"
+      - ".github/workflows/hr-ui-tests.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    # Frontend points exclusively to the browser-intercepted fake hostname.
+    env:
+      VITE_REACT_API_URL: "https://hr-ci-backend.invalid/"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install frontend and browser test runner
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Build the actual frontend
+        run: npm run build
+      - name: Run mock-only browser tests
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/hr-frontend-preview.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          node tests/hr-ui-smoke.mjs
