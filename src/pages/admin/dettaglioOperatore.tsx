@@ -6,8 +6,9 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrPratiche, hrAggiornaPeriodo, hrRegistraAttivita, hrPrendiInCarico } from "@/utils/hrWorkflow";
-import type { HRPratica } from "@/utils/hrWorkflow";
+import { hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
+import {usePraticaOperatoreHR} from "@/hooks/usePraticaOperatoreHR";
+
 import { ezystaffBEUrl } from "@/utils/baseUrl";
 import {messaggioBloccoContratto} from "@/utils/hrContrattoRestrittivo";
 import type { Dipendente } from "@/entity";
@@ -67,35 +68,15 @@ const DettaglioOperatore = () => {
     const datiMancantiHR=datiContrattoMancanti(dipendente);
     const [formContrattoOpen,setFormContrattoOpen] = useState(false);
     const [searchParams] = useSearchParams();
-    const [praticaHR,setPraticaHR] = useState<HRPratica|null>(null);
-    useEffect(()=>{
-      if(!id)return;
-      const praticaId=Number(searchParams.get("pratica"));
-      let active=true;
-      void (async()=>{
-        const rows=await hrPratiche();
-        const all=rows.filter(p=>p.idOperatore===Number(id)).sort((a,b)=>b.id-a.id);
-        const selected=praticaId?all.find(p=>p.id===praticaId):all[0];
-        if(!selected){if(active)setPraticaHR(null);return}
-        if(window.location.pathname.startsWith("/hr/")&&selected.stato!=="COMPLETATO")await hrPrendiInCarico(selected.id);
-        if(active)setPraticaHR(selected);
-      })().catch(()=>{if(active)setPraticaHR(null)});
-      return ()=>{active=false};
-    },[id,searchParams]);
-
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
-    // The workflow derives status from persisted contracts, UNILAV and PEC confirmations.
-    useEffect(()=>{
-      if(!praticaHR?.id)return;
-      let active=true;
-      void hrPratiche().then(rows=>{
-        const latest=rows.find(p=>p.id===praticaHR.id);
-        if(active&&latest&&(latest.stato!==praticaHR.stato||latest.note!==praticaHR.note))setPraticaHR(latest);
-      }).catch(()=>{});
-      return ()=>{active=false};
-    },[contratti,aggiornamentoAzioniHR,praticaHR?.id]);
+
+    const {praticaHR,setPraticaHR}=usePraticaOperatoreHR({
+      id,praticaId:searchParams.get("pratica"),
+      isHR:window.location.pathname.startsWith("/hr/"),
+      contratti,aggiornamentoAzioniHR
+    });
 
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
     const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
