@@ -24,9 +24,7 @@ const Header = () => {
       }
     });
 
-    const data = await resp.json();
-
-    console.log(data);
+    await resp.json();
 
     localStorage.removeItem('token');
     localStorage.removeItem('user');

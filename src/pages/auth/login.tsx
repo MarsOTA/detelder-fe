@@ -19,14 +19,14 @@ export default function Login() {
   //const { checkAuth, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    console.log("Init login");
+
 //    console.log("isAuthenticated: " + isAuthenticated);
   //  console.log("isLoading: " + isLoading);
 //    if (!isLoading && isAuthenticated) 
 
 /*
       const ruolo = localStorage.getItem('ruolo');
-      console.log("ruolo: " + ruolo);
+
       if (ruolo === 'ADMIN') {
         navigate('/admin/eventi');
       } else {

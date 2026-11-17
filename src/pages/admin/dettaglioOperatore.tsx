@@ -265,7 +265,6 @@ const DettaglioOperatore = () => {
 
     const getOperatore = async (id: string) => {
 
-        console.log("Sto per chiamare /operatori/ottieniOperatore/", id, new Date().toISOString());
         const resp = await fetch(`${ezystaffBEUrl}operatori/ottieniOperatore/${id}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -276,7 +275,6 @@ const DettaglioOperatore = () => {
         });
 
         const data = await resp.json();
-        console.log("Dati ricevuti**********", data);
         return data; // restituisco solo i dati, nessun setState qui
     };
 
@@ -287,7 +285,6 @@ const DettaglioOperatore = () => {
         }
         try {
             const data = await getOperatore(id);
-            console.log("Dati ricevuti**********", data);
             setDipendente(data); // aggiorno lo stato qui
         } catch (error) {
             console.error("Errore nel fetch operatore:", error);
@@ -356,7 +353,6 @@ const DettaglioOperatore = () => {
     }
 
     const editaAllegati = () => {
-        console.log("allegati?.cartaIdentitaNdocumento: " + allegati?.cartaIdentitaNdocumento);
         setFormAllegati({
             cartaIdentitaNdocumento: allegati?.cartaIdentitaNdocumento || "",
             cartaIdentitaDataScadenza: allegati?.cartaIdentitaDataScadenza
@@ -576,7 +572,6 @@ const DettaglioOperatore = () => {
                 : null,
         }
 
-        console.log("datiAllegati: ", datiAllegati);
 
         await aggiornaDipendente(datiAllegati, "aggiornaAllegatiOperatore");
 
@@ -656,7 +651,6 @@ const DettaglioOperatore = () => {
 
     async function aggiornaDipendente<T>(dipendente: T, scheda: string) {
         try {
-            console.log('Dati da inviare per nascita/residenza:', JSON.stringify(dipendente));
 
             const resp = await fetch(`${ezystaffBEUrl}operatori/${scheda}/${id}`, {
                 method: 'PATCH',
@@ -837,7 +831,6 @@ const DettaglioOperatore = () => {
             };
         }
 
-        console.log("***contrattoFinale*****: ", contrattoFinale);
 
         const url = new URL(ezystaffBEUrl + "operatori/creaContratto");
 
@@ -852,7 +845,6 @@ const DettaglioOperatore = () => {
             body: JSON.stringify(contrattoFinale)
         });
         const data = await resp.json();
-        console.log(data);
         console.info("Generazione contratto");
 
         await caricaListaContratti();
@@ -902,7 +894,6 @@ const DettaglioOperatore = () => {
 
             const data = await resp.json();
 
-            console.log("*** contratto generato ***", data);
 
             const aggiornati=await caricaListaContratti();
             if(praticaHR && window.location.pathname.startsWith("/hr/")){
@@ -982,7 +973,6 @@ const DettaglioOperatore = () => {
                     formContrattoChiamata.indirizzoPredefinito,
             };
 
-            console.log("*** contratto CHIAMATA ***", contrattoFinale);
 
             await inviaContratto(contrattoFinale, true);
         } finally {
@@ -1017,7 +1007,6 @@ const DettaglioOperatore = () => {
                 dataFine: formContrattoOccasionale.dataFine ? format(formContrattoOccasionale.dataFine, "yyyy-MM-dd") : null,
                 dataFirmaContratto: formContrattoOccasionale.dataFirmaContratto ? format(formContrattoOccasionale.dataFirmaContratto, "yyyy-MM-dd") : null,
             };
-            console.log("*** contratto OCCASIONALE ***", contrattoFinale);
             await inviaContratto(contrattoFinale, true);
         } finally {
             setLoading(false);
@@ -1039,10 +1028,6 @@ const DettaglioOperatore = () => {
                 ...formConsegnaBeniFormazione,
             };
 
-            console.log(
-                "*** contratto CONSEGNA BENI FORMAZIONE ***",
-                contrattoFinale
-            );
 
             await inviaContratto(contrattoFinale, true);
         } finally {
@@ -1063,7 +1048,6 @@ const DettaglioOperatore = () => {
                 dataInizio: formContrattoTempoIndeterminato.dataInizio ? format(formContrattoTempoIndeterminato.dataInizio, "yyyy-MM-dd") : null,
                 dataFine: formContrattoTempoIndeterminato.dataFine ? format(formContrattoTempoIndeterminato.dataFine, "yyyy-MM-dd") : null,
             };
-            console.log("*** contratto tempo indeterminato ***", contrattoFinale);
             await inviaContratto(contrattoFinale, false);
         } finally {
             setLoading(false);
@@ -1083,7 +1067,6 @@ const DettaglioOperatore = () => {
                 dataInizio: formContrattoTempoDeterminato.dataInizio ? format(formContrattoTempoDeterminato.dataInizio, "yyyy-MM-dd") : null,
                 dataFine: formContrattoTempoDeterminato.dataFine ? format(formContrattoTempoDeterminato.dataFine, "yyyy-MM-dd") : null,
             };
-            console.log("*** contratto tempo determinato ***", contrattoFinale);
             await inviaContratto(contrattoFinale, false);
         } finally {
             setLoading(false);
@@ -1114,7 +1097,6 @@ const DettaglioOperatore = () => {
         })
         const data = await resp.json();
         console.info("**CARICAMENTO CONTRATTI INIZIO**");
-        console.log(data);
         setContratti(data);
         console.info("**CARICAMENTO CONTRATTI FINE**");
         return data as Contratto[];
@@ -1131,7 +1113,6 @@ const DettaglioOperatore = () => {
         })
         const data = await resp.json();
         console.info("**CARICAMENTO ALLEGATI INIZIO**");
-        console.log(data);
         setAllegati(data);
         console.info("**CARICAMENTO ALLEGATI FINE**");
     }
@@ -1170,7 +1151,6 @@ const DettaglioOperatore = () => {
 
             const data = await resp.json();
 
-            console.log(data);
 
             return data;
 
@@ -1209,7 +1189,6 @@ const DettaglioOperatore = () => {
     
                 // opzionale: risposta JSON
                 const data = await resp.json();
-                console.log(data);
     
                 return data;
             } catch (error) {
@@ -1242,7 +1221,6 @@ const DettaglioOperatore = () => {
 
             // opzionale: risposta JSON
             const data = await resp.json();
-            console.log(data);
 
             return data;
         } catch (error) {
@@ -1342,7 +1320,6 @@ const DettaglioOperatore = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        console.log("Upload file:", file, "per contratto:", idContratto);
 
         const formData = new FormData();
         formData.append("tipoContratto", tipoContratto);
@@ -1367,7 +1344,6 @@ const DettaglioOperatore = () => {
             }
 
             const data = await response.json();
-            console.log("Upload completato con successo:", data);
             await caricaListaContratti();
             if(praticaHR && window.location.pathname.startsWith("/hr/")){
                 const azione=tipoContratto==="contrattoFirmato"?"CONTRATTO_FIRMATO_CARICATO":"UNILAV_CARICATO";
@@ -1394,7 +1370,6 @@ const DettaglioOperatore = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        console.log("Upload file:", file, "id operatore:", id);
 
         const formData = new FormData();
         formData.append("file", file);
@@ -1420,7 +1395,6 @@ const DettaglioOperatore = () => {
             }
 
             const data = await response.json();
-            console.log("Upload completato con successo:", data);
             // Qui puoi aggiornare lo stato o mostrare un messaggio di successo
             caricaAllegati();
         } catch (error) {
@@ -1467,7 +1441,6 @@ const DettaglioOperatore = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        console.log("Upload file:", file, "per contratto:", id, "tipoImmagine: " + tipoImmagine);
 
         const formData = new FormData();
         formData.append("file", file);
@@ -1493,7 +1466,6 @@ const DettaglioOperatore = () => {
             }
 
             const data = await response.json();
-            console.log("Upload completato con successo:", data);
             await fetchImage(tipoImmagine);
             await caricaListaContratti();
             // Qui puoi aggiornare lo stato o mostrare un messaggio di successo
@@ -1527,8 +1499,6 @@ const DettaglioOperatore = () => {
             }
         }
 
-        console.log(imageUrl);
-        console.log(extension);
 
         switch (tipoImmagine) {
             case 'primoPiano':
