@@ -43,6 +43,7 @@ const createPage=async(primaryRole,hrRole)=>{
     else if(suffix.match(/^hr-workflow\/utenti\/\d+\/ruolo$/)&&route.request().method()==="PUT"){
       const body=JSON.parse(route.request().postData()||"{}");
       writes.push({path:suffix,role:body.role});
+      users[0].ruoloHR=body.role;
       payload={id:Number(suffix.split("/")[2]),role:body.role};
     }else {
       // Fail visibly if the UI unexpectedly accesses a new backend endpoint.
@@ -60,7 +61,7 @@ try{
   await combined.page.getByText("Abilitazioni ADMIN / HR").waitFor();
   const select=combined.page.getByRole("combobox",{name:"Ruolo HR Utente Fittizio"});
   await select.selectOption("ADMIN_HR");
-  await combined.page.waitForFunction(()=>document.querySelector("select")?.value==="ADMIN_HR",{timeout:10000});
+  await combined.page.waitForFunction(()=>document.querySelector("select")?.value==="ADMIN_HR",null,{timeout:10000});
   assert.deepEqual(writes,[{path:"hr-workflow/utenti/5/ruolo",role:"ADMIN_HR"}]);
   await combined.page.getByRole("link",{name:"Lavora HR"}).click();
   await combined.page.getByText("Torna ad Admin").waitFor();
@@ -72,19 +73,19 @@ try{
   await hr.page.goto(appUrl+"/hr");
   await hr.page.getByText("DETELDER · HR").waitFor({timeout:20000});
   await hr.page.goto(appUrl+"/admin/modulo-hr");
-  await hr.page.getByText("Non autorizzato").waitFor({timeout:20000});
+  await hr.page.getByText("Accesso Negato").waitFor({timeout:20000});
   await hr.context.close();
   console.log("OK: HR user cannot access administrator routes");
 
   const admin=await createPage("ADMIN","ADMIN");
   await admin.page.goto(appUrl+"/hr");
-  await admin.page.getByText("Non autorizzato").waitFor({timeout:20000});
+  await admin.page.getByText("Accesso Negato").waitFor({timeout:20000});
   await admin.context.close();
   console.log("OK: legacy ADMIN does not silently inherit HR privileges");
 
   const denied=await createPage("OPERATORE",null);
   await denied.page.goto(appUrl+"/hr");
-  await denied.page.getByText("Non autorizzato").waitFor({timeout:20000});
+  await denied.page.getByText("Accesso Negato").waitFor({timeout:20000});
   await denied.context.close();
   console.log("OK: operator without HR entitlement cannot enter HR");
 }finally{
