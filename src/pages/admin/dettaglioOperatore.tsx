@@ -1343,7 +1343,7 @@ const DettaglioOperatore = () => {
                 throw new Error(`Errore nel caricamento: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            await response.json();
             await caricaListaContratti();
             if(praticaHR && window.location.pathname.startsWith("/hr/")){
                 const azione=tipoContratto==="contrattoFirmato"?"CONTRATTO_FIRMATO_CARICATO":"UNILAV_CARICATO";
@@ -1394,7 +1394,7 @@ const DettaglioOperatore = () => {
                 throw new Error(`Errore nel caricamento: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            await response.json();
             // Qui puoi aggiornare lo stato o mostrare un messaggio di successo
             caricaAllegati();
         } catch (error) {
@@ -1465,7 +1465,7 @@ const DettaglioOperatore = () => {
                 throw new Error(`Errore nel caricamento: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            await response.json();
             await fetchImage(tipoImmagine);
             await caricaListaContratti();
             // Qui puoi aggiornare lo stato o mostrare un messaggio di successo
