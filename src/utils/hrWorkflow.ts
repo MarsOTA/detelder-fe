@@ -1,5 +1,5 @@
 import { ezystaffBEUrl } from "@/utils/baseUrl";
-export type HRRole="ADMIN"|"HR";
+export type HRRole="ADMIN"|"HR"|"ADMIN_HR";
 export type HRStato="DA_ELABORARE"|"IN_LAVORAZIONE"|"DOCUMENTI_MANCANTI"|"COMPLETATO";
 export type HRPratica={id:number;idOperatore:number;nome:string;cognome:string;tipologia:string;datore:string;dataInizio:string|null;dataFine:string|null;stato:HRStato;simulazioneTest?:boolean;note:string|null;assegnatoDa:number;presoInCaricoDa:number|null;assegnatoDaNome?:string|null;assegnatoDaCognome?:string|null;presoInCaricoDaNome?:string|null;presoInCaricoDaCognome?:string|null;aggiornatoIl?:string;creatoIl:string};
 export type HRUtente={id:number;nome:string;cognome:string;email?:string;ruoloPrincipale:string;ruoloHR:HRRole|null};

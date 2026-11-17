@@ -7,6 +7,7 @@ import Header from './pages/common/Header';
 import HeaderHR from './pages/common/HeaderHR';
 import { ezystaffBEUrl } from './utils/baseUrl';
 import { hrMe } from './utils/hrWorkflow';
+import {ruoloConsente} from './utils/hrAccessPolicy';
 
 interface ProtectedRouteProps {
   allowedRole: 'ADMIN' | 'OPERATORE' | 'HR';
@@ -79,7 +80,7 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
   }
 
   
-  if (allowedRole === 'OPERATORE' ? ruolo !== 'OPERATORE' : allowedRole === 'ADMIN' ? !(serverHRRole === 'ADMIN' || ruolo === 'ADMIN') : serverHRRole !== 'HR') {
+  if (allowedRole === 'OPERATORE' ? ruolo !== 'OPERATORE' : allowedRole === 'ADMIN' ? !(ruoloConsente(serverHRRole,'ADMIN') || ruolo === 'ADMIN') : !ruoloConsente(serverHRRole,'HR')) {
     return <Navigate to="/unauthorized" replace />;
   }
     
