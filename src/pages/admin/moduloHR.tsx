@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
+import TurniAssegnatiHR from "../components/TurniAssegnatiHR";
+import {fineTurnoHR as fineTurno} from "@/utils/hrDateRules";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, CheckCircle2, ClipboardList, UserRoundCheck } from "lucide-react";
 import { ezystaffBEUrl } from "@/utils/baseUrl";
@@ -21,7 +23,6 @@ const oggi=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1
 const iso=(v?:string|null)=>v?String(v).slice(0,10):"";
 const formatData=(v?:string|null)=>{const s=iso(v);return s.length===10?s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(2,4):"—";};
 const giorniDaOggi=(data:string)=>Math.round((Date.parse(data+"T12:00:00")-Date.parse(oggi()+"T12:00:00"))/86400000);
-const fineTurno=(t:Turno)=>{const data=iso(t.dataTurno);if(!data)return "";const da=(t.oraInizio||"").slice(0,5),a=(t.oraFine||"").slice(0,5);if(da&&a&&a<=da){const d=new Date(data+"T12:00:00");d.setDate(d.getDate()+1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}return data;};
 const tipoLavoro=(t:string)=>["CHIAMATA","OCCASIONALE","TEMPO_DETERMINATO","TEMPO_INDETERMINATO","CONTRATTO_TEMPO_DETERMINATO","CONTRATTO_TEMPO_INDETERMINATO"].includes(t);
 const copre=(c:Contratto,data:string)=>tipoLavoro(c.tipologia)&&iso(c.dataInizio)<=data&&!!c.dataInizio&&(!c.dataFine||iso(c.dataFine)>=data);
 async function api<T>(path:string):Promise<T>{
@@ -248,7 +249,7 @@ export default function ModuloHR(){
 </>}
 
 </div></td>
-    </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><div className="rounded-lg border bg-white p-4"><h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>{x.turni.length?<table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>{x.turni.map((t,i)=><tr key={t.idTurno??i} className="border-t"><td className="p-2">{formatData(t.dataTurno)}</td><td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td><td className="p-2">{t.nomeEvento||"—"}</td><td className="p-2">{t.via||"Luogo non specificato"}</td></tr>)}</tbody></table>:<p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}</div></td></tr>}</Fragment>)}
+    </tr>{espanso===x.operatore.id&&<tr className="bg-[#f5faf8]"><td colSpan={7} className="p-4"><TurniAssegnatiHR turni={x.turni} formatData={formatData}/></td></tr>}</Fragment>)}
     {!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{loading?"Caricamento…":"Nessun operatore corrisponde ai filtri"}</td></tr>}
    </tbody></table></div>
   </div>

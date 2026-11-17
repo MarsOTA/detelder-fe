@@ -23,13 +23,11 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     const location = useLocation();
 
     const checkAuth = async () => {
-      console.log('[checkAuth] called on', location.pathname)
       try {
         
        // const res = await fetch('http://localhost:4000/api/auth/validate', { credentials: 'include' });
         const res = await fetch(ezystaffBEUrl + 'auth/checkAuth', { credentials: 'include' });
         const data = await res.json()
-        console.log(data)
         setIsAuthenticated(data.ok)
         if (data.ok) {
           const identity=await hrMe().catch(()=>null);
@@ -50,31 +48,20 @@ export const ProtectedRoute = ({ allowedRole }: ProtectedRouteProps) => {
     }
 
   useEffect(() => {
-    console.log("inzio useEffect*****");
     checkAuth()
-    console.log("fine useEffect*****");
   }, [location.pathname]) 
 
 
 
   //const location = useLocation();
 
-  console.log("sono in PrivateRoute**: isAuthenticated: " + isAuthenticated);
-  console.log("sono in PrivateRoute**: isLoading: " + isLoading);
-  console.log("sono in PrivateRoute**: location: " + JSON.stringify(location));
 
   if (isLoading) {
     return <div>Loading authentication status…</div>;
   }
 
-  const idOperatore = localStorage.getItem('idOperatore');
   const ruolo = localStorage.getItem('ruolo');
-  const token = localStorage.getItem('token');
 
-  console.log('idOperatore: ' + idOperatore);
-  console.log('ruolo: ' + ruolo);
-  console.log('token: ' + token);
-   console.log('allowedRole: ' + allowedRole);
 
   if (!isAuthenticated) {
     localStorage.removeItem('token');

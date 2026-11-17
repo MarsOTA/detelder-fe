@@ -1,4 +1,6 @@
 import {listaChiamateHR} from "@/utils/chiamateHR";
+import {fineTurnoHR as fineTurno} from "@/utils/hrDateRules";
+import {coprePeriodoChiamata} from "@/utils/intermittentiPrestazioni";
 import {ezystaffBEUrl} from "@/utils/baseUrl";
 
 export type HRAnagrafica={
@@ -26,7 +28,6 @@ export function datiContrattoMancanti(a:HRAnagrafica|null|undefined):string[]{
  return missing.filter(([,v])=>!valido(v as string|null|undefined)).map(([label])=>label);
 }
 const copre=(c:HRContratto,inizio:string,fine:string)=>!!dataHR(c.dataInizio)&&dataHR(c.dataInizio)<=inizio&&(!c.dataFine||dataHR(c.dataFine)>=fine);
-const fineTurno=(t:HRTurno)=>{const d=dataHR(t.dataTurno);if(!d)return d;const a=String(t.oraInizio||"").slice(0,5),b=String(t.oraFine||"").slice(0,5);if(a&&b&&b<=a){const v=new Date(d+"T12:00:00");v.setDate(v.getDate()+1);return [v.getFullYear(),String(v.getMonth()+1).padStart(2,"0"),String(v.getDate()).padStart(2,"0")].join("-")}return d};
 const fmt=(s:string)=>s? s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(0,4):"";
 export async function verificaRegolaritaHR(id:number,turni:HRTurno[],contratti:HRContratto[],dati:HRAnagrafica|null):Promise<string[]>{
  const mancanti=datiContrattoMancanti(dati);
@@ -46,7 +47,7 @@ export async function verificaRegolaritaHR(id:number,turni:HRTurno[],contratti:H
   if(!contratto.pathContrattoUnilav&&!tutti.includes("Documento UNILAV mancante"))tutti.push("Documento UNILAV mancante");
   const lista=chiamate[contratto.idContratto];
   if(lista===null){if(!tutti.includes("Verifica chiamate non disponibile"))tutti.push("Verifica chiamate non disponibile");continue}
-  if(!lista.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&dataHR(c.dataInizio)<=da&&dataHR(c.dataFine)>=al)){
+  if(!lista.some(c=>c.stato==="INVIATA"&&!c.annullamentoTest&&coprePeriodoChiamata(c,da,al))){
    const motivo="Chiamata non coperta per il turno del "+fmt(da);
    if(!tutti.includes(motivo))tutti.push(motivo);
   }

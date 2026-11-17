@@ -5,6 +5,7 @@ import {ezystaffBEUrl} from "@/utils/baseUrl";
 import type {HRPratica,HRStato} from "@/utils/hrWorkflow";
 import {Eye,RefreshCw} from "lucide-react";
 import TooltipStatoHR from "../components/TooltipStatoHR";
+import TurniAssegnatiHR from "../components/TurniAssegnatiHR";
 import {caricaAnagraficaHR,caricaContrattiHR,verificaRegolaritaHR} from "@/utils/hrCompliance";
 import type {HRTurno} from "@/utils/hrCompliance";
 type TurnoDettaglio=HRTurno & {idTurno?:number;nomeEvento?:string|null;titoloEvento?:string|null;via?:string|null};
@@ -71,18 +72,7 @@ export default function HRCoda(){
      <td className="p-3"><span className={`font-semibold ${livelloPriorita(p)==="Alta"?"text-red-700":livelloPriorita(p)==="Media"?"text-amber-700":"text-emerald-700"}`}>{livelloPriorita(p)}</span></td>
      <td className="p-3"><Link title="Visualizza e lavora contratto" aria-label={"Apri contratto di "+p.cognome+" "+p.nome} to={`/hr/operatore/${p.idOperatore}?tab=contratti&pratica=${p.id}`} className="inline-flex rounded-md border border-[#b7d7cc] p-2 text-[#007a55] hover:bg-[#ecf3f1]"><Eye className="h-5 w-5"/></Link></td>
     </tr>{espanso===p.idOperatore&&<tr className="border-b bg-[#f5faf8]"><td colSpan={7} className="p-4">
-      <div className="rounded-lg border bg-white p-4">
-       <h3 className="mb-3 font-semibold text-[#007a55]">Turni assegnati</h3>
-       {turniDettaglio.filter(t=>Number(t.idOperatore)===p.idOperatore).length?
-        <table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="p-2">Data</th><th className="p-2">Orario</th><th className="p-2">Evento</th><th className="p-2">Luogo</th></tr></thead><tbody>
-        {turniDettaglio.filter(t=>Number(t.idOperatore)===p.idOperatore).sort((a,b)=>String(a.dataTurno||"").localeCompare(String(b.dataTurno||""))).map((t,i)=><tr key={t.idTurno??i} className="border-t">
-         <td className="p-2">{date(t.dataTurno||null)}</td>
-         <td className="p-2">{t.oraInizio||"—"} – {t.oraFine||"—"}</td>
-         <td className="p-2">{t.nomeEvento||t.titoloEvento||"—"}</td>
-         <td className="p-2">{t.via||"Luogo non specificato"}</td>
-        </tr>)}</tbody></table>:
-        <p className="text-gray-500">Nessun turno nei prossimi 90 giorni</p>}
-      </div>
+      <TurniAssegnatiHR turni={turniDettaglio.filter(t=>Number(t.idOperatore)===p.idOperatore).sort((a,b)=>String(a.dataTurno||"").localeCompare(String(b.dataTurno||"")))} formatData={v=>date(v||null)}/>
     </td></tr>}</Fragment>)}{!visibili.length&&<tr><td colSpan={7} className="p-6 text-center text-gray-500">{busy?"Caricamento…":"Nessuna pratica trovata"}</td></tr>}</tbody>
    </table></div>
   </section>
