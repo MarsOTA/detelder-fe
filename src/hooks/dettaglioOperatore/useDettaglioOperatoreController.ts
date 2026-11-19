@@ -1,3 +1,4 @@
+import {useChiamateOperatore} from "./useChiamateOperatore";
 import {useContrattiOperatore} from "./useContrattiOperatore";
 import {useFormContratti} from "./useFormContratti";
 import {useImmaginiOperatore} from "./useImmaginiOperatore";
@@ -29,9 +30,7 @@ export const useDettaglioOperatoreController = () => {
     const datiMancantiHR=datiContrattoMancanti(dipendente);
     const [formContrattoOpen,setFormContrattoOpen] = useState(false);
     const [searchParams] = useSearchParams();
-    const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
-    const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
-    const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
+    const {archivioChiamateOpen,setArchivioChiamateOpen,nuovaChiamataOpen,setNuovaChiamataOpen,aggiornamentoAzioniHR,setAggiornamentoAzioniHR,contrattoPadre,dateProposta,aggiornaChiamate}=useChiamateOperatore(id,contratti,searchParams);
     // Permission to perform intermittent calls is based on the verified backend role,
     // not the /admin vs /hr route. ADMIN_HR may work from either operator view.
     const [puoEseguireChiamate,setPuoEseguireChiamate]=useState(false);
@@ -51,34 +50,6 @@ export const useDettaglioOperatoreController = () => {
 
     const {formContrattoChiamata,setFormContrattoChiamata,formContrattoOccasionale,setFormContrattoOccasionale,formContrattoTempoDeterminato,setFormContrattoTempoDeterminato,formContrattoTempoIndeterminato,setFormContrattoTempoIndeterminato,formConsegnaBeniFormazione,handleChangeContrattoChiamata,handleChangeContrattoOccasionale,handleChangeContrattoTempoDeterminato,handleChangeContrattoTempoIndeterminato,handleChangeConsegnaBeniFormazione}=useFormContratti(praticaHR);
 
-    const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
-    const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
-    useEffect(()=>{
-      if(searchParams.get("azione")!=="chiamata"||!id||!contratti.length)return;
-      const requested=Number(searchParams.get("contratto"));
-      const c=contratti.find(item=>item.idContratto===requested&&item.tipologia==="CHIAMATA");
-      if(!c||!c.dataInizio||!c.dataFine)return;
-      const current=new Date();const today=[current.getFullYear(),String(current.getMonth()+1).padStart(2,"0"),String(current.getDate()).padStart(2,"0")].join("-");
-      if(c.dataInizio.slice(0,10)>today||c.dataFine.slice(0,10)<today)return;
-      const inizio=searchParams.get("inizio")||"";
-      const fine=searchParams.get("fine")||inizio;
-      const dal=c.dataInizio.slice(0,10),al=c.dataFine.slice(0,10);
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(inizio)||!/^\d{4}-\d{2}-\d{2}$/.test(fine)||inizio<dal||fine>al||fine<inizio)return;
-      setContrattoPadre({idContratto:c.idContratto,tipologia:"CHIAMATA",dataInizio:dal,dataFine:al});
-      setDateProposta({inizio,fine});
-      setNuovaChiamataOpen(true);
-    },[id,contratti,searchParams]);
-
-    const [,setChiamateCounts] = useState<Record<number,number>>({});
-    const aggiornaChiamate = async () => {
-      if(!id)return;
-      const padri=contratti.filter(c=>c.tipologia==="CHIAMATA");
-      const results=await Promise.allSettled(padri.map(c=>listaChiamateHR(Number(id),c.idContratto)));
-      const counts:Record<number,number>={};
-      results.forEach((res,i)=>{if(res.status==="fulfilled")counts[padri[i].idContratto]=res.value.length;});
-      setChiamateCounts(counts);
-    };
-    useEffect(()=>{void aggiornaChiamate();},[id,contratti]);
     // Non mostrare conteggi fittizi: manca ancora la persistenza delle chiamate su Aiven.
 
 
