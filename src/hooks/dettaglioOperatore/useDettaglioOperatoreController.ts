@@ -3,23 +3,15 @@ import {useFormContratti} from "./useFormContratti";
 import {useImmaginiOperatore} from "./useImmaginiOperatore";
 import {useAllegatiOperatore} from "./useAllegatiOperatore";
 import {useAnagraficaOperatore} from "./useAnagraficaOperatore";
-import { useState,useEffect } from "react";
-import { useParams,useSearchParams } from "react-router-dom";
-import type { ContrattoChiamataPadre } from "@/pages/admin/dialog/IntermittentiDialog";
-import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrRegistraAttivita, hrMe } from "@/utils/hrWorkflow";
-import { ruoloConsente } from "@/utils/hrAccessPolicy";
-import { usePraticaOperatoreHR } from "@/hooks/usePraticaOperatoreHR";
-import { ezystaffBEUrl } from "@/utils/baseUrl";
-import { messaggioBloccoContratto } from "@/utils/hrContrattoRestrittivo";
-import type { Dipendente } from "@/entity";
-import { datiContrattoMancanti } from "@/utils/hrCompliance";
-import { format } from "date-fns";
-import type { FormDatiAnagrafici,FormNascitaResidenza,FormDatiGenerali,FormContratto,
- FormContrattoOccasionale,FormContrattoTempoIndeterminato,FormContrattoTempoDeterminato,
- FormHeader,FormAllegati,FormConsegnaBeniFormazione,TipoContratto,ContrattoBase,Contratto,
- Allegati,ContrattoPayload,ImageData
-} from "@/pages/admin/dettaglioOperatore.types";
+import {useState,useEffect} from "react";
+import {useParams,useSearchParams} from "react-router-dom";
+import type {ContrattoChiamataPadre} from "@/pages/admin/dialog/IntermittentiDialog";
+import {listaChiamateHR} from "@/utils/chiamateHR";
+import {hrMe} from "@/utils/hrWorkflow";
+import {ruoloConsente} from "@/utils/hrAccessPolicy";
+import {usePraticaOperatoreHR} from "@/hooks/usePraticaOperatoreHR";
+import {datiContrattoMancanti} from "@/utils/hrCompliance";
+import type {TipoContratto,Contratto} from "@/pages/admin/dettaglioOperatore.types";
 
 export const useDettaglioOperatoreController = () => {
     const { id } = useParams();
@@ -128,6 +120,7 @@ export const useDettaglioOperatoreController = () => {
 
   const {caricaListaContratti,generaContrattoChiamata,generaContrattoOccasionale,generaContrattoConsegnaBeniFormazione,generaContrattoTempoIndeterminato,generaContrattoTempoDeterminato,getsioneCancellazioneSingoloContratto,getsioneCancellazioneTuttiContratti,dowloadPdf,caricaContrattoFirmato}=useContrattiOperatore({id,contratti,setContratti,praticaHR,tipoContratto,datiMancantiHR,setLoading,setFormContrattoOpen,formContrattoChiamata,formContrattoOccasionale,formContrattoTempoIndeterminato,formContrattoTempoDeterminato,formConsegnaBeniFormazione});
   const {imgPrimoPiano,imgFiguraIntera,imgMezzoBusto,caricaImmagine,fetchImage}=useImmaginiOperatore(id,caricaListaContratti);
+  const {editAllegati,allegati,formAllegati,editaAllegati,aggiornaAllegati,handleChangeFormAllegati,caricaAllegati,dowloadAllegato,caricaDocumento,eliminaDocumento}=useAllegatiOperatore(id,aggiornaDipendente);
   return {
     aggiornaAllegati, aggiornaChiamate, aggiornaDatiAnagrafici, aggiornaDatiGenerici, aggiornaHeader, aggiornaNascitaResidenza, aggiornamentoAzioniHR, allegati, archivioChiamateOpen, caricaContrattoFirmato, caricaDocumento, caricaImmagine, caricaListaContratti, contratti, contrattiPrecedenti, contrattoPadre, dateProposta, datiMancantiHR, dipendente, disabilitaDatiAnagrafici, disabilitaDatiGenerali, disabilitaHeader, disabilitaNascitaResidenza, dowloadAllegato, dowloadPdf, editAllegati, editDatiAnagrafici, editDatiGenerali, editHeader, editNascitaResidenza, editaAllegati, editaDatiAnagrafici, editaDatiGenerali, editaHeader, editaNascitaResidenza, eliminaDocumento, formAllegati, formConsegnaBeniFormazione, formContrattoChiamata, formContrattoOccasionale, formContrattoOpen, formContrattoTempoDeterminato, formContrattoTempoIndeterminato, formDatiAnagrafici, formDatiGenerali, formDatiNascitaResidenza, formHeader, generaContrattoChiamata, generaContrattoConsegnaBeniFormazione, generaContrattoOccasionale, generaContrattoTempoDeterminato, generaContrattoTempoIndeterminato, getsioneCancellazioneSingoloContratto, getsioneCancellazioneTuttiContratti, handleChangeConsegnaBeniFormazione, handleChangeContrattoChiamata, handleChangeContrattoOccasionale, handleChangeContrattoTempoDeterminato, handleChangeContrattoTempoIndeterminato, handleChangeDatiAnagrafici, handleChangeDatiGenerali, handleChangeDatiNascitaResidenza, handleChangeFormAllegati, handleChangeFormHeader, id, imgFiguraIntera, imgMezzoBusto, imgPrimoPiano, listaMansioniHeader, loading, nuovaChiamataOpen, praticaHR, puoEseguireChiamate, setAggiornamentoAzioniHR, setArchivioChiamateOpen, setFormContrattoChiamata, setFormContrattoOccasionale, setFormContrattoOpen, setFormContrattoTempoDeterminato, setFormContrattoTempoIndeterminato, setNuovaChiamataOpen, setPraticaHR, tipoContratto
   };
