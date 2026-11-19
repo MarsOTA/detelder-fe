@@ -69,6 +69,13 @@ async function verify(role,shouldManage){
   assert.equal(await send.count()>0,shouldManage,role+" call action visibility mismatch");
   const code=page.getByRole("textbox",{name:"Codice comunicazione"});
   assert.equal(await code.isEnabled(),shouldManage,role+" UNILAV code edit mismatch");
+  // All three refactored tabs must still mount without React errors.
+  if(role==="ADMIN_HR"){
+    await page.getByRole("tab",{name:"Anagrafica"}).click();
+    await page.getByRole("tab",{name:"Allegati"}).click();
+    await page.getByRole("tab",{name:"Contratti"}).click();
+    assert.equal(await page.getByRole("checkbox",{name:/Includi prestazione/}).first().isVisible(),true);
+  }
   assert.equal(errors.length,0,"React error: "+errors.join("; "));
   checks.push(role+": "+(shouldManage?"execute & edit call prerequisites":"read-only"));
  }finally{await context.close()}
