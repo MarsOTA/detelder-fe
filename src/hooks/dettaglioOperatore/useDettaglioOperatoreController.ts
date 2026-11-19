@@ -1,3 +1,4 @@
+import {useFormContratti} from "./useFormContratti";
 import {useImmaginiOperatore} from "./useImmaginiOperatore";
 import {useAllegatiOperatore} from "./useAllegatiOperatore";
 import {useAnagraficaOperatore} from "./useAnagraficaOperatore";
@@ -55,6 +56,8 @@ export const useDettaglioOperatoreController = () => {
       contratti,aggiornamentoAzioniHR
     });
 
+    const {formContrattoChiamata,setFormContrattoChiamata,formContrattoOccasionale,setFormContrattoOccasionale,formContrattoTempoDeterminato,setFormContrattoTempoDeterminato,formContrattoTempoIndeterminato,setFormContrattoTempoIndeterminato,formConsegnaBeniFormazione,handleChangeContrattoChiamata,handleChangeContrattoOccasionale,handleChangeContrattoTempoDeterminato,handleChangeContrattoTempoIndeterminato,handleChangeConsegnaBeniFormazione}=useFormContratti(praticaHR);
+
     const [contrattoPadre, setContrattoPadre] = useState<ContrattoChiamataPadre | null>(null);
     const [dateProposta,setDateProposta]=useState<{inizio:string;fine:string}|null>(null);
     useEffect(()=>{
@@ -98,41 +101,6 @@ export const useDettaglioOperatoreController = () => {
 
 
 
-    const [formContrattoChiamata, setFormContrattoChiamata] = useState<FormContratto>({
-        dataInizio: null,
-        dataFine: null,
-        dataFirmaContratto: null,
-        //  listaMansioni: [],
-        //  compensoTotaleLordo: 0,
-        //  qualifica: "",
-        cittaPredefinita: "MILANO",
-        indirizzoPredefinito: "VIA A. RIZZOLI 4",
-        cittaAlternativa: "",
-        indirizzoAlternativo: "",
-        //  giorniPeriodoProva: 0,       
-    });
-
-    const [formContrattoOccasionale, setFormContrattoOccasionale] = useState<FormContrattoOccasionale>({
-        dataInizio: null,
-        dataFine: null,
-        dataFirmaContratto: null
-    });
-
-    const [formContrattoTempoIndeterminato, setFormContrattoTempoIndeterminato] = useState<FormContrattoTempoIndeterminato>({
-        dataInizio: null,
-        dataFine: null
-    });
-
-    const [formContrattoTempoDeterminato, setFormContrattoTempoDeterminato] = useState<FormContrattoTempoDeterminato>({
-        dataInizio: null,
-        dataFine: null
-    });
-
-    const [formConsegnaBeniFormazione, setFormConsegnaBeniFormazione] = useState<FormConsegnaBeniFormazione>({
-        elencoContenutiFormazione: "",
-        elencoBeniStrumentali: ""
-    });
-
     // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
     // Legacy contracts are presented through the same modern card as newly assigned HR contracts.
     // These view-only records must not create or update HR workflow practices.
@@ -148,17 +116,6 @@ export const useDettaglioOperatoreController = () => {
           TEMPO_INDETERMINATO:"CONTRATTO_TEMPO_INDETERMINATO",
           CHIAMATA:"CHIAMATA", OCCASIONALE:"OCCASIONALE",
           CONSGNA_BENI_FORMAZIONE:"CONSGNA_BENI_FORMAZIONE" } as Record<string,TipoContratto>)[praticaHR.tipologia] ?? null : null;
-    useEffect(()=>{
-      if(!praticaHR)return;
-      // Le date suggerite dall'ADMIN restano modificabili nei form originali.
-      const toDate=(value:string|null)=>value?new Date(value.slice(0,10)+"T12:00:00"):null;
-      const dataInizio=toDate(praticaHR.dataInizio),dataFine=toDate(praticaHR.dataFine);
-      setFormContrattoChiamata(prev=>({...prev,dataInizio,dataFine}));
-      setFormContrattoOccasionale(prev=>({...prev,dataInizio,dataFine}));
-      setFormContrattoTempoDeterminato(prev=>({...prev,dataInizio,dataFine}));
-      setFormContrattoTempoIndeterminato(prev=>({...prev,dataInizio,dataFine}));
-    },[praticaHR?.id,praticaHR?.dataInizio,praticaHR?.dataFine]);
-
     useEffect(() => {
         caricaOperatore();
         caricaListaContratti();
@@ -167,56 +124,6 @@ export const useDettaglioOperatoreController = () => {
         fetchImage('figuraIntera');
         caricaAllegati();
     }, []);
-
-    const handleChangeContrattoChiamata = (
-        key: string,
-        value: string | number | Date | string[] | null
-    ) => {
-        setFormContrattoChiamata((prev) => ({
-            ...prev,
-            [key]: value,
-        }))
-    }
-
-    const handleChangeContrattoOccasionale = (
-        key: string,
-        value: Date | null
-    ) => {
-        setFormContrattoOccasionale((prev) => ({
-            ...prev,
-            [key]: value,
-        }))
-    }
-
-    const handleChangeContrattoTempoIndeterminato = (
-        key: string,
-        value: Date | null
-    ) => {
-        setFormContrattoTempoIndeterminato((prev) => ({
-            ...prev,
-            [key]: value,
-        }))
-    }
-
-    const handleChangeContrattoTempoDeterminato = (
-        key: string,
-        value: Date | null
-    ) => {
-        setFormContrattoTempoDeterminato((prev) => ({
-            ...prev,
-            [key]: value,
-        }))
-    }
-
-    const handleChangeConsegnaBeniFormazione = (
-        key: string,
-        value: string | null
-    ) => {
-        setFormConsegnaBeniFormazione((prev) => ({
-            ...prev,
-            [key]: value,
-        }))
-    }
 
     /*
     const generaContratto = async () => {
