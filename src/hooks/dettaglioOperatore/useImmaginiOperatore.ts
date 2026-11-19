@@ -97,9 +97,5 @@ export function useImmaginiOperatore(id:string|undefined,caricaListaContratti:()
         }
     };
 
-
-
-  const {editAllegati,allegati,formAllegati,editaAllegati,aggiornaAllegati,handleChangeFormAllegati,caricaAllegati,dowloadAllegato,caricaDocumento,eliminaDocumento}=useAllegatiOperatore(id,aggiornaDipendente);
-
  return {imgPrimoPiano,imgFiguraIntera,imgMezzoBusto,caricaImmagine,fetchImage};
 }
