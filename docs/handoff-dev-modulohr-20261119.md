@@ -1,6 +1,6 @@
 # Detelder ModuloHR — Handoff DEV (19/11/2026)
 
-**Stato:** refactoring funzionale presentabile su Vercel/Aiven **TEST**; non pronto per OVH o comunicazioni ministeriali reali. Questo file va letto insieme a [modulo-hr-regole.md](./modulo-hr-regole.md), che contiene la matrice delle regole HR-01..HR-12.
+**Stato:** refactoring strutturale dei principali componenti completato; refactoring funzionale presentabile su Vercel/Aiven **TEST**; non pronto per OVH o comunicazioni ministeriali reali. Questo file va letto insieme a [modulo-hr-regole.md](./modulo-hr-regole.md), che contiene la matrice delle regole HR-01..HR-12.
 
 ## 1. Branch, ambienti e confini
 
@@ -21,8 +21,13 @@ FE -> BE -> **Aiven MySQL TEST**. Le variabili CORS e API sono specializzate per
 
 - `src/pages/admin/moduloHR.tsx`: matrice Admin, analisi turni/contratti e assegnazione pratica.
 - `src/pages/admin/hrCoda.tsx`, `hrRuoli.tsx`: coda HR, gestione ruoli.
-- `src/pages/admin/dettaglioOperatore.tsx`: scheda/contratti e orchestrazione; **componente ancora esteso**, prossimo candidato all'estrazione.
-- `src/pages/components/ContrattoAttivoHR.tsx`, `AzioniHRIntermittenti.tsx`, `ArchivioContrattiHR.tsx`: documenti, comunicazioni e archivio.
+- `src/pages/admin/dettaglioOperatore.tsx`: **shell presentazionale** (~50 righe) che compone header, tab Anagrafica, tab Contratti, tab Allegati, archivio e dialog chiamate.
+- `src/pages/components/OperatoreAnagraficaTab.tsx`, `OperatoreContrattiTab.tsx`: viste separate, senza accesso diretto al database.
+- `src/hooks/dettaglioOperatore/useDettaglioOperatoreController.ts`: controller di composizione e view model tipizzato (meno di 100 righe).
+- `src/hooks/dettaglioOperatore/useAnagraficaOperatore.ts`, `useAllegatiOperatore.ts`, `useImmaginiOperatore.ts`: form/CRUD anagrafica, documenti e foto.
+- `src/hooks/dettaglioOperatore/useFormContratti.ts`, `useContrattiOperatore.ts`, `useChiamateOperatore.ts`: editing, emissione/archiviazione contratti e gestione chiamate.
+- `src/hooks/moduloHR/useModuloHRAdmin.ts`: stato, filtri, matrice e assegnazione della vista Admin. `src/pages/admin/moduloHR.tsx` ora si occupa solo della presentazione.
+- `src/pages/components/ContrattoAttivoHR.tsx`, `AzioniHRIntermittenti.tsx`, `ArchivioChiamateIntermittenti.tsx`, `ArchivioContrattiHR.tsx`: documenti, preparazione chiamate e tabella archivio indipendente.
 - `src/hooks/usePraticaOperatoreHR.ts`: selezione e presa in carico.
 - `src/utils/hrValutazione.ts`, `hrRegolarizzazione.ts`, `hrContrattoRestrittivo.ts`, `hrCompliance.ts`: regole turni/contratti/prerequisiti.
 - `src/utils/intermittentiPrestazioni.ts`, `intermittentiXml.ts`, `intermittentiPdf.ts`: copertura delle prestazioni, XML e PDF.
@@ -99,7 +104,7 @@ FE -> BE -> **Aiven MySQL TEST**. Le variabili CORS e API sono specializzate per
 5. Eseguire un collaudo end-to-end sull'**esatto commit candidate al rilascio** e definire rollback.
 
 **P1**
-6. Completare estrazione del monolite `dettaglioOperatore.tsx`.
+6. Proseguire *solo se giustificato dalla review* la scomposizione dei componenti legacy già indipendenti, soprattutto `AllegatiOperatoreTab.tsx` e la logica di `AzioniHRIntermittenti.tsx`. La pagina operatore e il controller principali sono già estratti nei moduli descritti sopra.
 7. Spostare gli effetti collaterali dal `GET /pratiche` in un servizio/evento esplicito.
 8. Sostituire i controlli ambientali basati su suffisso `DB_HOST` con impostazioni di ambiente robuste.
 9. Rendere riproducibile PDF template e dipendenza `pdf-lib` (attualmente importata da CDN nel browser).
