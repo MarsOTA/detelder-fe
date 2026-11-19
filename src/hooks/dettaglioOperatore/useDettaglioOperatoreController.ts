@@ -6,8 +6,6 @@ import {useAllegatiOperatore} from "./useAllegatiOperatore";
 import {useAnagraficaOperatore} from "./useAnagraficaOperatore";
 import {useState,useEffect} from "react";
 import {useParams,useSearchParams} from "react-router-dom";
-import type {ContrattoChiamataPadre} from "@/pages/admin/dialog/IntermittentiDialog";
-import {listaChiamateHR} from "@/utils/chiamateHR";
 import {hrMe} from "@/utils/hrWorkflow";
 import {ruoloConsente} from "@/utils/hrAccessPolicy";
 import {usePraticaOperatoreHR} from "@/hooks/usePraticaOperatoreHR";
@@ -16,15 +14,8 @@ import type {TipoContratto,Contratto} from "@/pages/admin/dettaglioOperatore.typ
 
 export const useDettaglioOperatoreController = () => {
     const { id } = useParams();
-    //const [loading, setLoading] = useState(false);
     const [loading, setLoading] = useState(false);
     const {dipendente, editHeader, disabilitaHeader, editDatiAnagrafici, disabilitaDatiAnagrafici, editNascitaResidenza, disabilitaNascitaResidenza, editDatiGenerali, disabilitaDatiGenerali, formDatiAnagrafici, formDatiNascitaResidenza, formDatiGenerali, formHeader, caricaOperatore, aggiornaDipendente, editaDatiAnagrafici, editaHeader, editaDatiGenerali, editaNascitaResidenza, aggiornaDatiAnagrafici, aggiornaHeader, aggiornaDatiGenerici, aggiornaNascitaResidenza, handleChangeDatiAnagrafici, handleChangeDatiNascitaResidenza, handleChangeDatiGenerali, handleChangeFormHeader}=useAnagraficaOperatore(id);
-
-
-
-
-
-    // const [editCartaIdentita, setEditCartaIdentita] = useState<boolean>(false);
 
     const [contratti, setContratti] = useState<Contratto[]>([]);
     const datiMancantiHR=datiContrattoMancanti(dipendente);
@@ -50,9 +41,6 @@ export const useDettaglioOperatoreController = () => {
 
     const {formContrattoChiamata,setFormContrattoChiamata,formContrattoOccasionale,setFormContrattoOccasionale,formContrattoTempoDeterminato,setFormContrattoTempoDeterminato,formContrattoTempoIndeterminato,setFormContrattoTempoIndeterminato,formConsegnaBeniFormazione,handleChangeContrattoChiamata,handleChangeContrattoOccasionale,handleChangeContrattoTempoDeterminato,handleChangeContrattoTempoIndeterminato,handleChangeConsegnaBeniFormazione}=useFormContratti(praticaHR);
 
-    // Non mostrare conteggi fittizi: manca ancora la persistenza delle chiamate su Aiven.
-
-
     const listaMansioniHeader = [
         "Doorman",
         "Controllo accessi",
@@ -62,8 +50,6 @@ export const useDettaglioOperatoreController = () => {
         "Antincendio avanzato",
         "Primo soccorso"
     ];
-
-
 
     // L'HR riceve il tipo esclusivamente dalla pratica assegnata dall'ADMIN.
     // Legacy contracts are presented through the same modern card as newly assigned HR contracts.
