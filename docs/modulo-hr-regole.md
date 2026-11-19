@@ -18,6 +18,23 @@
 | Backend `services/hrCallCoverage.js` | Fonte autorevole per verificare la copertura in archivio |
 | Backend `services/hrPermissions.js` | Autorizzazioni effettive del ruolo ADMIN, HR o ADMIN_HR |
 
+## Struttura componenti dopo il refactoring
+
+La vista `src/pages/admin/dettaglioOperatore.tsx` è una shell: compone i tab
+`OperatoreAnagraficaTab` e `OperatoreContrattiTab`, insieme all'header,
+agli allegati e ai dialog. I componenti ricevono un view model tipizzato da
+`useDettaglioOperatoreController` e non possiedono la logica HTTP.
+
+Gli hook `useAnagraficaOperatore`, `useAllegatiOperatore`,
+`useImmaginiOperatore`, `useFormContratti`,
+`useContrattiOperatore` e `useChiamateOperatore` tengono distinte le
+responsabilità. La tabella Admin usa `useModuloHRAdmin`; l'archivio
+intermittenti usa `ArchivioChiamateIntermittenti`.
+
+Le API e la matrice delle regole contrattuali sono invariate.
+Il refactoring non abilita invii email/PEC effettivi. Le verifiche UI avvengono
+su branch Vercel e database Aiven di test, mai su OVH.
+
 ## Regole applicative
 
 | ID | Regola | Test atteso |
