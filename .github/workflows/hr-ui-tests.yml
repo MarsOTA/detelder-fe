@@ -10,6 +10,9 @@ on:
       - "tests/**"
       - "package.json"
       - ".github/workflows/hr-ui-tests.yml"
+concurrency:
+  group: hr-ui-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -23,13 +26,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - name: Install frontend and browser test runner
+      - name: Install frontend dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Typecheck and build the actual frontend
+        run: npm run build
+      - name: Install browser test runner
         run: |
-          npm install --ignore-scripts --no-audit --no-fund
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.0
           npx playwright install --with-deps chromium
-      - name: Build the actual frontend
-        run: npm run build
       - name: Run mock-only browser tests
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/hr-frontend-preview.log 2>&1 &
