@@ -7,7 +7,7 @@ import {AlertCircle,CheckCircle2,ClipboardList,UserRoundCheck} from "lucide-reac
 import {useModuloHRAdmin} from "@/hooks/moduloHR/useModuloHRAdmin";
 
 export default function ModuloHR(){
- const {date,datore,p,target,tipo}=useModuloHRAdmin();
+ const {aggiorna,apriSchedaHR,assegnaNuovoPeriodo,assegnando,cambiaTipologia,carica,dateContratto,errore,espanso,filtroPriorita,inlineHR,inoltra,irregolari,loading,nomiEventi,nomiOperatori,periodoVisualizzato,praticaCorrente,progress,ricerca,ricercaEvento,salvaPeriodo,setDateContratto,setEspanso,setFiltroPriorita,setRicerca,setRicercaEvento,tipoSelezionato,visibili}=useModuloHRAdmin();
  return <main className="m-6 space-y-5">
   <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-extrabold text-[#007a55]">ADMIN · Assegnazione contratti</h1><p className="text-sm text-gray-500">Scegli tipologia e datore, poi assegna la pratica alla coda HR.</p></div><button className="rounded-md bg-[#007a55] px-4 py-2 text-white disabled:opacity-50" onClick={()=>void carica()} disabled={loading}>{loading?"Caricamento…":"Aggiorna dati"}</button></div>
   {errore&&<div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-red-800">{errore}</div>}
