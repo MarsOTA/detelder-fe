@@ -11,7 +11,7 @@ export type {TipoContratto} from "./dettaglioOperatore.types";
 
 const DettaglioOperatore = () => {
  const model=useDettaglioOperatoreController();
- const {aggiornaAllegati,aggiornaChiamate,aggiornaHeader,allegati,archivioChiamateOpen,caricaDocumento,caricaImmagine,contratti,contrattoPadre,dateProposta,dipendente,disabilitaHeader,dowloadAllegato,editAllegati,editHeader,editaAllegati,editaHeader,eliminaDocumento,formAllegati,formHeader,handleChangeFormAllegati,handleChangeFormHeader,id,imgFiguraIntera,imgMezzoBusto,imgPrimoPiano,listaMansioniHeader,nuovaChiamataOpen,searchParams,setAggiornamentoAzioniHR,setArchivioChiamateOpen,setNuovaChiamataOpen}=model;
+ const {aggiornaAllegati,aggiornaChiamate,aggiornaHeader,allegati,archivioChiamateOpen,caricaDocumento,caricaImmagine,contrattoPadre,dateProposta,dipendente,disabilitaHeader,dowloadAllegato,editAllegati,editHeader,editaAllegati,editaHeader,eliminaDocumento,formAllegati,formHeader,handleChangeFormAllegati,handleChangeFormHeader,id,imgFiguraIntera,imgMezzoBusto,imgPrimoPiano,listaMansioniHeader,nuovaChiamataOpen,searchParams,setAggiornamentoAzioniHR,setArchivioChiamateOpen,setNuovaChiamataOpen}=model;
     return (
         <section className="m-6">
 
