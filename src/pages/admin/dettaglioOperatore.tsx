@@ -6,7 +6,8 @@ import { IntermittentiDialog } from "./dialog/IntermittentiDialog";
 import { NuovaChiamataIntermittenteDialog } from "./dialog/NuovaChiamataIntermittenteDialog";
 import type { ContrattoChiamataPadre } from "./dialog/IntermittentiDialog";
 import { listaChiamateHR } from "@/utils/chiamateHR";
-import { hrAggiornaPeriodo, hrRegistraAttivita } from "@/utils/hrWorkflow";
+import { hrAggiornaPeriodo, hrRegistraAttivita, hrMe } from "@/utils/hrWorkflow";
+import { ruoloConsente } from "@/utils/hrAccessPolicy";
 import {usePraticaOperatoreHR} from "@/hooks/usePraticaOperatoreHR";
 
 import { ezystaffBEUrl } from "@/utils/baseUrl";
@@ -71,6 +72,16 @@ const DettaglioOperatore = () => {
     const [archivioChiamateOpen, setArchivioChiamateOpen] = useState(false);
     const [nuovaChiamataOpen, setNuovaChiamataOpen] = useState(false);
     const [aggiornamentoAzioniHR,setAggiornamentoAzioniHR]=useState(0);
+    // Permission to perform intermittent calls is based on the verified backend role,
+    // not the /admin vs /hr route. ADMIN_HR may work from either operator view.
+    const [puoEseguireChiamate,setPuoEseguireChiamate]=useState(false);
+    useEffect(()=>{
+      let active=true;
+      void hrMe().then(identity=>{
+        if(active)setPuoEseguireChiamate(ruoloConsente(identity.role,"HR"));
+      }).catch(()=>{if(active)setPuoEseguireChiamate(false)});
+      return()=>{active=false};
+    },[]);
 
     const {praticaHR,setPraticaHR}=usePraticaOperatoreHR({
       id,praticaId:searchParams.get("pratica"),
@@ -1602,7 +1613,7 @@ const DettaglioOperatore = () => {
                       <AzioniHRIntermittenti
                         key={aggiornamentoAzioniHR}
                         idOperatore={Number(id)}
-                        readOnly={!window.location.pathname.startsWith("/hr/")}
+                        readOnly={!puoEseguireChiamate}
                         pratica={praticaHR}
                         contratti={contratti}
                         codiceFiscale={dipendente?.codiceFiscale||""}
@@ -1633,7 +1644,7 @@ const DettaglioOperatore = () => {
                       <AzioniHRIntermittenti
                         key={"archivio-"+aggiornamentoAzioniHR}
                         mode="archive"
-                        readOnly={!window.location.pathname.startsWith("/hr/")}
+                        readOnly={!puoEseguireChiamate}
                         idOperatore={Number(id)}
                         pratica={praticaHR}
                         contratti={contratti}
