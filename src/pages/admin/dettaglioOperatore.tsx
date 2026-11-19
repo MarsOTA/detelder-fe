@@ -1608,7 +1608,7 @@ const DettaglioOperatore = () => {
                     pratica={praticaHR}
                     codiceFiscale={dipendente?.codiceFiscale}
                     datiMancanti={datiMancantiHR}
-                    isHR={window.location.pathname.startsWith("/hr/")}
+                    isHR={puoEseguireChiamate}
                     azioni={praticaHR?.tipologia==="CHIAMATA"&&id?(
                       <AzioniHRIntermittenti
                         key={aggiornamentoAzioniHR}
@@ -1619,7 +1619,7 @@ const DettaglioOperatore = () => {
                         codiceFiscale={dipendente?.codiceFiscale||""}
                         onCreateContract={()=>setFormContrattoOpen(true)}
                         missingPrerequisites={datiMancantiHR.length>0}
-                        createFields={window.location.pathname.startsWith("/hr/")?<div className="w-full space-y-3 rounded-lg border bg-white p-3">
+                        createFields={puoEseguireChiamate?<div className="w-full space-y-3 rounded-lg border bg-white p-3">
                           <p className="text-xs text-gray-600">Periodo definito dall'ADMIN: {praticaHR.dataInizio?.slice(0,10)||"—"} – {praticaHR.dataFine?.slice(0,10)||"—"}</p>
                           <label className="block text-xs">Data firma contratto<input type="date" className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata.dataFirmaContratto?format(formContrattoChiamata.dataFirmaContratto,"yyyy-MM-dd"):""} onChange={e=>setFormContrattoChiamata(v=>({...v,dataFirmaContratto:e.target.value?new Date(e.target.value+"T12:00:00"):null}))}/></label>
                           <div className="grid gap-2 md:grid-cols-2">{(["cittaPredefinita","indirizzoPredefinito","cittaAlternativa","indirizzoAlternativo"] as const).map(k=><label key={k} className="block text-xs">{({cittaPredefinita:"Città sede",indirizzoPredefinito:"Indirizzo sede",cittaAlternativa:"Città alternativa",indirizzoAlternativo:"Indirizzo alternativo"})[k]}<input className="mt-1 block w-full rounded border bg-white p-2" value={formContrattoChiamata[k]} onChange={e=>setFormContrattoChiamata(v=>({...v,[k]:e.target.value}))}/></label>)}</div>
