@@ -133,5 +133,5 @@ export function useModuloHRAdmin(){
   setSearchParams({}, {replace:true});
  },[searchParams,righe,loading,setSearchParams]);
  const apriSchedaHR=(x:Riga)=>navigate(`/admin/dettaglio-operatore/${x.operatore.id}?tab=contratti${praticaCorrente(x)?"&pratica="+praticaCorrente(x)!.id:""}`);
- return {date,datore,p,target,tipo};
+ return {aggiorna,apriSchedaHR,assegnaNuovoPeriodo,assegnando,cambiaTipologia,carica,dateContratto,errore,espanso,filtroPriorita,inlineHR,inoltra,irregolari,loading,nomiEventi,nomiOperatori,periodoVisualizzato,praticaCorrente,progress,ricerca,ricercaEvento,salvaPeriodo,setDateContratto,setEspanso,setFiltroPriorita,setRicerca,setRicercaEvento,tipoSelezionato,visibili};
 }
