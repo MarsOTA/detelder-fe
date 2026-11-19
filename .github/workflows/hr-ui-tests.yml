@@ -40,3 +40,4 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           node tests/hr-ui-smoke.mjs
           node tests/hr-call-role-smoke.mjs
+          node tests/hr-admin-assignment-smoke.mjs
