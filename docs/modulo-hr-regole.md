@@ -34,6 +34,8 @@
 | HR-10 | Gli annullamenti di prova mantengono traccia della comunicazione iniziale | Una comunicazione annullata non risulta coperta |
 | HR-11 | ADMIN_HR comprende le capacità ADMIN e HR, senza concederle a HR puro | Check backend, non solo frontend |
 | HR-12 | Le azioni privilegiate devono essere autorizzate su API con la sessione verificata | Richiesta anonima → 401 |
+| HR-13 | Dopo assegnazione iniziale e con pratica aperta, la CTA Admin è **Apri pratica HR** | Non creare/prendere il nome di una seconda pratica prima di completare la prima |
+| HR-14 | `ADMIN_HR` può preparare le chiamate anche dalla scheda operatore Admin, non solo da `/hr` | Il normale `ADMIN` rimane senza esecuzione chiamate |
 
 ## Stati e ricevute
 
@@ -50,15 +52,18 @@
 | Elaborare pratica, codice comunicazione, attività | no | sì | sì |
 | Gestire utenti HR | sì | no | sì |
 | Accedere alla coda di lavorazione HR | no | sì | sì |
+| Preparare e simulare chiamate intermittenti (anche in vista Admin) | no | sì | sì |
 
 La verifica di ruolo è nel backend. I controlli dei componenti React sono solo una guida UX.
 
 ## Collaudo prima di un rilascio
 
+Per architettura, limiti attuali, API, test automatizzati e backlog per il DEV: [handoff-dev-modulohr-20261119.md](./handoff-dev-modulohr-20261119.md).
+
 1. Salvare la build precedente del prototipo.
 2. Eseguire `npm test` sul branch backend `refactor/modulohr-regole-20261117` e `npm run build` sul frontend.
 3. Fare una copia di sicurezza del database Aiven **di test**.
-4. Applicare solo sul database di test `db/migrations/20261117_admin_hr_role.sql` del backend.
+4. Verificare il tipo `ruolo` in `hr_ruoli_assegnati` sul solo database Aiven di test. **Nel branch corrente** `middleware/hrAccess.js` esegue anche `ALTER TABLE` alla prima richiesta HR quando trova il vecchio ENUM. Il file `db/migrations/20261117_admin_hr_role.sql` è il riferimento per la futura migrazione esplicita/versionata; non eseguirlo indiscriminatamente su OVH.
 5. Verificare autenticazione e separazione ruoli con account ADMIN, HR, ADMIN_HR e operatore non abilitato.
 6. Provare assegnazione da contratto occasionale scaduto a chiamata e ricerca della nuova pratica.
 7. Provare XML con 18–19 e 22–22, PDF conforme, blocco duplicazioni e nessuna falsa copertura del 20–21.
