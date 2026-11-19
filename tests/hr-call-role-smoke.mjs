@@ -74,7 +74,7 @@ async function verify(role,shouldManage){
     await page.getByRole("tab",{name:"Anagrafica"}).click();
     await page.getByRole("tab",{name:"Allegati"}).click();
     await page.getByRole("tab",{name:"Contratti"}).click();
-    assert.equal(await page.getByRole("checkbox",{name:/Includi prestazione/}).first().isVisible(),true);
+    await page.getByRole("checkbox",{name:/Includi prestazione/}).first().waitFor({state:"visible",timeout:10000});
   }
   assert.equal(errors.length,0,"React error: "+errors.join("; "));
   checks.push(role+": "+(shouldManage?"execute & edit call prerequisites":"read-only"));
